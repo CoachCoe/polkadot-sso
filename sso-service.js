@@ -24,12 +24,17 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "'unsafe-eval'"], // Added unsafe-eval for WebAssembly
+      scriptSrc: [
+        "'self'", 
+        "https://cdn.jsdelivr.net", 
+        "'unsafe-eval'", 
+        "'unsafe-inline'" // Added this
+      ],
       connectSrc: ["'self'", "*"],
       imgSrc: ["'self'", "data:", "https:"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      workerSrc: ["'self'", "blob:"], // Added for WebAssembly
-      childSrc: ["'self'", "blob:"], // Added for WebAssembly
+      workerSrc: ["'self'", "blob:"],
+      childSrc: ["'self'", "blob:"],
     },
   }
 }));
@@ -74,6 +79,7 @@ const dbPromise = open({
 });
 
 // Initialize database with enhanced schema
+// Initialize database with enhanced schema
 async function initDB() {
   const db = await dbPromise;
   await db.exec(`
@@ -97,6 +103,9 @@ async function initDB() {
     CREATE INDEX IF NOT EXISTS idx_challenges_id ON challenges(id);
     CREATE INDEX IF NOT EXISTS idx_sessions_address ON sessions(address);
   `);
+
+  // Log successful initialization
+  console.log('Database initialized successfully');
 }
 
 initDB();
@@ -149,6 +158,9 @@ app.get('/login', async (req, res) => {
       return res.status(400).send('Invalid client');
     }
     
+    // Generate a nonce for our scripts
+    const nonce = crypto.randomBytes(16).toString('base64');
+    
     res.send(`
       <html>
         <head>
@@ -158,7 +170,15 @@ app.get('/login', async (req, res) => {
           <h1>Login with Polkadot Wallet</h1>
           <div id="status">Ready to connect...</div>
           <button id="connectButton">Connect Wallet</button>
-          <script>window.CLIENT_ID = "${client_id}";</script>
+          
+          <!-- Move the initialization to the external file -->
+          <script>
+            // Initialize data needed by login.js
+            window.SSO_CONFIG = {
+              clientId: ${JSON.stringify(client_id)},
+              appName: "Polkadot SSO Demo"
+            };
+          </script>
           <script type="module" src="/login.js"></script>
         </body>
       </html>

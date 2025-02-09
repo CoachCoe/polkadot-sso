@@ -1,33 +1,55 @@
-import { web3Enable, web3Accounts } from 'https://cdn.jsdelivr.net/npm/@polkadot/extension-dapp@0.46.5/+esm';
-
 const statusDiv = document.getElementById('status');
 const connectButton = document.getElementById('connectButton');
 
+async function waitForExtension(maxAttempts = 10) {
+  for (let i = 0; i < maxAttempts; i++) {
+    if (window.injectedWeb3 && window.injectedWeb3['polkadot-js']) {
+      return window.injectedWeb3['polkadot-js'];
+    }
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+  throw new Error('Polkadot extension not found after waiting');
+}
+
 connectButton.addEventListener('click', async () => {
   try {
-    statusDiv.textContent = 'Requesting extension access...';
+    statusDiv.textContent = 'Checking for extension...';
     
-    const extensions = await web3Enable('Polkadot SSO Demo');
-    if (extensions.length === 0) {
-      throw new Error('No extension found');
+    // Wait for extension to be injected
+    const extension = await waitForExtension();
+    if (!extension) {
+      throw new Error('Please install Polkadot.js extension first');
     }
 
-    const accounts = await web3Accounts();
-    if (accounts.length === 0) {
-      throw new Error('No accounts found');
+    statusDiv.textContent = 'Enabling extension...';
+    
+    // Enable the extension
+    const enabledExtension = await extension.enable(window.SSO_CONFIG.appName);
+    if (!enabledExtension) {
+      throw new Error('Failed to enable extension');
     }
 
-    // Get the client_id from the window object that we set in the HTML
-    const clientId = window.CLIENT_ID;
-    if (!clientId) {
-      throw new Error('Client ID not found');
+    statusDiv.textContent = 'Requesting account access...';
+    
+    // Get accounts
+    const accounts = await enabledExtension.accounts.get();
+    console.log('Found accounts:', accounts);
+
+    if (!accounts || accounts.length === 0) {
+      throw new Error('No accounts found. Please create an account in Polkadot.js extension');
     }
 
+    statusDiv.textContent = 'Account found, proceeding...';
+    
     window.location.href = '/challenge?address=' + 
       encodeURIComponent(accounts[0].address) + 
-      '&client_id=' + encodeURIComponent(clientId);
+      '&client_id=' + encodeURIComponent(window.SSO_CONFIG.clientId);
+
   } catch (error) {
-    statusDiv.textContent = 'Error: ' + error.message;
     console.error('Connection error:', error);
+    statusDiv.textContent = 'Error: ' + error.message;
   }
 });
+
+// Log extension status for debugging
+console.log('Extension status:', window.injectedWeb3);
