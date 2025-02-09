@@ -21,6 +21,22 @@ polkadot-sso/
 ├── demo-app.js       # Demo client application
 └── sso.db           # SQLite database (created automatically)
 
+## Sequence Diagram
+    participant User as User+Wallet
+    participant App as Demo App
+    participant SSO as SSO Service
+    participant DB as SQLite
+    
+    App->>SSO: 1. GET /login?client_id=demo-app
+    SSO->>User: 2. Display wallet connect button
+    User->>SSO: 3. Connect Polkadot wallet
+    SSO->>DB: 4. Generate & store challenge
+    SSO->>User: 5. Display challenge for signing
+    User->>SSO: 6. Sign challenge with wallet
+    SSO->>DB: 7. Store session
+    SSO->>App: 8. Redirect with JWT token
+    App->>User: 9. Display success with token
+
 ## Installation
 
 1. Clone the repository:
