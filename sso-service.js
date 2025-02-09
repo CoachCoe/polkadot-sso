@@ -24,10 +24,12 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "https://cdn.jsdelivr.net"],
+      scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "'unsafe-eval'"], // Added unsafe-eval for WebAssembly
       connectSrc: ["'self'", "*"],
       imgSrc: ["'self'", "data:", "https:"],
       styleSrc: ["'self'", "'unsafe-inline'"],
+      workerSrc: ["'self'", "blob:"], // Added for WebAssembly
+      childSrc: ["'self'", "blob:"], // Added for WebAssembly
     },
   }
 }));
