@@ -5,7 +5,8 @@ app.get('/', (req, res) => {
   res.send(`
     <html>
       <head>
-        <title>Demo App</title>
+        <title>Polkadot SSO POC</title>
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
         <style>
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -30,7 +31,7 @@ app.get('/', (req, res) => {
         </style>
       </head>
       <body>
-        <h1>Demo App</h1>
+        <h1>Polkadot SSO POC</h1>
         <p>This is a demo application showing Polkadot SSO integration.</p>
         <a href="http://localhost:3000/login?client_id=demo-app" class="login-button">
           Login with Polkadot
@@ -46,7 +47,8 @@ app.get('/callback', (req, res) => {
   res.send(`
     <html>
       <head>
-        <title>Demo App - Logged In</title>
+        <title>Polkadot SSO POC - Logged In</title>
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
         <style>
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -131,5 +133,5 @@ app.get('/callback', (req, res) => {
 });
 
 app.listen(3001, () => {
-  console.log('Demo app running on port 3001');
+  console.log('Polkadot SSO POC app running on port 3001');
 });
