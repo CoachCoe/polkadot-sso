@@ -246,6 +246,7 @@ app.get('/login', async (req, res) => {
         <head>
           <title>Login with Polkadot</title>
           <link rel="stylesheet" href="/styles.css">
+          <link rel="icon" type="image/x-icon" href="/favicon.ico">
         </head>
         <body>
           <div class="container">
@@ -294,6 +295,7 @@ app.get('/challenge', async (req, res) => {
         <head>
           <title>Sign Message</title>
           <link rel="stylesheet" href="/styles.css">
+          <link rel="icon" type="image/x-icon" href="/favicon.ico">
         </head>
         <body>
           <div class="container">
