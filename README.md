@@ -36,13 +36,12 @@ npm init -y
 npm install express @polkadot/util-crypto jsonwebtoken sqlite3 sqlite cors helmet express-rate-limit dotenv crypto
 
 ## Create a .env file:
-JWT_SECRET=<your-generated-secret>
+JWT_SECRET=<your-generated-secret> (for now this is just require('crypto').randomBytes(64).toString('hex'))
 CLIENT_WHITELIST=http://localhost:3001
 DATABASE_PATH=./sso.db
 NODE_ENV=development
 
 ## Start the services:
-# Start the SSO service
 node sso-service.js
 
 # In another terminal, start the demo app
