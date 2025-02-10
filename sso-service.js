@@ -103,9 +103,21 @@ async function initDB() {
       is_active BOOLEAN DEFAULT 1
     );
 
+    CREATE TABLE IF NOT EXISTS revoked_tokens (
+    jti TEXT PRIMARY KEY,         -- Token's unique identifier
+    token_type TEXT NOT NULL,     -- 'access' or 'refresh'
+    revoked_at INTEGER NOT NULL,
+    reason TEXT,
+    address TEXT NOT NULL,
+    client_id TEXT NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_challenges_id ON challenges(id);
     CREATE INDEX IF NOT EXISTS idx_sessions_address ON sessions(address);
     CREATE INDEX IF NOT EXISTS idx_sessions_refresh_token ON sessions(refresh_token);
+    CREATE INDEX IF NOT EXISTS idx_revoked_tokens_address ON revoked_tokens(address);
+    CREATE INDEX IF NOT EXISTS idx_revoked_tokens_client ON revoked_tokens(client_id);
+    CREATE INDEX IF NOT EXISTS idx_revoked_tokens_type ON revoked_tokens(token_type);
   `);
 }
 
@@ -202,13 +214,24 @@ async function verifyToken(token, type = 'access') {
     }
 
     const db = await dbPromise;
+
+    // Check if token is revoked
+    const isRevoked = await db.get(
+      'SELECT * FROM revoked_tokens WHERE jti = ?',
+      [decoded.jti]
+    );
+
+    if (isRevoked) {
+      throw new Error('Token has been revoked');
+    }
+
     const session = await db.get(
-      'SELECT * FROM sessions WHERE address = ? AND client_id = ?',
+      'SELECT * FROM sessions WHERE address = ? AND client_id = ? AND is_active = 1',
       [decoded.address, decoded.client_id]
     );
 
     if (!session) {
-      throw new Error('Session not found');
+      throw new Error('Session not found or inactive');
     }
 
     if (session.fingerprint !== decoded.fingerprint) {
@@ -228,6 +251,29 @@ async function verifyToken(token, type = 'access') {
     };
   }
 }
+
+// Add near other utility functions
+async function cleanupRevokedTokens() {
+  try {
+    const db = await dbPromise;
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000); // 30 days
+
+    // Delete old revoked tokens but keep emergency revocations
+    await db.run(
+      `DELETE FROM revoked_tokens 
+       WHERE revoked_at < ? 
+       AND reason NOT LIKE 'EMERGENCY:%'`,
+      [thirtyDaysAgo]
+    );
+
+    console.log('Cleaned up old revoked tokens');
+  } catch (error) {
+    console.error('Token cleanup error:', error);
+  }
+}
+
+// Add cleanup schedule (runs every 24 hours)
+setInterval(cleanupRevokedTokens, 24 * 60 * 60 * 1000);
 
 // Login endpoint
 app.get('/login', async (req, res) => {
@@ -596,6 +642,298 @@ app.delete('/api/clients/:clientId', async (req, res) => {
   }
 });
 
+// Revoke specific token
+app.post('/api/tokens/revoke', async (req, res) => {
+  try {
+    const { token } = req.body;
+    
+    // Verify token first
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ['HS512'],
+      issuer: 'polkadot-sso'
+    });
+
+    const db = await dbPromise;
+    await db.run(
+      `INSERT INTO revoked_tokens (
+        jti,
+        token_type,
+        revoked_at,
+        reason,
+        address,
+        client_id
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        decoded.jti,
+        decoded.type,
+        Date.now(),
+        'User requested revocation',
+        decoded.address,
+        decoded.client_id
+      ]
+    );
+
+    res.json({ message: 'Token revoked successfully' });
+  } catch (error) {
+    console.error('Token revocation error:', error);
+    res.status(500).json({ error: 'Failed to revoke token' });
+  }
+});
+
+// Revoke all tokens for an address
+app.post('/api/tokens/revoke-all', async (req, res) => {
+  try {
+    const { address } = req.body;
+    const db = await dbPromise;
+
+    // Get all active sessions for the address
+    const sessions = await db.all(
+      'SELECT * FROM sessions WHERE address = ? AND is_active = 1',
+      [address]
+    );
+
+    // Revoke all tokens from these sessions
+    for (const session of sessions) {
+      await db.run(
+        `INSERT INTO revoked_tokens (
+          jti,
+          token_type,
+          revoked_at,
+          reason,
+          address,
+          client_id
+        ) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)`,
+        [
+          session.access_token_id,
+          'access',
+          Date.now(),
+          'All tokens revoked for address',
+          address,
+          session.client_id,
+          session.refresh_token_id,
+          'refresh',
+          Date.now(),
+          'All tokens revoked for address',
+          address,
+          session.client_id
+        ]
+      );
+    }
+
+    // Mark sessions as inactive
+    await db.run(
+      'UPDATE sessions SET is_active = 0 WHERE address = ?',
+      [address]
+    );
+
+    res.json({ message: 'All tokens revoked successfully' });
+  } catch (error) {
+    console.error('Token revocation error:', error);
+    res.status(500).json({ error: 'Failed to revoke tokens' });
+  }
+});
+
+// Revoke all tokens for a client
+app.post('/api/tokens/revoke-client', async (req, res) => {
+  try {
+    const { client_id } = req.body;
+    const db = await dbPromise;
+
+    // Get all active sessions for the client
+    const sessions = await db.all(
+      'SELECT * FROM sessions WHERE client_id = ? AND is_active = 1',
+      [client_id]
+    );
+
+    // Revoke all tokens from these sessions
+    for (const session of sessions) {
+      await db.run(
+        `INSERT INTO revoked_tokens (
+          jti,
+          token_type,
+          revoked_at,
+          reason,
+          address,
+          client_id
+        ) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)`,
+        [
+          session.access_token_id,
+          'access',
+          Date.now(),
+          'All tokens revoked for client',
+          session.address,
+          client_id,
+          session.refresh_token_id,
+          'refresh',
+          Date.now(),
+          'All tokens revoked for client',
+          session.address,
+          client_id
+        ]
+      );
+    }
+
+    // Add emergency revocation endpoint
+app.post('/api/tokens/emergency-revoke', async (req, res) => {
+  try {
+    const { reason, scope, value, admin_key } = req.body;
+
+    // Verify admin key (should be in environment variables)
+    if (admin_key !== process.env.ADMIN_SECRET) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const db = await dbPromise;
+    const emergencyReason = `EMERGENCY: ${reason}`;
+
+    switch (scope) {
+      case 'all':
+        // Revoke all active tokens
+        const allSessions = await db.all(
+          'SELECT * FROM sessions WHERE is_active = 1'
+        );
+
+        for (const session of allSessions) {
+          await db.run(
+            `INSERT INTO revoked_tokens (
+              jti,
+              token_type,
+              revoked_at,
+              reason,
+              address,
+              client_id
+            ) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)`,
+            [
+              session.access_token_id,
+              'access',
+              Date.now(),
+              emergencyReason,
+              session.address,
+              session.client_id,
+              session.refresh_token_id,
+              'refresh',
+              Date.now(),
+              emergencyReason,
+              session.address,
+              session.client_id
+            ]
+          );
+        }
+
+        // Mark all sessions as inactive
+        await db.run('UPDATE sessions SET is_active = 0');
+        break;
+
+      case 'client':
+        // Revoke all tokens for a specific client
+        const clientSessions = await db.all(
+          'SELECT * FROM sessions WHERE client_id = ? AND is_active = 1',
+          [value]
+        );
+
+        for (const session of clientSessions) {
+          await db.run(
+            `INSERT INTO revoked_tokens (
+              jti,
+              token_type,
+              revoked_at,
+              reason,
+              address,
+              client_id
+            ) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)`,
+            [
+              session.access_token_id,
+              'access',
+              Date.now(),
+              emergencyReason,
+              session.address,
+              value,
+              session.refresh_token_id,
+              'refresh',
+              Date.now(),
+              emergencyReason,
+              session.address,
+              value
+            ]
+          );
+        }
+
+        await db.run(
+          'UPDATE sessions SET is_active = 0 WHERE client_id = ?',
+          [value]
+        );
+        break;
+
+      case 'address':
+        // Revoke all tokens for a specific address
+        const addressSessions = await db.all(
+          'SELECT * FROM sessions WHERE address = ? AND is_active = 1',
+          [value]
+        );
+
+        for (const session of addressSessions) {
+          await db.run(
+            `INSERT INTO revoked_tokens (
+              jti,
+              token_type,
+              revoked_at,
+              reason,
+              address,
+              client_id
+            ) VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)`,
+            [
+              session.access_token_id,
+              'access',
+              Date.now(),
+              emergencyReason,
+              value,
+              session.client_id,
+              session.refresh_token_id,
+              'refresh',
+              Date.now(),
+              emergencyReason,
+              value,
+              session.client_id
+            ]
+          );
+        }
+
+        await db.run(
+          'UPDATE sessions SET is_active = 0 WHERE address = ?',
+          [value]
+        );
+        break;
+
+      default:
+        return res.status(400).json({ error: 'Invalid scope' });
+    }
+
+    // Log emergency action
+    console.error(`Emergency revocation: ${emergencyReason}, Scope: ${scope}, Value: ${value}`);
+
+    res.json({ 
+      message: 'Emergency revocation completed',
+      scope,
+      reason: emergencyReason
+    });
+  } catch (error) {
+    console.error('Emergency revocation error:', error);
+    res.status(500).json({ error: 'Emergency revocation failed' });
+  }
+});
+
+    // Mark sessions as inactive
+    await db.run(
+      'UPDATE sessions SET is_active = 0 WHERE client_id = ?',
+      [client_id]
+    );
+
+    res.json({ message: 'All client tokens revoked successfully' });
+  } catch (error) {
+    console.error('Token revocation error:', error);
+    res.status(500).json({ error: 'Failed to revoke client tokens' });
+  }
+});
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Global error:', err);
