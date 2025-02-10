@@ -77,16 +77,6 @@ const dbPromise = open({
 async function initDB() {
   const db = await dbPromise;
   await db.exec(`
-    CREATE TABLE IF NOT EXISTS clients (
-      client_id TEXT PRIMARY KEY,
-      client_secret TEXT NOT NULL,
-      name TEXT NOT NULL,
-      redirect_urls TEXT NOT NULL,
-      allowed_origins TEXT NOT NULL,
-      created_at INTEGER,
-      updated_at INTEGER
-    );
-
     CREATE TABLE IF NOT EXISTS challenges (
       id TEXT PRIMARY KEY,
       message TEXT,
@@ -94,19 +84,23 @@ async function initDB() {
       created_at INTEGER,
       expires_at INTEGER,
       nonce TEXT,
-      used BOOLEAN DEFAULT 0,
-      FOREIGN KEY(client_id) REFERENCES clients(client_id)
+      used BOOLEAN DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS sessions (
-      address TEXT PRIMARY KEY,
+      id TEXT PRIMARY KEY,
+      address TEXT NOT NULL,
+      client_id TEXT NOT NULL,
       access_token TEXT,
       refresh_token TEXT,
+      access_token_id TEXT,
+      refresh_token_id TEXT,
+      fingerprint TEXT NOT NULL,
       access_token_expires_at INTEGER,
       refresh_token_expires_at INTEGER,
       created_at INTEGER,
-      client_id TEXT,
-      FOREIGN KEY(client_id) REFERENCES clients(client_id)
+      last_used_at INTEGER,
+      is_active BOOLEAN DEFAULT 1
     );
 
     CREATE INDEX IF NOT EXISTS idx_challenges_id ON challenges(id);
@@ -137,7 +131,15 @@ async function storeChallenge(challenge) {
   );
 }
 
+// Enhanced token generation with security improvements
 function generateTokens(address, client_id) {
+  // Generate unique identifiers for tokens
+  const accessJwtid = crypto.randomBytes(32).toString('hex');
+  const refreshJwtid = crypto.randomBytes(32).toString('hex');
+  
+  // Generate a fingerprint for the session
+  const fingerprint = crypto.randomBytes(16).toString('hex');
+
   const accessToken = jwt.sign(
     {
       address,
@@ -145,13 +147,16 @@ function generateTokens(address, client_id) {
       type: 'access',
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + (15 * 60), // 15 minutes
-      jti: crypto.randomUUID()
+      jti: accessJwtid,
+      fingerprint
     },
     process.env.JWT_SECRET,
     {
-      algorithm: 'HS256',
+      algorithm: 'HS512', // Upgraded from HS256
       audience: client_id,
-      issuer: 'polkadot-sso'
+      issuer: 'polkadot-sso',
+      subject: address,
+      notBefore: Math.floor(Date.now() / 1000)
     }
   );
 
@@ -162,17 +167,66 @@ function generateTokens(address, client_id) {
       type: 'refresh',
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 7 days
-      jti: crypto.randomUUID()
+      jti: refreshJwtid,
+      fingerprint
     },
     process.env.JWT_SECRET,
     {
-      algorithm: 'HS256',
+      algorithm: 'HS512',
       audience: client_id,
-      issuer: 'polkadot-sso'
+      issuer: 'polkadot-sso',
+      subject: address,
+      notBefore: Math.floor(Date.now() / 1000)
     }
   );
 
-  return { accessToken, refreshToken };
+  return { 
+    accessToken, 
+    refreshToken,
+    fingerprint,
+    accessJwtid,
+    refreshJwtid
+  };
+}
+
+// Token verification utility
+async function verifyToken(token, type = 'access') {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ['HS512'],
+      issuer: 'polkadot-sso'
+    });
+
+    if (decoded.type !== type) {
+      throw new Error('Invalid token type');
+    }
+
+    const db = await dbPromise;
+    const session = await db.get(
+      'SELECT * FROM sessions WHERE address = ? AND client_id = ?',
+      [decoded.address, decoded.client_id]
+    );
+
+    if (!session) {
+      throw new Error('Session not found');
+    }
+
+    if (session.fingerprint !== decoded.fingerprint) {
+      throw new Error('Invalid token fingerprint');
+    }
+
+    return { 
+      valid: true, 
+      decoded,
+      session
+    };
+  } catch (error) {
+    console.error('Token verification failed:', error.message);
+    return { 
+      valid: false, 
+      error: error.message 
+    };
+  }
 }
 
 // Login endpoint
@@ -305,40 +359,62 @@ app.get('/verify', async (req, res) => {
       return res.status(401).send('Invalid signature');
     }
 
-    // Mark challenge as used
     await db.run(
       'UPDATE challenges SET used = 1 WHERE id = ?',
       challenge_id
     );
 
-    // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(address, challenge.client_id);
+    // Generate tokens with enhanced security
+    const { 
+      accessToken, 
+      refreshToken, 
+      fingerprint,
+      accessJwtid,
+      refreshJwtid 
+    } = generateTokens(address, challenge.client_id);
     
-    // Store session with both tokens
+    // Store session with enhanced security information
     await db.run(
       `INSERT OR REPLACE INTO sessions (
+        id,
         address, 
+        client_id,
         access_token,
-        refresh_token, 
+        refresh_token,
+        access_token_id,
+        refresh_token_id,
+        fingerprint,
         access_token_expires_at,
         refresh_token_expires_at,
         created_at,
-        client_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        last_used_at,
+        is_active
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
+        crypto.randomUUID(),
         address,
+        challenge.client_id,
         accessToken,
         refreshToken,
-        Date.now() + (15 * 60 * 1000), // 15 minutes
-        Date.now() + (7 * 24 * 60 * 60 * 1000), // 7 days
+        accessJwtid,
+        refreshJwtid,
+        fingerprint,
+        Date.now() + (15 * 60 * 1000),
+        Date.now() + (7 * 24 * 60 * 60 * 1000),
         Date.now(),
-        challenge.client_id
+        Date.now(),
+        1
       ]
     );
     
     const client = clients.get(challenge.client_id);
     
-    res.redirect(`${client.redirect_url}?access_token=${accessToken}&refresh_token=${refreshToken}`);
+    res.redirect(
+      `${client.redirect_url}?` +
+      `access_token=${accessToken}&` +
+      `refresh_token=${refreshToken}&` +
+      `fingerprint=${fingerprint}`
+    );
   } catch (error) {
     console.error('Verification error:', error);
     res.status(500).send('Verification failed');
@@ -354,42 +430,43 @@ app.post('/refresh', async (req, res) => {
       return res.status(400).json({ error: 'Refresh token required' });
     }
 
-    let decoded;
-    try {
-      decoded = jwt.verify(refresh_token, process.env.JWT_SECRET);
-    } catch (error) {
-      return res.status(401).json({ error: 'Invalid refresh token' });
+    const verification = await verifyToken(refresh_token, 'refresh');
+    if (!verification.valid) {
+      return res.status(401).json({ error: verification.error });
     }
 
-    if (decoded.type !== 'refresh') {
-      return res.status(401).json({ error: 'Invalid token type' });
-    }
+    const { decoded, session } = verification;
 
+    // Generate new tokens
+    const { 
+      accessToken, 
+      refreshToken, 
+      fingerprint,
+      accessJwtid,
+      refreshJwtid 
+    } = generateTokens(decoded.address, decoded.client_id);
+    
     const db = await dbPromise;
-    
-    const session = await db.get(
-      'SELECT * FROM sessions WHERE refresh_token = ? AND refresh_token_expires_at > ?',
-      [refresh_token, Date.now()]
-    );
-
-    if (!session) {
-      return res.status(401).json({ error: 'Refresh token expired or invalid' });
-    }
-
-    const { accessToken, refreshToken } = generateTokens(decoded.address, decoded.client_id);
-    
     await db.run(
       `UPDATE sessions SET 
         access_token = ?,
         refresh_token = ?,
+        access_token_id = ?,
+        refresh_token_id = ?,
+        fingerprint = ?,
         access_token_expires_at = ?,
-        refresh_token_expires_at = ?
+        refresh_token_expires_at = ?,
+        last_used_at = ?
       WHERE address = ? AND client_id = ?`,
       [
         accessToken,
         refreshToken,
-        Date.now() + (15 * 60 * 1000), // 15 minutes
-        Date.now() + (7 * 24 * 60 * 60 * 1000), // 7 days
+        accessJwtid,
+        refreshJwtid,
+        fingerprint,
+        Date.now() + (15 * 60 * 1000),
+        Date.now() + (7 * 24 * 60 * 60 * 1000),
+        Date.now(),
         decoded.address,
         decoded.client_id
       ]
@@ -398,7 +475,8 @@ app.post('/refresh', async (req, res) => {
     res.json({
       access_token: accessToken,
       refresh_token: refreshToken,
-      expires_in: 900 // 15 minutes in seconds
+      fingerprint: fingerprint,
+      expires_in: 900
     });
 
   } catch (error) {
@@ -407,12 +485,11 @@ app.post('/refresh', async (req, res) => {
   }
 });
 
-// Client registration endpoint
+// Client management endpoints
 app.post('/api/clients/register', async (req, res) => {
   try {
     const { name, redirect_urls, allowed_origins } = req.body;
 
-    // Validate required fields
     if (!name || !redirect_urls || !allowed_origins) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -516,6 +593,7 @@ app.delete('/api/clients/:clientId', async (req, res) => {
     res.status(500).json({ error: 'Deletion failed' });
   }
 });
+
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Global error:', err);
@@ -528,3 +606,4 @@ app.use((err, req, res, next) => {
 app.listen(3000, () => {
   console.log('SSO Service running on port 3000');
 });
+    
