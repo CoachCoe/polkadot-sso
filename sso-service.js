@@ -24,12 +24,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: [
-        "'self'", 
-        "https://cdn.jsdelivr.net", 
-        "'unsafe-eval'", 
-        "'unsafe-inline'" // Added this
-      ],
+      scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "'unsafe-eval'", "'unsafe-inline'"],
       connectSrc: ["'self'", "*"],
       imgSrc: ["'self'", "data:", "https:"],
       styleSrc: ["'self'", "'unsafe-inline'"],
@@ -63,7 +58,7 @@ app.use('/login', authLimiter);
 app.use('/challenge', authLimiter);
 app.use('/verify', authLimiter);
 
-// Simple in-memory storage for demo clients (should be moved to database in production)
+// Simple in-memory storage for demo clients
 const clients = new Map([
   ['demo-app', { 
     name: 'Demo App', 
@@ -72,13 +67,12 @@ const clients = new Map([
   }]
 ]);
 
-// Initialize SQLite with security improvements
+// Initialize SQLite
 const dbPromise = open({
   filename: process.env.DATABASE_PATH || './sso.db',
   driver: sqlite3.Database
 });
 
-// Initialize database with enhanced schema
 // Initialize database with enhanced schema
 async function initDB() {
   const db = await dbPromise;
@@ -95,17 +89,18 @@ async function initDB() {
 
     CREATE TABLE IF NOT EXISTS sessions (
       address TEXT PRIMARY KEY,
-      token TEXT,
+      access_token TEXT,
+      refresh_token TEXT,
+      access_token_expires_at INTEGER,
+      refresh_token_expires_at INTEGER,
       created_at INTEGER,
-      expires_at INTEGER
+      client_id TEXT
     );
 
     CREATE INDEX IF NOT EXISTS idx_challenges_id ON challenges(id);
     CREATE INDEX IF NOT EXISTS idx_sessions_address ON sessions(address);
+    CREATE INDEX IF NOT EXISTS idx_sessions_refresh_token ON sessions(refresh_token);
   `);
-
-  // Log successful initialization
-  console.log('Database initialized successfully');
 }
 
 initDB();
@@ -130,22 +125,42 @@ async function storeChallenge(challenge) {
   );
 }
 
-function generateToken(address, client_id) {
-  return jwt.sign(
+function generateTokens(address, client_id) {
+  const accessToken = jwt.sign(
     {
       address,
       client_id,
+      type: 'access',
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + (60 * 60), // 1 hour
+      exp: Math.floor(Date.now() / 1000) + (15 * 60), // 15 minutes
       jti: crypto.randomUUID()
     },
-    process.env.JWT_SECRET || 'your-secret-key', // Use environment variable in production
+    process.env.JWT_SECRET,
     {
       algorithm: 'HS256',
       audience: client_id,
       issuer: 'polkadot-sso'
     }
   );
+
+  const refreshToken = jwt.sign(
+    {
+      address,
+      client_id,
+      type: 'refresh',
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 7 days
+      jti: crypto.randomUUID()
+    },
+    process.env.JWT_SECRET,
+    {
+      algorithm: 'HS256',
+      audience: client_id,
+      issuer: 'polkadot-sso'
+    }
+  );
+
+  return { accessToken, refreshToken };
 }
 
 // Login endpoint
@@ -158,6 +173,8 @@ app.get('/login', async (req, res) => {
       return res.status(400).send('Invalid client');
     }
     
+    const escapedClientId = JSON.stringify(client_id);
+    
     res.send(`
       <html>
         <head>
@@ -167,16 +184,15 @@ app.get('/login', async (req, res) => {
         <body>
           <div class="container">
             <h1>Login with Polkadot</h1>
-            <div id="status">Waiting for wallet connection...</div>
+            <div id="status">Ready to connect...</div>
             <button id="connectButton">
               <span id="buttonText">Connect Wallet</span>
               <span id="loadingSpinner" class="loading" style="display: none;"></span>
             </button>
           </div>
-
           <script>
             window.SSO_CONFIG = {
-              clientId: ${JSON.stringify(client_id)},
+              clientId: ${escapedClientId},
               appName: "Polkadot SSO Demo"
             };
           </script>
@@ -253,12 +269,10 @@ app.get('/verify', async (req, res) => {
       return res.status(400).send('Missing required parameters');
     }
 
-    // Verify signature format
     if (!signature.startsWith('0x')) {
       return res.status(400).send('Invalid signature format');
     }
 
-    // Get challenge
     const challenge = await db.get(
       'SELECT * FROM challenges WHERE id = ? AND used = 0', 
       challenge_id
@@ -268,12 +282,10 @@ app.get('/verify', async (req, res) => {
       return res.status(400).send('Invalid or used challenge');
     }
 
-    // Check challenge expiration
     if (Date.now() > challenge.expires_at) {
       return res.status(401).send('Challenge expired');
     }
 
-    // Verify the signature
     await cryptoWaitReady();
     const { isValid } = signatureVerify(challenge.message, signature, address);
     
@@ -287,23 +299,99 @@ app.get('/verify', async (req, res) => {
       challenge_id
     );
 
-    // Generate token
-    const token = generateToken(address, challenge.client_id);
+    // Generate tokens
+    const { accessToken, refreshToken } = generateTokens(address, challenge.client_id);
     
-    // Store session
+    // Store session with both tokens
     await db.run(
-      'INSERT OR REPLACE INTO sessions (address, token, created_at, expires_at) VALUES (?, ?, ?, ?)',
-      [address, token, Date.now(), Date.now() + (60 * 60 * 1000)]
+      `INSERT OR REPLACE INTO sessions (
+        address, 
+        access_token,
+        refresh_token, 
+        access_token_expires_at,
+        refresh_token_expires_at,
+        created_at,
+        client_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        address,
+        accessToken,
+        refreshToken,
+        Date.now() + (15 * 60 * 1000), // 15 minutes
+        Date.now() + (7 * 24 * 60 * 60 * 1000), // 7 days
+        Date.now(),
+        challenge.client_id
+      ]
     );
     
-    // Get client redirect URL
     const client = clients.get(challenge.client_id);
     
-    // Redirect back to client with token
-    res.redirect(`${client.redirect_url}?token=${token}`);
+    res.redirect(`${client.redirect_url}?access_token=${accessToken}&refresh_token=${refreshToken}`);
   } catch (error) {
     console.error('Verification error:', error);
     res.status(500).send('Verification failed');
+  }
+});
+
+// Refresh token endpoint
+app.post('/refresh', async (req, res) => {
+  try {
+    const { refresh_token } = req.body;
+    
+    if (!refresh_token) {
+      return res.status(400).json({ error: 'Refresh token required' });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(refresh_token, process.env.JWT_SECRET);
+    } catch (error) {
+      return res.status(401).json({ error: 'Invalid refresh token' });
+    }
+
+    if (decoded.type !== 'refresh') {
+      return res.status(401).json({ error: 'Invalid token type' });
+    }
+
+    const db = await dbPromise;
+    
+    const session = await db.get(
+      'SELECT * FROM sessions WHERE refresh_token = ? AND refresh_token_expires_at > ?',
+      [refresh_token, Date.now()]
+    );
+
+    if (!session) {
+      return res.status(401).json({ error: 'Refresh token expired or invalid' });
+    }
+
+    const { accessToken, refreshToken } = generateTokens(decoded.address, decoded.client_id);
+    
+    await db.run(
+      `UPDATE sessions SET 
+        access_token = ?,
+        refresh_token = ?,
+        access_token_expires_at = ?,
+        refresh_token_expires_at = ?
+      WHERE address = ? AND client_id = ?`,
+      [
+        accessToken,
+        refreshToken,
+        Date.now() + (15 * 60 * 1000), // 15 minutes
+        Date.now() + (7 * 24 * 60 * 60 * 1000), // 7 days
+        decoded.address,
+        decoded.client_id
+      ]
+    );
+
+    res.json({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      expires_in: 900 // 15 minutes in seconds
+    });
+
+  } catch (error) {
+    console.error('Refresh token error:', error);
+    res.status(500).json({ error: 'Token refresh failed' });
   }
 });
 

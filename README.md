@@ -92,13 +92,13 @@ Error handling and logging
 /callback - Receives and displays the JWT token
 
 ## Next Steps
-### Implement refresh token mechanism
-### Add client application registration
-### Enhance session management
-### Add single sign-out capability
-### Implement scope-based access control
-### Add user profile management
-### Add account linking capabilities
+# Implement refresh token mechanism
+# Add client application registration
+# Enhance session management
+# Add single sign-out capability
+# Implement scope-based access control
+# Add user profile management
+# Add account linking capabilities
 
 ## Contributing
 This is a basic implementation meant for demonstration purposes. Feel free to extend it with additional features or security improvements.
