@@ -1,5 +1,18 @@
 const statusDiv = document.getElementById('status');
 const connectButton = document.getElementById('connectButton');
+const buttonText = document.getElementById('buttonText');
+const loadingSpinner = document.getElementById('loadingSpinner');
+
+function setLoading(isLoading) {
+  connectButton.disabled = isLoading;
+  loadingSpinner.style.display = isLoading ? 'inline-block' : 'none';
+  buttonText.textContent = isLoading ? 'Connecting...' : 'Connect Wallet';
+}
+
+function updateStatus(message, type = 'info') {
+  statusDiv.className = type;
+  statusDiv.textContent = message;
+}
 
 async function waitForExtension(maxAttempts = 10) {
   for (let i = 0; i < maxAttempts; i++) {
@@ -13,7 +26,8 @@ async function waitForExtension(maxAttempts = 10) {
 
 connectButton.addEventListener('click', async () => {
   try {
-    statusDiv.textContent = 'Checking for extension...';
+    setLoading(true);
+    updateStatus('Checking for extension...');
     
     // Wait for extension to be injected
     const extension = await waitForExtension();
@@ -21,7 +35,7 @@ connectButton.addEventListener('click', async () => {
       throw new Error('Please install Polkadot.js extension first');
     }
 
-    statusDiv.textContent = 'Enabling extension...';
+    updateStatus('Enabling extension...');
     
     // Enable the extension
     const enabledExtension = await extension.enable(window.SSO_CONFIG.appName);
@@ -29,7 +43,7 @@ connectButton.addEventListener('click', async () => {
       throw new Error('Failed to enable extension');
     }
 
-    statusDiv.textContent = 'Requesting account access...';
+    updateStatus('Requesting account access...');
     
     // Get accounts
     const accounts = await enabledExtension.accounts.get();
@@ -39,17 +53,69 @@ connectButton.addEventListener('click', async () => {
       throw new Error('No accounts found. Please create an account in Polkadot.js extension');
     }
 
-    statusDiv.textContent = 'Account found, proceeding...';
+    // If there are multiple accounts, show account selection
+    if (accounts.length > 1) {
+      updateStatus('Please select an account');
+      showAccountSelection(accounts);
+      return;
+    }
+
+    updateStatus('Account found, proceeding...', 'success');
     
-    window.location.href = '/challenge?address=' + 
-      encodeURIComponent(accounts[0].address) + 
-      '&client_id=' + encodeURIComponent(window.SSO_CONFIG.clientId);
+    // Proceed with the first account if only one exists
+    proceedWithAddress(accounts[0].address);
 
   } catch (error) {
     console.error('Connection error:', error);
-    statusDiv.textContent = 'Error: ' + error.message;
+    updateStatus(error.message, 'error');
+  } finally {
+    setLoading(false);
   }
 });
 
-// Log extension status for debugging
-console.log('Extension status:', window.injectedWeb3);
+function showAccountSelection(accounts) {
+  // Create account selection dropdown
+  const selectContainer = document.createElement('div');
+  selectContainer.className = 'account-select-container';
+  
+  const select = document.createElement('select');
+  select.id = 'accountSelect';
+  select.className = 'account-select';
+  
+  accounts.forEach((account, index) => {
+    const option = document.createElement('option');
+    option.value = account.address;
+    option.textContent = `${account.meta.name || `Account ${index + 1}`} (${account.address.slice(0, 8)}...)`;
+    select.appendChild(option);
+  });
+
+  const continueButton = document.createElement('button');
+  continueButton.textContent = 'Continue';
+  continueButton.className = 'continue-button';
+  continueButton.onclick = () => {
+    const selectedAddress = select.value;
+    if (selectedAddress) {
+      proceedWithAddress(selectedAddress);
+    }
+  };
+
+  selectContainer.appendChild(select);
+  selectContainer.appendChild(continueButton);
+
+  // Insert after status div
+  statusDiv.parentNode.insertBefore(selectContainer, statusDiv.nextSibling);
+  connectButton.style.display = 'none';
+}
+
+function proceedWithAddress(address) {
+  if (!window.SSO_CONFIG.clientId) {
+    throw new Error('Client ID not found');
+  }
+
+  window.location.href = '/challenge?address=' + 
+    encodeURIComponent(address) + 
+    '&client_id=' + encodeURIComponent(window.SSO_CONFIG.clientId);
+}
+
+// Log initial extension status for debugging
+console.log('Initial extension status:', window.injectedWeb3);
