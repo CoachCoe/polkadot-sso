@@ -77,6 +77,16 @@ const dbPromise = open({
 async function initDB() {
   const db = await dbPromise;
   await db.exec(`
+    CREATE TABLE IF NOT EXISTS clients (
+      client_id TEXT PRIMARY KEY,
+      client_secret TEXT NOT NULL,
+      name TEXT NOT NULL,
+      redirect_urls TEXT NOT NULL,
+      allowed_origins TEXT NOT NULL,
+      created_at INTEGER,
+      updated_at INTEGER
+    );
+
     CREATE TABLE IF NOT EXISTS challenges (
       id TEXT PRIMARY KEY,
       message TEXT,
@@ -84,7 +94,8 @@ async function initDB() {
       created_at INTEGER,
       expires_at INTEGER,
       nonce TEXT,
-      used BOOLEAN DEFAULT 0
+      used BOOLEAN DEFAULT 0,
+      FOREIGN KEY(client_id) REFERENCES clients(client_id)
     );
 
     CREATE TABLE IF NOT EXISTS sessions (
@@ -94,7 +105,8 @@ async function initDB() {
       access_token_expires_at INTEGER,
       refresh_token_expires_at INTEGER,
       created_at INTEGER,
-      client_id TEXT
+      client_id TEXT,
+      FOREIGN KEY(client_id) REFERENCES clients(client_id)
     );
 
     CREATE INDEX IF NOT EXISTS idx_challenges_id ON challenges(id);
@@ -395,6 +407,115 @@ app.post('/refresh', async (req, res) => {
   }
 });
 
+// Client registration endpoint
+app.post('/api/clients/register', async (req, res) => {
+  try {
+    const { name, redirect_urls, allowed_origins } = req.body;
+
+    // Validate required fields
+    if (!name || !redirect_urls || !allowed_origins) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Generate client credentials
+    const clientId = crypto.randomUUID();
+    const clientSecret = crypto.randomBytes(32).toString('hex');
+
+    const db = await dbPromise;
+    await db.run(
+      `INSERT INTO clients (
+        client_id, 
+        client_secret, 
+        name, 
+        redirect_urls, 
+        allowed_origins, 
+        created_at, 
+        updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        clientId,
+        clientSecret,
+        name,
+        JSON.stringify(redirect_urls),
+        JSON.stringify(allowed_origins),
+        Date.now(),
+        Date.now()
+      ]
+    );
+
+    res.json({
+      client_id: clientId,
+      client_secret: clientSecret,
+      name,
+      redirect_urls,
+      allowed_origins
+    });
+  } catch (error) {
+    console.error('Client registration error:', error);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+// List clients endpoint
+app.get('/api/clients', async (req, res) => {
+  try {
+    const db = await dbPromise;
+    const clients = await db.all('SELECT client_id, name, redirect_urls, allowed_origins, created_at FROM clients');
+    
+    // Parse JSON strings back to arrays
+    const formattedClients = clients.map(client => ({
+      ...client,
+      redirect_urls: JSON.parse(client.redirect_urls),
+      allowed_origins: JSON.parse(client.allowed_origins)
+    }));
+
+    res.json(formattedClients);
+  } catch (error) {
+    console.error('Client list error:', error);
+    res.status(500).json({ error: 'Failed to retrieve clients' });
+  }
+});
+
+// Update client endpoint
+app.put('/api/clients/:clientId', async (req, res) => {
+  try {
+    const { clientId } = req.params;
+    const { name, redirect_urls, allowed_origins } = req.body;
+
+    const db = await dbPromise;
+    await db.run(
+      `UPDATE clients 
+       SET name = ?, redirect_urls = ?, allowed_origins = ?, updated_at = ?
+       WHERE client_id = ?`,
+      [
+        name,
+        JSON.stringify(redirect_urls),
+        JSON.stringify(allowed_origins),
+        Date.now(),
+        clientId
+      ]
+    );
+
+    res.json({ message: 'Client updated successfully' });
+  } catch (error) {
+    console.error('Client update error:', error);
+    res.status(500).json({ error: 'Update failed' });
+  }
+});
+
+// Delete client endpoint
+app.delete('/api/clients/:clientId', async (req, res) => {
+  try {
+    const { clientId } = req.params;
+    const db = await dbPromise;
+    
+    await db.run('DELETE FROM clients WHERE client_id = ?', clientId);
+    res.json({ message: 'Client deleted successfully' });
+  } catch (error) {
+    console.error('Client deletion error:', error);
+    res.status(500).json({ error: 'Deletion failed' });
+  }
+});
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Global error:', err);
