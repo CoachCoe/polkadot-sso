@@ -158,22 +158,23 @@ app.get('/login', async (req, res) => {
       return res.status(400).send('Invalid client');
     }
     
-    // Generate a nonce for our scripts
-    const nonce = crypto.randomBytes(16).toString('base64');
-    
     res.send(`
       <html>
         <head>
           <title>Login with Polkadot</title>
+          <link rel="stylesheet" href="/styles.css">
         </head>
         <body>
-          <h1>Login with Polkadot Wallet</h1>
-          <div id="status">Ready to connect...</div>
-          <button id="connectButton">Connect Wallet</button>
-          
-          <!-- Move the initialization to the external file -->
+          <div class="container">
+            <h1>Login with Polkadot</h1>
+            <div id="status">Waiting for wallet connection...</div>
+            <button id="connectButton">
+              <span id="buttonText">Connect Wallet</span>
+              <span id="loadingSpinner" class="loading" style="display: none;"></span>
+            </button>
+          </div>
+
           <script>
-            // Initialize data needed by login.js
             window.SSO_CONFIG = {
               clientId: ${JSON.stringify(client_id)},
               appName: "Polkadot SSO Demo"
@@ -210,18 +211,26 @@ app.get('/challenge', async (req, res) => {
       <html>
         <head>
           <title>Sign Message</title>
+          <link rel="stylesheet" href="/styles.css">
         </head>
         <body>
-          <h2>Challenge Message</h2>
-          <p>Message: ${challenge.message}</p>
-          <p>Address: ${address}</p>
-          <div id="status"></div>
-          <button id="signButton">Sign with Wallet</button>
+          <div class="container">
+            <h2>Sign Message</h2>
+            <div class="message-box">
+              <p><strong>Message:</strong> ${challenge.message}</p>
+              <p><strong>Address:</strong> ${address}</p>
+            </div>
+            <div id="status"></div>
+            <button id="signButton">
+              <span id="buttonText">Sign with Wallet</span>
+              <span id="loadingSpinner" class="loading" style="display: none;"></span>
+            </button>
+          </div>
           <script>
             window.CHALLENGE_DATA = {
-              address: "${address}",
-              message: "${challenge.message}",
-              challengeId: "${challenge.id}"
+              address: ${JSON.stringify(address)},
+              message: ${JSON.stringify(challenge.message)},
+              challengeId: ${JSON.stringify(challenge.id)}
             };
           </script>
           <script type="module" src="/challenge.js"></script>
