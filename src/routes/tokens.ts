@@ -1,14 +1,17 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { TokenService } from '../services/token';
 import { Database } from 'sqlite';
-import { rateLimiters } from '../middleware/rateLimit';
+import { createRateLimiters } from '../middleware/rateLimit';
 import { sanitizeRequest } from '../middleware/validation';
+import { AuditService } from '../services/auditService';
 
 export const createTokenRouter = (
   tokenService: TokenService,
-  db: Database
+  db: Database,
+  auditService: AuditService
 ) => {
   const router = Router();
+  const rateLimiters = createRateLimiters(auditService);
 
   router.post('/refresh',
     rateLimiters.refresh,

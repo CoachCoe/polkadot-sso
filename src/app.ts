@@ -19,6 +19,8 @@ import { createLogger } from './utils/logger';
 import { addRequestId } from './middleware/requestId';
 import { RequestWithId } from './types/express';
 import { sessionConfig } from './config/session';
+import cors from 'cors';
+import { corsConfig } from './config/cors';
 
 const logger = createLogger('app');
 
@@ -36,6 +38,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: [
         "'self'",
+        (_, res: any) => `'nonce-${res.locals.nonce}'`,
         "https://cdn.jsdelivr.net",
         "https://polkadot.js.org"
       ],
@@ -45,10 +48,24 @@ app.use(helmet({
       upgradeInsecureRequests: []
     }
   },
+  referrerPolicy: { policy: 'same-origin' },
+  permittedCrossDomainPolicies: { permittedPolicies: 'none' },
   crossOriginEmbedderPolicy: true,
-  crossOriginOpenerPolicy: true,
-  crossOriginResourcePolicy: { policy: "same-site" }
+  crossOriginOpenerPolicy: { policy: 'same-origin' },
+  crossOriginResourcePolicy: { policy: 'same-site' }
 }));
+
+// Add CORS preflight
+app.options('*', cors(corsConfig));
+
+// Add request ID tracking and security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Request-ID', (req as RequestWithId).id);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
 
 // Session configuration
 app.use(session(sessionConfig));
@@ -91,7 +108,7 @@ async function initializeApp() {
     clients, 
     db
   ));
-  app.use('/api/tokens', createTokenRouter(tokenService, db));
+  app.use('/api/tokens', createTokenRouter(tokenService, db, auditService));
   app.use('/api/clients', createClientRouter(db));
 
   // Error handler

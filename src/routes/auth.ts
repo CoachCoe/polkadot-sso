@@ -10,7 +10,7 @@ import { createHash } from 'crypto';
 import { sanitizeRequest } from '../middleware/validation';
 import { AuditService } from '../services/auditService';
 import { escapeHtml } from '../utils/sanitization';
-import { rateLimiters } from '../middleware/rateLimit';
+import { createRateLimiters } from '../middleware/rateLimit';
 import { secureQueries } from '../utils/db';
 import { z } from 'zod';
 import { validateBody } from '../middleware/validation';
@@ -58,6 +58,7 @@ export const createAuthRouter = (
  db: Database
 ) => {
  const router = Router();
+ const rateLimiters = createRateLimiters(auditService);
 
  const loginHandler: RequestHandler = async (req, res) => {
    try {
