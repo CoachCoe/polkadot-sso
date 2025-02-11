@@ -3,6 +3,20 @@ import { open, Database } from 'sqlite';
 import { mkdir } from 'fs/promises';
 import { dirname } from 'path';
 
+const DB_POOL_SIZE = 10;
+
+export async function createDbPool(): Promise<Database[]> {
+  const pool: Database[] = [];
+  for (let i = 0; i < DB_POOL_SIZE; i++) {
+    const db = await open({
+      filename: './data/sso.db',
+      driver: sqlite3.Database
+    });
+    pool.push(db);
+  }
+  return pool;
+}
+
 export async function initializeDatabase(): Promise<Database> {
   const dbPath = './data/sso.db';
   

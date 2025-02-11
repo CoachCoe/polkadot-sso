@@ -10,6 +10,9 @@ import { Database } from 'sqlite';
 import { createHash } from 'crypto';
 import { createRateLimiter, sanitizeRequest, validateRequest } from '../middleware/requestSecurity';
 import { AuditService } from '../services/auditService';
+import { escapeHtml } from '../utils/sanitization';
+import { rateLimiters } from '../middleware/rateLimit';
+import { secureQueries } from '../utils/db';
 
 async function generateCodeChallenge(verifier: string): Promise<string> {
   const hash = createHash('sha256');
@@ -119,9 +122,17 @@ export const createAuthRouter = (
      res.send(`
       <html>
         <head>
-          <title>${client.name}</title>
+          <title>${escapeHtml(client.name)}</title>
           <link rel="stylesheet" href="/styles/main.css">
-          <link rel="icon" type="image/x-icon" href="/favicon.ico">
+          <script nonce="${res.locals.nonce}">
+            window.CHALLENGE_DATA = {
+              address: "${escapeHtml(address as string)}",
+              message: "${escapeHtml(challenge.message)}",
+              challengeId: "${escapeHtml(challenge.id)}",
+              codeVerifier: "${escapeHtml(challenge.code_verifier)}",
+              state: "${escapeHtml(challenge.state)}"
+            };
+          </script>
           <script src="https://cdn.jsdelivr.net/npm/@polkadot/util@12.6.2/bundle-polkadot-util.min.js"></script>
           <script src="https://cdn.jsdelivr.net/npm/@polkadot/util-crypto@12.6.2/bundle-polkadot-util-crypto.min.js"></script>
           <script src="https://cdn.jsdelivr.net/npm/@polkadot/extension-dapp@0.46.6/bundle-polkadot-extension-dapp.min.js"></script>
@@ -130,8 +141,8 @@ export const createAuthRouter = (
           <div class="container">
             <h2>Sign Message</h2>
             <div class="message-box">
-              <p><strong>Message:</strong> ${challenge.message}</p>
-              <p><strong>Address:</strong> ${address}</p>
+              <p><strong>Message:</strong> ${escapeHtml(challenge.message)}</p>
+              <p><strong>Address:</strong> ${escapeHtml(address as string)}</p>
             </div>
             <div id="status"></div>
             <button id="signButton">
@@ -139,15 +150,6 @@ export const createAuthRouter = (
               <span id="loadingSpinner" class="loading" style="display: none;"></span>
             </button>
           </div>
-          <script>
-            window.CHALLENGE_DATA = {
-              address: ${JSON.stringify(address)},
-              message: ${JSON.stringify(challenge.message)},
-              challengeId: ${JSON.stringify(challenge.id)},
-              codeVerifier: ${JSON.stringify(challenge.code_verifier)},
-              state: ${JSON.stringify(challenge.state)}
-            };
-          </script>
           <script src="/js/client/challenge.js"></script>
         </body>
       </html>
@@ -232,23 +234,16 @@ export const createAuthRouter = (
      }
 
      // Get and validate auth code
-     const authCode = await db.get(
-       'SELECT * FROM auth_codes WHERE code = ? AND client_id = ? AND used = 0',
-       [code, client_id]
-     );
-
+     const authCode = await secureQueries.authCodes.verify(db, code, client_id);
      if (!authCode || Date.now() > authCode.expires_at) {
        return res.status(400).send('Invalid or expired authorization code');
      }
 
+     // Mark auth code as used
+     await secureQueries.authCodes.markUsed(db, code);
+
      // Generate tokens
      const tokens = tokenService.generateTokens(authCode.address, client_id);
-
-     // Mark auth code as used
-     await db.run(
-       'UPDATE auth_codes SET used = 1 WHERE code = ?',
-       [code]
-     );
 
      // Return tokens in response body
      res.json({
@@ -263,10 +258,33 @@ export const createAuthRouter = (
    }
  };
 
- router.get('/login', loginLimiter, sanitizeRequest(), validateRequest(), loginHandler);
- router.get('/challenge', authLimiter, challengeHandler);
- router.get('/verify', authLimiter, verifyHandler);
- router.post('/token', tokenHandler);
+ router.get('/login', 
+   rateLimiters.login,
+   sanitizeRequest(),
+   validateRequest(),
+   loginHandler
+ );
+
+ router.get('/challenge', 
+   rateLimiters.challenge,
+   sanitizeRequest(),
+   validateRequest(),
+   challengeHandler
+ );
+
+ router.get('/verify', 
+   rateLimiters.verify,
+   sanitizeRequest(),
+   validateRequest(),
+   verifyHandler
+ );
+
+ router.post('/token', 
+   rateLimiters.token,
+   sanitizeRequest(),
+   validateRequest(),
+   tokenHandler
+ );
 
  return router;
 };

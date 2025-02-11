@@ -1,4 +1,3 @@
-// src/middleware/security.ts
 import { Request, Response as ExpressResponse, NextFunction, RequestHandler } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -19,15 +18,16 @@ export const securityMiddleware: RequestHandler[] = [
         defaultSrc: ["'self'"],
         scriptSrc: [
           "'self'",
-          "'unsafe-inline'",
-          "'unsafe-eval'",
+          (_, res: any) => `'nonce-${res.locals.nonce}'`,
           "https://cdn.jsdelivr.net",
           "https://polkadot.js.org"
         ],
         connectSrc: ["'self'", "wss://rpc.polkadot.io"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'"],
         frameAncestors: ["'none'"],
-        objectSrc: ["'none'"]
+        objectSrc: ["'none'"],
+        formAction: ["'self'"],
+        upgradeInsecureRequests: []
       }
     },
     hsts: {
@@ -42,9 +42,19 @@ export const securityMiddleware: RequestHandler[] = [
     referrerPolicy: { policy: 'same-origin' }
   }),
   cors({
-    origin: process.env.CLIENT_WHITELIST?.split(',') || ['http://localhost:3001'],
+    origin: (origin, callback) => {
+      const allowedOrigins = process.env.CLIENT_WHITELIST?.split(',') || ['http://localhost:3001'];
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST'],
-    credentials: true
+    credentials: true,
+    maxAge: 86400, // 24 hours
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['X-Request-Id']
   })
 ];
 
