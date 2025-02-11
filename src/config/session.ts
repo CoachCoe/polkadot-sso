@@ -1,5 +1,6 @@
 import session from 'express-session';
 import { createClient } from 'redis';
+import { RedisStore } from 'connect-redis';
 import { randomBytes } from 'crypto';
 
 const redisClient = createClient({
@@ -7,10 +8,8 @@ const redisClient = createClient({
 });
 redisClient.connect().catch(console.error);
 
-// Use require for RedisStore
-const RedisStore = require('connect-redis')(session);
 const store = new RedisStore({
-  client: redisClient,
+  client: redisClient as any,
   prefix: "sso:"
 });
 
@@ -21,7 +20,7 @@ export const sessionConfig = {
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    sameSite: 'strict',
+    sameSite: 'strict' as const,
     maxAge: 15 * 60 * 1000, // 15 minutes
     path: '/',
     domain: process.env.COOKIE_DOMAIN || undefined

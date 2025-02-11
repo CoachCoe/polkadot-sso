@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction, RequestHandler, ErrorRequestHandler } from 'express';
 import path from 'path';
 import { config } from 'dotenv';
+import helmet from 'helmet';
 import { securityMiddleware, nonceMiddleware, ResponseWithLocals } from './middleware/security';
 import { initializeDatabase } from './config/db';
 import { TokenService } from './services/token';
@@ -11,13 +12,11 @@ import { createTokenRouter } from './routes/tokens';
 import { createClientRouter } from './routes/clients';
 import { Client } from './types/auth';
 import session from 'express-session';
-import { SecurityConfig } from './config/security';
 import { rateLimit } from 'express-rate-limit';
-import helmet from 'helmet';
 import { createLogger } from './utils/logger';
 import { addRequestId } from './middleware/requestId';
-import crypto from 'crypto';
 import { RequestWithId } from './types/express';
+import { sessionConfig } from './config/session';
 
 // Load environment variables
 config();
@@ -27,7 +26,7 @@ const logger = createLogger('app');
 const app = express();
 
 // Apply middleware
-app.use(addRequestId as RequestHandler);
+app.use(addRequestId);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
@@ -53,7 +52,7 @@ app.use(helmet({
 }));
 
 // Session configuration
-app.use(session(SecurityConfig.session));
+app.use(session(sessionConfig));
 
 // Global rate limiter
 app.use(rateLimit({

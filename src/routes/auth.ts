@@ -8,11 +8,26 @@ import { validateAuthRequest, validateSignature, validateClientCredentials } fro
 import crypto from 'crypto';
 import { Database } from 'sqlite';
 import { createHash } from 'crypto';
-import { createRateLimiter, sanitizeRequest, validateRequest } from '../middleware/requestSecurity';
+import { sanitizeRequest } from '../middleware/validation';
 import { AuditService } from '../services/auditService';
 import { escapeHtml } from '../utils/sanitization';
 import { rateLimiters } from '../middleware/rateLimit';
 import { secureQueries } from '../utils/db';
+import { z } from 'zod';
+import { validateBody } from '../middleware/validation';
+import { logRequest, logError } from '../utils/logger';
+
+// Add schemas at the top of the file
+const loginSchema = z.object({
+  address: z.string().min(1),
+  client_id: z.string().min(1)
+});
+
+const tokenSchema = z.object({
+  code: z.string().min(32).max(64),
+  client_id: z.string().min(1),
+  client_secret: z.string().min(32)
+});
 
 async function generateCodeChallenge(verifier: string): Promise<string> {
   const hash = createHash('sha256');
@@ -29,12 +44,9 @@ export const createAuthRouter = (
 ) => {
  const router = Router();
 
- // Add rate limiters
- const loginLimiter = createRateLimiter(15 * 60 * 1000, 10);  // 10 requests per 15 minutes
- const tokenLimiter = createRateLimiter(60 * 1000, 5);        // 5 requests per minute
-
  const loginHandler: RequestHandler = async (req, res) => {
    try {
+     logRequest(req, 'Login attempt', { address: req.query.address });
      const validation = validateAuthRequest(req);
      if (!validation.isValid) {
        return res.status(400).send(validation.error);
@@ -89,6 +101,7 @@ export const createAuthRouter = (
       </html>
     `);
    } catch (error) {
+     logError(req, error as Error);
      await auditService.log({
        type: 'AUTH_ATTEMPT',
        client_id: (req.query.client_id as string) || 'unknown',
@@ -261,28 +274,28 @@ export const createAuthRouter = (
  router.get('/login', 
    rateLimiters.login,
    sanitizeRequest(),
-   validateRequest(),
+   validateBody(loginSchema),
    loginHandler
  );
 
  router.get('/challenge', 
    rateLimiters.challenge,
    sanitizeRequest(),
-   validateRequest(),
+   validateBody(loginSchema),
    challengeHandler
  );
 
  router.get('/verify', 
    rateLimiters.verify,
    sanitizeRequest(),
-   validateRequest(),
+   validateBody(loginSchema),
    verifyHandler
  );
 
  router.post('/token', 
    rateLimiters.token,
    sanitizeRequest(),
-   validateRequest(),
+   validateBody(tokenSchema),
    tokenHandler
  );
 

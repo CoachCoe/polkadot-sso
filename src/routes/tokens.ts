@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { TokenService } from '../services/token';
 import { Database } from 'sqlite';
 import { rateLimiters } from '../middleware/rateLimit';
-import { sanitizeRequest, validateRequest } from '../middleware/requestSecurity';
+import { sanitizeRequest } from '../middleware/validation';
 
 export const createTokenRouter = (
   tokenService: TokenService,
@@ -13,7 +13,6 @@ export const createTokenRouter = (
   router.post('/refresh',
     rateLimiters.refresh,
     sanitizeRequest(),
-    validateRequest(),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const { refresh_token } = req.body;
