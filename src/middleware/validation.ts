@@ -15,7 +15,14 @@ export const sanitizeRequest = () => (
 export const validateBody = (schema: z.ZodSchema) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
-      schema.parse(req.body);
+      // Create an object that matches our schema structure
+      const dataToValidate = {
+        body: req.body,
+        query: req.query,
+        params: req.params
+      };
+
+      schema.parse(dataToValidate);
       next();
     } catch (error: unknown) {
       if (error instanceof z.ZodError) {

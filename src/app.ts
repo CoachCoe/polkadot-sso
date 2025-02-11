@@ -1,6 +1,8 @@
+import { config } from 'dotenv';
+config();
+
 import express, { Request, Response, NextFunction, RequestHandler, ErrorRequestHandler } from 'express';
 import path from 'path';
-import { config } from 'dotenv';
 import helmet from 'helmet';
 import { securityMiddleware, nonceMiddleware, ResponseWithLocals } from './middleware/security';
 import { initializeDatabase } from './config/db';
@@ -17,9 +19,6 @@ import { createLogger } from './utils/logger';
 import { addRequestId } from './middleware/requestId';
 import { RequestWithId } from './types/express';
 import { sessionConfig } from './config/session';
-
-// Load environment variables
-config();
 
 const logger = createLogger('app');
 
@@ -100,16 +99,24 @@ async function initializeApp() {
     const requestId = (req as RequestWithId).id;
     logger.error({
       requestId,
-      error: err,
+      error: {
+        name: err.name,
+        message: err.message,
+        stack: err.stack,
+        details: err
+      },
       method: req.method,
       url: req.url,
+      query: req.query,
+      body: req.body,
       ip: req.ip || 'unknown'
     });
 
     res.status(500).json({
       status: 'error',
       message: 'Internal server error',
-      requestId
+      requestId,
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }) as ErrorRequestHandler);
 
