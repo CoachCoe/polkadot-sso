@@ -17,6 +17,8 @@ interface Window {
     address: string;
     message: string;
     challengeId: string;
+    codeVerifier: string;
+    state: string;
   };
   SSO_CONFIG: {
     clientId: string;

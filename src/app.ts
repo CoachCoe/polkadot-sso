@@ -40,7 +40,7 @@ async function initializeApp() {
   ]);
 
   // Mount routes
-  app.use('/', createAuthRouter(tokenService, challengeService, clients));
+  app.use('/', createAuthRouter(tokenService, challengeService, clients, db));
   app.use('/api/tokens', createTokenRouter(tokenService, db));
   app.use('/api/clients', createClientRouter(db));
 

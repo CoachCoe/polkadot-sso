@@ -5,11 +5,27 @@ import { Database } from 'sqlite';
 export class ChallengeService {
   constructor(private db: Database) {}
 
-  generateChallenge(client_id: string): Challenge {
+  private generateCodeVerifier(): string {
+    return crypto.randomBytes(32).toString('base64url');
+  }
+
+  private async generateCodeChallenge(verifier: string): Promise<string> {
+    const hash = crypto.createHash('sha256');
+    hash.update(verifier);
+    return hash.digest('base64url');
+  }
+
+  async generateChallenge(client_id: string): Promise<Challenge> {
+    const code_verifier = this.generateCodeVerifier();
+    const code_challenge = await this.generateCodeChallenge(code_verifier);
+    const state = crypto.randomBytes(16).toString('hex');
+
     return {
       id: crypto.randomUUID(),
       message: `Login to SSO Demo at ${new Date().toISOString()}`,
-      nonce: crypto.randomBytes(32).toString('hex'),
+      code_verifier,
+      code_challenge,
+      state,
       client_id,
       created_at: Date.now(),
       expires_at: Date.now() + (5 * 60 * 1000), // 5 minutes
@@ -19,14 +35,19 @@ export class ChallengeService {
 
   async storeChallenge(challenge: Challenge): Promise<void> {
     await this.db.run(
-      'INSERT INTO challenges (id, message, client_id, created_at, expires_at, nonce, used) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      `INSERT INTO challenges (
+        id, message, client_id, created_at, expires_at, 
+        code_verifier, code_challenge, state, used
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         challenge.id,
         challenge.message,
         challenge.client_id,
         challenge.created_at,
         challenge.expires_at,
-        challenge.nonce,
+        challenge.code_verifier,
+        challenge.code_challenge,
+        challenge.state,
         challenge.used
       ]
     );

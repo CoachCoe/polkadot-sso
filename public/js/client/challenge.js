@@ -36,7 +36,9 @@
             window.location.href = '/verify?signature=' +
                 encodeURIComponent(signature) +
                 '&challenge_id=' + window.CHALLENGE_DATA.challengeId +
-                '&address=' + encodeURIComponent(window.CHALLENGE_DATA.address);
+                '&address=' + encodeURIComponent(window.CHALLENGE_DATA.address) +
+                '&code_verifier=' + encodeURIComponent(window.CHALLENGE_DATA.codeVerifier) +
+                '&state=' + encodeURIComponent(window.CHALLENGE_DATA.state);
         }
         catch (error) {
             console.error('Signing error:', error);

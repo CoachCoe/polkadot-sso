@@ -1,21 +1,39 @@
 import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
+import { mkdir } from 'fs/promises';
+import { dirname } from 'path';
 
 export async function initializeDatabase(): Promise<Database> {
+  const dbPath = './data/sso.db';
+  
+  // Create data directory if it doesn't exist
+  await mkdir(dirname(dbPath), { recursive: true });
+
   const db = await open({
-    filename: process.env.DATABASE_PATH || './sso.db',
+    filename: dbPath,
     driver: sqlite3.Database
   });
 
   await db.exec(`
     CREATE TABLE IF NOT EXISTS challenges (
       id TEXT PRIMARY KEY,
-      message TEXT,
-      client_id TEXT,
-      created_at INTEGER,
-      expires_at INTEGER,
-      nonce TEXT,
-      used BOOLEAN DEFAULT 0
+      message TEXT NOT NULL,
+      client_id TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL,
+      code_verifier TEXT NOT NULL,
+      code_challenge TEXT NOT NULL,
+      state TEXT NOT NULL,
+      used BOOLEAN NOT NULL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS auth_codes (
+      code TEXT PRIMARY KEY,
+      address TEXT NOT NULL,
+      client_id TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL,
+      used BOOLEAN NOT NULL DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS sessions (

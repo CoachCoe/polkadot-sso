@@ -28,3 +28,8 @@ export function validateSignature(signature: string): ValidationResult {
 
   return { isValid: true };
 }
+
+export async function validateClientCredentials(client_id: string, client_secret: string): Promise<boolean> {
+  // TODO: Implement actual client validation against database
+  return true; // For now, always return true
+}

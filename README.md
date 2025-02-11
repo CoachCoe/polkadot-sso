@@ -1,122 +1,128 @@
-# Polkadot SSO Demo
+# Polkadot SSO Service
 
-A simple Single Sign-On (SSO) implementation using Polkadot wallet authentication. This demo shows how web applications can authenticate users using their Polkadot wallet addresses instead of traditional username/password combinations.
+A secure Single Sign-On (SSO) service that uses Polkadot wallet signatures for authentication. Implements OAuth 2.0 with PKCE (Proof Key for Code Exchange) for enhanced security.
 
 ## Features
-- Wallet-based authentication using Polkadot.js extension
-- Challenge-response authentication pattern with expiration
-- Secure JWT token issuance with proper signing and fingerprinting
-- Enhanced session management and tracking
-- Basic demo client application
-- SQLite storage for challenges and sessions
+
+- Polkadot wallet-based authentication
+- OAuth 2.0 with PKCE flow
+- Message signing with Polkadot.js extension
+- Secure token exchange
 - Rate limiting and security headers
-- Content Security Policy (CSP) implementation
+- SQLite database for persistence
+
+## Security Features
+
+- PKCE challenge-response verification
+- State parameter validation
+- Authorization code flow (no tokens in URLs)
+- Rate limiting on authentication endpoints
+- Content Security Policy (CSP) headers
+- CORS protection
+- Secure session management
 
 ## Prerequisites
-- Node.js installed
-- Polkadot{.js} extension installed in your browser ([Get it here](https://polkadot.js.org/extension/))
-- At least one account created in your Polkadot.js extension
 
-## Project Structure
-polkadot-sso/
-├── package.json
-├── sso-service.js    # Main SSO service
-├── demo-app.js       # Demo client application
-├── .env             # Environment configuration
-├── public/          # Static files
-│   ├── login.js     # Wallet connection logic
-│   └── challenge.js # Challenge signing logic
-└── sso.db           # SQLite database (created automatically)
+- Node.js (v14 or higher)
+- Polkadot{.js} extension installed in browser
+- SQLite3
 
 ## Installation
+Clone the repository
+git clone https://github.com/yourusername/polkadot-sso.git
 
-git clone https://github.com/CoachCoe/polkadot-sso.git
+Install dependencies
 cd polkadot-sso
+npm install
 
-# Install dependencies:
-npm init -y
-npm install express @polkadot/util-crypto jsonwebtoken sqlite3 sqlite cors helmet express-rate-limit dotenv crypto
+Build the project
+npm run build
 
-# Create a .env file:
-JWT_SECRET=<your-generated-secret> (for now this is just require('crypto').randomBytes(64).toString('hex')) 
-CLIENT_WHITELIST=http://localhost:3001
-DATABASE_PATH=./sso.db
-NODE_ENV=development
+Start the server
+npm start
 
-## Start the services:
-node sso-service.js
+## Configuration
 
-# In another terminal, start the demo app
-node demo-app.js
+Create a `.env` file in the root directory with the following variables:
 
-Security Features
-Challenge Security
+## Usage
 
-5-minute challenge expiration
-Single-use challenges
-Cryptographic nonce generation
-UUID-based challenge tracking
+### 1. Client Registration
+Register your application to get client credentials:
 
-Enhanced Token Security
-JWT tokens with HS512 algorithm signing
-Token fingerprinting for enhanced security
-Access tokens (15 minutes) and refresh tokens (7 days)
-Token type enforcement and verification
-Session-bound token tracking
-Token ID (jti) claim for uniqueness
-Token replay attack prevention
+curl -X POST http://localhost:3000/api/clients/register \
+-H "Content-Type: application/json" \
+-d '{
+"name": "My App",
+"redirect_urls": ["http://localhost:3001/callback"],
+"allowed_origins": ["http://localhost:3001"]
+}'
 
-Session Management
-Comprehensive session tracking
-Fingerprint validation
-Last activity tracking
-Active session status monitoring
-Token refresh management
-Session cleanup and expiration
 
-API Protection
-Rate limiting (5 attempts/15 minutes)
-CORS configuration
-Helmet.js security headers
-Content Security Policy (CSP)
+### 2. Authentication Flow
 
-Database Security
-Prepared statements (SQL injection prevention)
-Indexed queries
-Enhanced session and token tracking
-Comprehensive error handling and logging
-Token status tracking
+1. Redirect users to the login endpoint:
+http://localhost:3000/login?client_id=your-client-id
 
-Current Implementation Details
-SSO Service (Port 3000)
+2. User connects their Polkadot wallet
 
-/login - Initiates the wallet connection
-/challenge - Generates a challenge for signing
-/verify - Verifies the signature and issues JWT with fingerprinting
-/refresh - Handles secure token refresh with validation
+3. User signs the challenge message
 
-Demo App (Port 3001)
+4. Service redirects back with authorization code:
+http://your-redirect-url?code=auth-code&state=state-value
 
-/ - Home page with SSO login link
-/callback - Receives and displays the JWT token with refresh capability
+5. Exchange code for tokens:
+curl -X POST http://localhost:3000/token \
+-H "Content-Type: application/json" \
+-d '{
+"code": "auth-code",
+"client_id": "your-client-id",
+"client_secret": "your-client-secret"
+}'
 
-Next Steps
-Add single sign-out capability
-Implement scope-based access control
-Add user profile management
-Add account linking capabilities
-Implement token blacklisting
-Add session revocation capabilities
+## Database Schema
 
-Contributing
-This is a basic implementation meant for demonstration purposes. Feel free to extend it with additional features or security improvements.
-License
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at:
-http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+## API Endpoints
+
+### 1. Client Registration
+- Challenges table for PKCE authentication
+CREATE TABLE challenges (
+id TEXT PRIMARY KEY,
+message TEXT NOT NULL,
+client_id TEXT NOT NULL,
+created_at INTEGER NOT NULL,
+expires_at INTEGER NOT NULL,
+code_verifier TEXT NOT NULL,
+code_challenge TEXT NOT NULL,
+state TEXT NOT NULL,
+used BOOLEAN NOT NULL DEFAULT 0
+);
+-- Authorization codes for token exchange
+CREATE TABLE auth_codes (
+code TEXT PRIMARY KEY,
+address TEXT NOT NULL,
+client_id TEXT NOT NULL,
+created_at INTEGER NOT NULL,
+expires_at INTEGER NOT NULL,
+used BOOLEAN NOT NULL DEFAULT 0
+);
+
+## Development
+Run in development mode with hot reload
+npm run dev
+
+Build client-side TypeScript
+npx tsc -p tsconfig.client.json
+Build server-side TypeScript
+npx tsc
+
+## Security Considerations
+kens are never exposed in URLs
+- PKCE prevents authorization code interception attacks
+- State parameter prevents CSRF attacks
+- Rate limiting prevents brute force attempts
+- CSP headers prevent XSS attacks
+- CORS protects against unauthorized origins
+
+## License
+MIT

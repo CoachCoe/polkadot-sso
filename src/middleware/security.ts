@@ -9,19 +9,27 @@ export const securityMiddleware = [
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: [
-          "'self'", 
+          "'self'",
           "https://cdn.jsdelivr.net",
           "https://polkadot.js.org",
-          "'unsafe-eval'", 
-          "'unsafe-inline'"
+          "'unsafe-inline'",
+          "'unsafe-eval'"
         ],
         connectSrc: ["'self'", "*"],
         imgSrc: ["'self'", "data:", "https:"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        workerSrc: ["'self'", "blob:"],
-        childSrc: ["'self'", "blob:"],
-      },
-    }
+        styleSrc: ["'self'", "'unsafe-inline'"]
+      }
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true
+    },
+    frameguard: {
+      action: 'deny'
+    },
+    noSniff: true,
+    referrerPolicy: { policy: 'same-origin' }
   }),
   cors({
     origin: process.env.CLIENT_WHITELIST?.split(',') || ['http://localhost:3001'],

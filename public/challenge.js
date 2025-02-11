@@ -39,7 +39,7 @@ var require_challenge = __commonJS({
             type: "bytes"
           });
           updateStatus("Message signed! Verifying...", "success");
-          window.location.href = "/verify?signature=" + encodeURIComponent(signature) + "&challenge_id=" + window.CHALLENGE_DATA.challengeId + "&address=" + encodeURIComponent(window.CHALLENGE_DATA.address);
+          window.location.href = "/verify?signature=" + encodeURIComponent(signature) + "&challenge_id=" + window.CHALLENGE_DATA.challengeId + "&address=" + encodeURIComponent(window.CHALLENGE_DATA.address) + "&code_verifier=" + encodeURIComponent(window.CHALLENGE_DATA.codeVerifier) + "&state=" + encodeURIComponent(window.CHALLENGE_DATA.state);
         } catch (error) {
           console.error("Signing error:", error);
           updateStatus(error instanceof Error ? error.message : "Unknown error", "error");
