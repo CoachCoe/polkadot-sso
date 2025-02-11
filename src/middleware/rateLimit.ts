@@ -1,15 +1,30 @@
 import rateLimit from 'express-rate-limit';
-import RedisStore from 'rate-limit-redis';
+import { Request, Response } from 'express';
 
-export const createClientRateLimit = (windowMs: number, max: number) => 
-  rateLimit({
+const createIPRateLimiter = (
+  windowMs: number,
+  max: number,
+  endpoint: string
+) => {
+  const store = new Map();
+
+  return rateLimit({
     windowMs,
     max,
-    keyGenerator: (req) => `${req.ip}-${req.get('x-client-id')}`,
-    handler: (req, res) => {
+    keyGenerator: (req: Request) => `${req.ip}:${endpoint}`,
+    handler: (req: Request, res: Response) => {
       res.status(429).json({
-        error: 'Too many requests, please try again later',
+        error: 'Too many requests from this IP',
         retryAfter: Math.ceil(windowMs / 1000)
       });
-    }
-  }); 
+    },
+    standardHeaders: true,
+    legacyHeaders: false
+  });
+};
+
+export const rateLimiters = {
+  login: createIPRateLimiter(15 * 60 * 1000, 5, 'login'),
+  token: createIPRateLimiter(60 * 1000, 10, 'token'),
+  refresh: createIPRateLimiter(60 * 1000, 5, 'refresh')
+}; 

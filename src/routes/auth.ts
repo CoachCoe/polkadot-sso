@@ -121,7 +121,15 @@ export const createAuthRouter = (
         <head>
           <title>${client.name}</title>
           <link rel="stylesheet" href="/styles/main.css">
-          <link rel="icon" type="image/x-icon" href="/favicon.ico">
+          <script nonce="${res.locals.nonce}">
+            window.CHALLENGE_DATA = {
+              address: "${address}",
+              message: "${challenge.message}",
+              challengeId: "${challenge.id}",
+              codeVerifier: "${challenge.code_verifier}",
+              state: "${challenge.state}"
+            };
+          </script>
           <script src="https://cdn.jsdelivr.net/npm/@polkadot/util@12.6.2/bundle-polkadot-util.min.js"></script>
           <script src="https://cdn.jsdelivr.net/npm/@polkadot/util-crypto@12.6.2/bundle-polkadot-util-crypto.min.js"></script>
           <script src="https://cdn.jsdelivr.net/npm/@polkadot/extension-dapp@0.46.6/bundle-polkadot-extension-dapp.min.js"></script>
@@ -139,15 +147,6 @@ export const createAuthRouter = (
               <span id="loadingSpinner" class="loading" style="display: none;"></span>
             </button>
           </div>
-          <script>
-            window.CHALLENGE_DATA = {
-              address: ${JSON.stringify(address)},
-              message: ${JSON.stringify(challenge.message)},
-              challengeId: ${JSON.stringify(challenge.id)},
-              codeVerifier: ${JSON.stringify(challenge.code_verifier)},
-              state: ${JSON.stringify(challenge.state)}
-            };
-          </script>
           <script src="/js/client/challenge.js"></script>
         </body>
       </html>
