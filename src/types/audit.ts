@@ -4,7 +4,8 @@ export type AuditEventType =
   | 'CHALLENGE_CREATED'
   | 'CHALLENGE_VERIFIED'
   | 'TOKEN_REFRESH'
-  | 'CLIENT_ERROR';
+  | 'CLIENT_ERROR'
+  | 'SECURITY_EVENT';
 
 export interface AuditEvent {
   type: AuditEventType;

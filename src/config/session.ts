@@ -1,27 +1,39 @@
 import session from 'express-session';
 import { createClient } from 'redis';
+import { RedisStore } from 'connect-redis';
 import { randomBytes } from 'crypto';
 
-const redisClient = createClient({
-  url: process.env.REDIS_URL
+console.log('Environment variables:', {
+  SESSION_SECRET: process.env.SESSION_SECRET?.slice(0, 10) + '...',
+  NODE_ENV: process.env.NODE_ENV
 });
-redisClient.connect().catch(console.error);
 
-// Use require for RedisStore
-const RedisStore = require('connect-redis')(session);
-const store = new RedisStore({
-  client: redisClient,
-  prefix: "sso:"
-});
+if (!process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET environment variable is required');
+}
+
+// Only setup Redis in production
+let store;
+if (process.env.NODE_ENV === 'production') {
+  const redisClient = createClient({
+    url: process.env.REDIS_URL
+  });
+  redisClient.connect().catch(console.error);
+
+  store = new RedisStore({
+    client: redisClient as any,
+    prefix: "sso:"
+  });
+}
 
 export const sessionConfig = {
   store,
-  secret: process.env.SESSION_SECRET!,
+  secret: process.env.SESSION_SECRET,
   name: 'sso.sid',
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    sameSite: 'strict',
+    sameSite: 'strict' as const,
     maxAge: 15 * 60 * 1000, // 15 minutes
     path: '/',
     domain: process.env.COOKIE_DOMAIN || undefined

@@ -1,6 +1,9 @@
+import { config } from 'dotenv';
+config();
+
 import express, { Request, Response, NextFunction, RequestHandler, ErrorRequestHandler } from 'express';
 import path from 'path';
-import { config } from 'dotenv';
+import helmet from 'helmet';
 import { securityMiddleware, nonceMiddleware, ResponseWithLocals } from './middleware/security';
 import { initializeDatabase } from './config/db';
 import { TokenService } from './services/token';
@@ -11,23 +14,22 @@ import { createTokenRouter } from './routes/tokens';
 import { createClientRouter } from './routes/clients';
 import { Client } from './types/auth';
 import session from 'express-session';
-import { SecurityConfig } from './config/security';
 import { rateLimit } from 'express-rate-limit';
-import helmet from 'helmet';
 import { createLogger } from './utils/logger';
 import { addRequestId } from './middleware/requestId';
-import crypto from 'crypto';
 import { RequestWithId } from './types/express';
-
-// Load environment variables
-config();
+import { sessionConfig } from './config/session';
+import cors from 'cors';
+import { corsConfig } from './config/cors';
+import { createBruteForceProtection } from './middleware/bruteForce';
+import { sanitizeRequestParams } from './middleware/validation';
 
 const logger = createLogger('app');
 
 const app = express();
 
 // Apply middleware
-app.use(addRequestId as RequestHandler);
+app.use(addRequestId);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
@@ -38,6 +40,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: [
         "'self'",
+        (_, res: any) => `'nonce-${res.locals.nonce}'`,
         "https://cdn.jsdelivr.net",
         "https://polkadot.js.org"
       ],
@@ -47,13 +50,29 @@ app.use(helmet({
       upgradeInsecureRequests: []
     }
   },
+  referrerPolicy: { policy: 'same-origin' },
+  permittedCrossDomainPolicies: { permittedPolicies: 'none' },
   crossOriginEmbedderPolicy: true,
-  crossOriginOpenerPolicy: true,
-  crossOriginResourcePolicy: { policy: "same-site" }
+  crossOriginOpenerPolicy: { policy: 'same-origin' },
+  crossOriginResourcePolicy: { policy: 'same-site' }
 }));
 
+// Add CORS preflight
+app.options('*', cors(corsConfig));
+
+// Add request ID tracking and security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Request-ID', (req as RequestWithId).id);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Expect-CT', 'enforce, max-age=86400');
+  next();
+});
+
 // Session configuration
-app.use(session(SecurityConfig.session));
+app.use(session(sessionConfig));
 
 // Global rate limiter
 app.use(rateLimit({
@@ -62,6 +81,10 @@ app.use(rateLimit({
   standardHeaders: true,
   legacyHeaders: false
 }));
+
+// Add request size limits before other middleware
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Add before other middleware
 app.use((req, res, next) => nonceMiddleware(req, res as ResponseWithLocals, next));
@@ -85,6 +108,8 @@ async function initializeApp() {
     }]
   ]);
 
+  const bruteForceMiddleware = createBruteForceProtection(auditService);
+
   // Mount routes
   app.use('/', createAuthRouter(
     tokenService, 
@@ -93,24 +118,36 @@ async function initializeApp() {
     clients, 
     db
   ));
-  app.use('/api/tokens', createTokenRouter(tokenService, db));
+  app.use('/api/tokens', createTokenRouter(tokenService, db, auditService));
   app.use('/api/clients', createClientRouter(db));
+
+  // Add before route handlers
+  app.use(bruteForceMiddleware);
+  app.use(sanitizeRequestParams());
 
   // Error handler
   app.use(((err: Error, req: Request, res: Response, next: NextFunction) => {
     const requestId = (req as RequestWithId).id;
     logger.error({
       requestId,
-      error: err,
+      error: {
+        name: err.name,
+        message: err.message,
+        stack: err.stack,
+        details: err
+      },
       method: req.method,
       url: req.url,
+      query: req.query,
+      body: req.body,
       ip: req.ip || 'unknown'
     });
 
     res.status(500).json({
       status: 'error',
       message: 'Internal server error',
-      requestId
+      requestId,
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }) as ErrorRequestHandler);
 

@@ -1,33 +1,48 @@
 import winston from 'winston';
-import { SecurityConfig } from '../config/security';
+import { Request } from 'express';
 
 export const createLogger = (service: string) => {
   return winston.createLogger({
-    level: process.env.LOG_LEVEL || 'info',
     format: winston.format.combine(
       winston.format.timestamp(),
       winston.format.json(),
       winston.format.printf(({ timestamp, level, message, ...meta }) => {
-        // Sanitize sensitive data
-        const sanitizedMeta = { ...meta };
-        ['password', 'token', 'secret', 'signature'].forEach(key => {
-          if (key in sanitizedMeta) {
-            sanitizedMeta[key] = '[REDACTED]';
-          }
-        });
-
         return JSON.stringify({
           timestamp,
           service,
           level,
           message,
-          ...sanitizedMeta
+          ...meta
         });
       })
     ),
     transports: [
+      new winston.transports.Console(),
       new winston.transports.File({ filename: 'error.log', level: 'error' }),
       new winston.transports.File({ filename: 'combined.log' })
     ]
+  });
+};
+
+const defaultLogger = createLogger('default');
+
+export const logRequest = (req: Request, message: string, meta: any = {}) => {
+  defaultLogger.info(message, {
+    requestId: req.id,
+    method: req.method,
+    url: req.url,
+    ip: req.ip,
+    ...meta
+  });
+};
+
+export const logError = (req: Request, error: Error, meta: any = {}) => {
+  defaultLogger.error(error.message, {
+    requestId: req.id,
+    method: req.method,
+    url: req.url,
+    ip: req.ip,
+    stack: error.stack,
+    ...meta
   });
 }; 

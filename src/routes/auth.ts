@@ -1,18 +1,48 @@
 import { Router, Request, Response, NextFunction, RequestHandler } from 'express';
 import { TokenService } from '../services/token';
 import { ChallengeService } from '../services/challengeService';
-import { authLimiter } from '../config/auth';
 import { Client, Challenge } from '../types/auth';
 import { cryptoWaitReady, signatureVerify } from '@polkadot/util-crypto';
 import { validateAuthRequest, validateSignature, validateClientCredentials } from '../utils/validation';
 import crypto from 'crypto';
 import { Database } from 'sqlite';
 import { createHash } from 'crypto';
-import { createRateLimiter, sanitizeRequest, validateRequest } from '../middleware/requestSecurity';
+import { sanitizeRequest } from '../middleware/validation';
 import { AuditService } from '../services/auditService';
 import { escapeHtml } from '../utils/sanitization';
-import { rateLimiters } from '../middleware/rateLimit';
+import { createRateLimiters } from '../middleware/rateLimit';
 import { secureQueries } from '../utils/db';
+import { z } from 'zod';
+import { validateBody } from '../middleware/validation';
+import { logRequest, logError } from '../utils/logger';
+
+// Add schemas at the top of the file
+const loginSchema = z.object({
+  query: z.object({
+    client_id: z.string().min(1)
+  })
+});
+
+const tokenSchema = z.object({
+  code: z.string().min(32).max(64),
+  client_id: z.string().min(1),
+  client_secret: z.string().min(32)
+});
+
+const challengeSchema = z.object({
+  query: z.object({
+    address: z.string().min(1),
+    client_id: z.string().min(1)
+  })
+});
+
+const verifySchema = z.object({
+  query: z.object({
+    signature: z.string(),
+    challenge_id: z.string(),
+    address: z.string()
+  })
+});
 
 async function generateCodeChallenge(verifier: string): Promise<string> {
   const hash = createHash('sha256');
@@ -28,23 +58,23 @@ export const createAuthRouter = (
  db: Database
 ) => {
  const router = Router();
-
- // Add rate limiters
- const loginLimiter = createRateLimiter(15 * 60 * 1000, 10);  // 10 requests per 15 minutes
- const tokenLimiter = createRateLimiter(60 * 1000, 5);        // 5 requests per minute
+ const rateLimiters = createRateLimiters(auditService);
 
  const loginHandler: RequestHandler = async (req, res) => {
    try {
+     logRequest(req, 'Login attempt', { address: req.query.address });
      const validation = validateAuthRequest(req);
      if (!validation.isValid) {
-       return res.status(400).send(validation.error);
+       logError(req, new Error(validation.error || 'Validation failed'));
+       return res.status(400).json({ error: validation.error });
      }
 
      const { client_id } = req.query;
      const client = clients.get(client_id as string);
      
      if (!client) {
-       return res.status(400).send('Invalid client');
+       logError(req, new Error(`Invalid client_id: ${client_id}`));
+       return res.status(400).json({ error: 'Invalid client' });
      }
      
      const escapedClientId = JSON.stringify(client_id);
@@ -89,6 +119,7 @@ export const createAuthRouter = (
       </html>
     `);
    } catch (error) {
+     logError(req, error as Error);
      await auditService.log({
        type: 'AUTH_ATTEMPT',
        client_id: (req.query.client_id as string) || 'unknown',
@@ -99,7 +130,7 @@ export const createAuthRouter = (
        user_agent: req.get('user-agent') || 'unknown'
      });
      console.error('Login error:', error);
-     res.status(500).send('Authentication failed');
+     res.status(500).json({ error: 'Authentication failed' });
    }
  };
 
@@ -109,11 +140,13 @@ export const createAuthRouter = (
      const client = clients.get(client_id as string);
      
      if (!client) {
-       return res.status(400).send('Invalid client');
+       logError(req, new Error(`Invalid client_id: ${client_id}`));
+       return res.status(400).json({ error: 'Invalid client' });
      }
 
      if (!address) {
-       return res.status(400).send('Address is required');
+       logError(req, new Error('Address is required'));
+       return res.status(400).json({ error: 'Address is required' });
      }
 
      const challenge = await challengeService.generateChallenge(client_id as string);
@@ -155,8 +188,9 @@ export const createAuthRouter = (
       </html>
     `);
    } catch (error) {
+     logError(req, error as Error);
      console.error('Challenge error:', error);
-     res.status(500).send('Challenge generation failed');
+     res.status(500).json({ error: 'Challenge generation failed' });
    }
  };
 
@@ -218,8 +252,9 @@ export const createAuthRouter = (
        `state=${state}`
      );
    } catch (error) {
-     console.error('Verification error:', error);
-     res.status(500).send('Verification failed');
+     logError(req, error as Error);
+     console.error('Verify error:', error);
+     res.status(500).json({ error: 'Verification failed' });
    }
  };
 
@@ -261,28 +296,28 @@ export const createAuthRouter = (
  router.get('/login', 
    rateLimiters.login,
    sanitizeRequest(),
-   validateRequest(),
+   validateBody(loginSchema),
    loginHandler
  );
 
  router.get('/challenge', 
    rateLimiters.challenge,
    sanitizeRequest(),
-   validateRequest(),
+   validateBody(challengeSchema),
    challengeHandler
  );
 
  router.get('/verify', 
    rateLimiters.verify,
    sanitizeRequest(),
-   validateRequest(),
+   validateBody(verifySchema),
    verifyHandler
  );
 
  router.post('/token', 
    rateLimiters.token,
    sanitizeRequest(),
-   validateRequest(),
+   validateBody(tokenSchema),
    tokenHandler
  );
 
