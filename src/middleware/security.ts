@@ -1,23 +1,33 @@
 // src/middleware/security.ts
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response as ExpressResponse, NextFunction, RequestHandler } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import csurf from 'csurf';
+import { generateNonce } from '../utils/nonce';
 
-export const securityMiddleware = [
+export interface ResponseWithLocals extends ExpressResponse {
+  locals: {
+    nonce: string;
+    [key: string]: any;
+  };
+}
+
+export const securityMiddleware: RequestHandler[] = [
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: [
           "'self'",
-          "https://cdn.jsdelivr.net",
-          "https://polkadot.js.org",
           "'unsafe-inline'",
-          "'unsafe-eval'"
+          "'unsafe-eval'",
+          "https://cdn.jsdelivr.net",
+          "https://polkadot.js.org"
         ],
-        connectSrc: ["'self'", "*"],
-        imgSrc: ["'self'", "data:", "https:"],
-        styleSrc: ["'self'", "'unsafe-inline'"]
+        connectSrc: ["'self'", "wss://rpc.polkadot.io"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        frameAncestors: ["'none'"],
+        objectSrc: ["'none'"]
       }
     },
     hsts: {
@@ -38,10 +48,18 @@ export const securityMiddleware = [
   })
 ];
 
+export const csrfProtection = csurf({
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  }
+});
+
 export const errorHandler = (
   err: Error,
   req: Request,
-  res: Response,
+  res: ResponseWithLocals,
   next: NextFunction
 ) => {
   console.error('Global error:', err);
@@ -49,4 +67,24 @@ export const errorHandler = (
     error: 'Authentication failed',
     requestId: crypto.randomUUID()
   });
+};
+
+export const securityHeaders = (req: Request, res: ResponseWithLocals, next: NextFunction) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  next();
+};
+
+type NonceMiddleware = (
+  req: Request,
+  res: ResponseWithLocals,
+  next: NextFunction
+) => void;
+
+export const nonceMiddleware: NonceMiddleware = (req, res, next) => {
+  res.locals.nonce = generateNonce();
+  next();
 };

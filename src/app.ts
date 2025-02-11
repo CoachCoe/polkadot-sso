@@ -1,26 +1,71 @@
-import express from 'express';
+import express, { Request, Response, NextFunction, RequestHandler, ErrorRequestHandler } from 'express';
 import path from 'path';
 import { config } from 'dotenv';
-import { securityMiddleware, errorHandler } from './middleware/security';
+import { securityMiddleware, nonceMiddleware, ResponseWithLocals } from './middleware/security';
 import { initializeDatabase } from './config/db';
 import { TokenService } from './services/token';
 import { ChallengeService } from './services/challengeService';
+import { AuditService } from './services/auditService';
 import { createAuthRouter } from './routes/auth';
 import { createTokenRouter } from './routes/tokens';
 import { createClientRouter } from './routes/clients';
 import { Client } from './types/auth';
+import session from 'express-session';
+import { SecurityConfig } from './config/security';
+import { rateLimit } from 'express-rate-limit';
+import helmet from 'helmet';
+import { createLogger } from './utils/logger';
+import { addRequestId } from './middleware/requestId';
+import crypto from 'crypto';
+import { RequestWithId } from './types/express';
 
 // Load environment variables
 config();
 
+const logger = createLogger('app');
+
 const app = express();
 
-// Apply security middleware
-app.use(securityMiddleware);
+// Apply middleware
+app.use(addRequestId as RequestHandler);
 app.use(express.json());
-
-// Serve static files
 app.use(express.static(path.join(__dirname, '../public')));
+
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "https://cdn.jsdelivr.net",
+        "https://polkadot.js.org"
+      ],
+      connectSrc: ["'self'", "wss://rpc.polkadot.io"],
+      frameAncestors: ["'none'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: []
+    }
+  },
+  crossOriginEmbedderPolicy: true,
+  crossOriginOpenerPolicy: true,
+  crossOriginResourcePolicy: { policy: "same-site" }
+}));
+
+// Session configuration
+app.use(session(SecurityConfig.session));
+
+// Global rate limiter
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false
+}));
+
+// Add before other middleware
+app.use((req, res, next) => nonceMiddleware(req, res as ResponseWithLocals, next));
+app.use(securityMiddleware);
 
 // Initialize services and routes
 async function initializeApp() {
@@ -28,6 +73,7 @@ async function initializeApp() {
   
   const tokenService = new TokenService(db);
   const challengeService = new ChallengeService(db);
+  const auditService = new AuditService(db);
 
   // Demo clients (to be replaced with database-backed system)
   const clients = new Map<string, Client>([
@@ -40,16 +86,37 @@ async function initializeApp() {
   ]);
 
   // Mount routes
-  app.use('/', createAuthRouter(tokenService, challengeService, clients, db));
+  app.use('/', createAuthRouter(
+    tokenService, 
+    challengeService, 
+    auditService,
+    clients, 
+    db
+  ));
   app.use('/api/tokens', createTokenRouter(tokenService, db));
   app.use('/api/clients', createClientRouter(db));
 
   // Error handler
-  app.use(errorHandler);
+  app.use(((err: Error, req: Request, res: Response, next: NextFunction) => {
+    const requestId = (req as RequestWithId).id;
+    logger.error({
+      requestId,
+      error: err,
+      method: req.method,
+      url: req.url,
+      ip: req.ip || 'unknown'
+    });
+
+    res.status(500).json({
+      status: 'error',
+      message: 'Internal server error',
+      requestId
+    });
+  }) as ErrorRequestHandler);
 
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
-    console.log(`SSO Service running on port ${port}`);
+    logger.info(`SSO Service running on port ${port}`);
   });
 }
 

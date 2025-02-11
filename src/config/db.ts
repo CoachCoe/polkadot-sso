@@ -52,9 +52,25 @@ export async function initializeDatabase(): Promise<Database> {
       is_active BOOLEAN DEFAULT 1
     );
 
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      event_type TEXT NOT NULL,
+      user_address TEXT,
+      client_id TEXT NOT NULL,
+      action TEXT NOT NULL,
+      status TEXT NOT NULL,
+      details TEXT,
+      ip_address TEXT NOT NULL,
+      user_agent TEXT,
+      created_at INTEGER NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_challenges_id ON challenges(id);
     CREATE INDEX IF NOT EXISTS idx_sessions_address ON sessions(address);
     CREATE INDEX IF NOT EXISTS idx_sessions_refresh_token ON sessions(refresh_token);
+    CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_logs(user_address);
+    CREATE INDEX IF NOT EXISTS idx_audit_client ON audit_logs(client_id);
+    CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_logs(created_at);
   `);
 
   return db;

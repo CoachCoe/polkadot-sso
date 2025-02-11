@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction, RequestHandler } from 'express';
 import { TokenService } from '../services/token';
 import { ChallengeService } from '../services/challengeService';
 import { authLimiter } from '../config/auth';
@@ -8,6 +8,8 @@ import { validateAuthRequest, validateSignature, validateClientCredentials } fro
 import crypto from 'crypto';
 import { Database } from 'sqlite';
 import { createHash } from 'crypto';
+import { createRateLimiter, sanitizeRequest, validateRequest } from '../middleware/requestSecurity';
+import { AuditService } from '../services/auditService';
 
 async function generateCodeChallenge(verifier: string): Promise<string> {
   const hash = createHash('sha256');
@@ -18,12 +20,17 @@ async function generateCodeChallenge(verifier: string): Promise<string> {
 export const createAuthRouter = (
  tokenService: TokenService,
  challengeService: ChallengeService & { generateChallenge(client_id: string): Promise<Challenge> },
+ auditService: AuditService,
  clients: Map<string, Client>,
  db: Database
 ) => {
  const router = Router();
 
- router.get('/login', authLimiter, async (req: Request, res: Response) => {
+ // Add rate limiters
+ const loginLimiter = createRateLimiter(15 * 60 * 1000, 10);  // 10 requests per 15 minutes
+ const tokenLimiter = createRateLimiter(60 * 1000, 5);        // 5 requests per minute
+
+ const loginHandler: RequestHandler = async (req, res) => {
    try {
      const validation = validateAuthRequest(req);
      if (!validation.isValid) {
@@ -38,40 +45,62 @@ export const createAuthRouter = (
      }
      
      const escapedClientId = JSON.stringify(client_id);
+     const escapedAppName = JSON.stringify(client.name);
      
+     await auditService.log({
+       type: 'AUTH_ATTEMPT',
+       client_id: client_id as string,
+       action: 'LOGIN_INITIATED',
+       status: 'success',
+       ip_address: req.ip || 'unknown',
+       user_agent: req.get('user-agent') || 'unknown'
+     });
+
      res.send(`
       <html>
         <head>
-          <title>Login with Polkadot</title>
+          <title>${client.name}</title>
           <link rel="stylesheet" href="/styles/main.css">
           <link rel="icon" type="image/x-icon" href="/favicon.ico">
+          <script nonce="${res.locals.nonce}">
+            window.SSO_CONFIG = {
+              clientId: ${escapedClientId},
+              appName: ${escapedAppName}
+            };
+          </script>
         </head>
         <body>
+          <header class="app-header">
+            <h1>${client.name}</h1>
+            <p class="subtitle">A secure authentication service using Polkadot wallets</p>
+          </header>
           <div class="container">
-            <h1>Login with Polkadot</h1>
             <div id="status">Ready to connect...</div>
             <button id="connectButton">
               <span id="buttonText">Connect Wallet</span>
               <span id="loadingSpinner" class="loading" style="display: none;"></span>
             </button>
           </div>
-          <script>
-            window.SSO_CONFIG = {
-              clientId: ${escapedClientId},
-              appName: ${JSON.stringify("Polkadot SSO Demo")}
-            };
-          </script>
           <script src="/js/client/login.js"></script>
         </body>
       </html>
     `);
    } catch (error) {
+     await auditService.log({
+       type: 'AUTH_ATTEMPT',
+       client_id: (req.query.client_id as string) || 'unknown',
+       action: 'LOGIN_FAILED',
+       status: 'failure',
+       details: { error: error instanceof Error ? error.message : 'Unknown error' },
+       ip_address: req.ip || 'unknown',
+       user_agent: req.get('user-agent') || 'unknown'
+     });
      console.error('Login error:', error);
      res.status(500).send('Authentication failed');
    }
- });
+ };
 
- router.get('/challenge', authLimiter, async (req: Request, res: Response) => {
+ const challengeHandler: RequestHandler = async (req, res) => {
    try {
      const { address, client_id } = req.query;
      const client = clients.get(client_id as string);
@@ -90,7 +119,7 @@ export const createAuthRouter = (
      res.send(`
       <html>
         <head>
-          <title>Sign Message</title>
+          <title>${client.name}</title>
           <link rel="stylesheet" href="/styles/main.css">
           <link rel="icon" type="image/x-icon" href="/favicon.ico">
           <script src="https://cdn.jsdelivr.net/npm/@polkadot/util@12.6.2/bundle-polkadot-util.min.js"></script>
@@ -127,9 +156,9 @@ export const createAuthRouter = (
      console.error('Challenge error:', error);
      res.status(500).send('Challenge generation failed');
    }
- });
+ };
 
- router.get('/verify', authLimiter, async (req: Request, res: Response) => {
+ const verifyHandler: RequestHandler = async (req, res) => {
    try {
      const { signature, challenge_id, address, code_verifier, state } = req.query;
      
@@ -190,10 +219,9 @@ export const createAuthRouter = (
      console.error('Verification error:', error);
      res.status(500).send('Verification failed');
    }
- });
+ };
 
- // New endpoint for token exchange
- router.post('/token', async (req: Request, res: Response) => {
+ const tokenHandler: RequestHandler = async (req, res) => {
    try {
      const { code, client_id, client_secret } = req.body;
 
@@ -233,7 +261,12 @@ export const createAuthRouter = (
      console.error('Token exchange error:', error);
      res.status(500).send('Token exchange failed');
    }
- });
+ };
+
+ router.get('/login', loginLimiter, sanitizeRequest(), validateRequest(), loginHandler);
+ router.get('/challenge', authLimiter, challengeHandler);
+ router.get('/verify', authLimiter, verifyHandler);
+ router.post('/token', tokenHandler);
 
  return router;
 };

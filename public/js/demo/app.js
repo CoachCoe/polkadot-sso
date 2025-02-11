@@ -13,7 +13,7 @@ app.get('/', (_req, res) => {
     res.send(`
     <html>
       <head>
-        <title>Demo App</title>
+        <title>Polkadot SSO Demo</title>
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
         <style>
           body {
@@ -39,7 +39,7 @@ app.get('/', (_req, res) => {
         </style>
       </head>
       <body>
-        <h1>Demo App</h1>
+        <h1>Polkadot SSO Demo</h1>
         <p>This is a demo application showing Polkadot SSO integration.</p>
         <a href="http://localhost:3000/login?client_id=demo-app" class="login-button">
           Login with Polkadot
