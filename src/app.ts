@@ -21,6 +21,8 @@ import { RequestWithId } from './types/express';
 import { sessionConfig } from './config/session';
 import cors from 'cors';
 import { corsConfig } from './config/cors';
+import { createBruteForceProtection } from './middleware/bruteForce';
+import { sanitizeRequestParams } from './middleware/validation';
 
 const logger = createLogger('app');
 
@@ -64,6 +66,8 @@ app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Expect-CT', 'enforce, max-age=86400');
   next();
 });
 
@@ -77,6 +81,10 @@ app.use(rateLimit({
   standardHeaders: true,
   legacyHeaders: false
 }));
+
+// Add request size limits before other middleware
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Add before other middleware
 app.use((req, res, next) => nonceMiddleware(req, res as ResponseWithLocals, next));
@@ -100,6 +108,8 @@ async function initializeApp() {
     }]
   ]);
 
+  const bruteForceMiddleware = createBruteForceProtection(auditService);
+
   // Mount routes
   app.use('/', createAuthRouter(
     tokenService, 
@@ -110,6 +120,10 @@ async function initializeApp() {
   ));
   app.use('/api/tokens', createTokenRouter(tokenService, db, auditService));
   app.use('/api/clients', createClientRouter(db));
+
+  // Add before route handlers
+  app.use(bruteForceMiddleware);
+  app.use(sanitizeRequestParams());
 
   // Error handler
   app.use(((err: Error, req: Request, res: Response, next: NextFunction) => {

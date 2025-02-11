@@ -35,4 +35,22 @@ export const validateBody = (schema: z.ZodSchema) => {
       }
     }
   };
+};
+
+export const sanitizeRequestParams = () => (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  // Sanitize URL parameters
+  for (let param in req.params) {
+    req.params[param] = sanitizeInput(req.params[param]);
+  }
+  // Sanitize query parameters
+  for (let param in req.query) {
+    if (typeof req.query[param] === 'string') {
+      req.query[param] = sanitizeInput(req.query[param] as string);
+    }
+  }
+  next();
 }; 
