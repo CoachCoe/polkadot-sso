@@ -34,3 +34,4 @@
 {"timestamp":"2025-02-11T15:46:00.108Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
 {"timestamp":"2025-02-11T15:50:49.397Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
 {"timestamp":"2025-02-11T15:51:05.890Z","service":"default","level":"info","message":"Login attempt","requestId":"722dbbfe-4115-4cd1-9da5-78b795a90410","method":"GET","url":"/login?client_id=demo-app","ip":"::1"}
+{"timestamp":"2025-02-11T15:58:02.151Z","service":"default","level":"info","message":"Login attempt","requestId":"89824b95-22f3-4e67-86c0-0495a12b0eff","method":"GET","url":"/login?client_id=demo-app","ip":"::1"}

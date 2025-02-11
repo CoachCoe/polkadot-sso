@@ -1,128 +1,107 @@
 # Polkadot SSO Service
 
-A secure Single Sign-On (SSO) service that uses Polkadot wallet signatures for authentication. Implements OAuth 2.0 with PKCE (Proof Key for Code Exchange) for enhanced security.
+A secure Single Sign-On (SSO) service using Polkadot wallets for authentication.
 
 ## Features
 
-- Polkadot wallet-based authentication
-- OAuth 2.0 with PKCE flow
-- Message signing with Polkadot.js extension
-- Secure token exchange
-- Rate limiting and security headers
-- SQLite database for persistence
-
-## Security Features
-
-- PKCE challenge-response verification
-- State parameter validation
-- Authorization code flow (no tokens in URLs)
-- Rate limiting on authentication endpoints
-- Content Security Policy (CSP) headers
-- CORS protection
-- Secure session management
+- 🔐 Secure authentication using Polkadot wallets
+- 🔑 OAuth2 PKCE flow for secure authorization
+- 🛡️ Advanced security features (CSP, CORS, Rate Limiting)
+- 📝 Comprehensive audit logging
+- 🔄 Session management with Redis (Production) / Memory Store (Development)
+- 🎯 TypeScript for type safety
 
 ## Prerequisites
 
-- Node.js (v14 or higher)
-- Polkadot{.js} extension installed in browser
+- Node.js (v16 or higher)
 - SQLite3
+- Redis (for production)
 
 ## Installation
-Clone the repository
-git clone https://github.com/yourusername/polkadot-sso.git
 
-Install dependencies
+1. Clone the repository:
+git clone https://github.com/yourusername/polkadot-sso.git
 cd polkadot-sso
+
+2. Install dependencies:
 npm install
 
-Build the project
-npm run build
+3. Create `.env` file:
+Required
+SESSION_SECRET=your-secret-here
+NODE_ENV=development
+JWT_SECRET=your-jwt-secret
+DATABASE_ENCRYPTION_KEY=your-db-encryption-key
+Optional
+PORT=3000
+LOG_LEVEL=info
+COOKIE_DOMAIN=localhost
+CLIENT_WHITELIST=http://localhost:3001
+ALLOWED_ORIGINS=http://localhost:3001
+Redis (only needed in production)
+REDIS_URL=redis://localhost:6379
 
-Start the server
-npm start
+4. Start the development server:
+npm run dev
 
-## Configuration
+## Project Structure
+public/
+├── js/
+│   └── client/
+│       ├── login.js      # Compiled from src/client/login.ts
+│       └── challenge.js  # Compiled from src/client/challenge.ts
+├── styles/
+│   └── main.css          # Styles for the login/challenge pages
+└── favicon.ico           # Optional favicon
+src/
+├── config/ # Configuration files
+├── middleware/ # Express middleware
+├── routes/ # API routes
+├── services/ # Business logic
+├── types/ # TypeScript types
+├── utils/ # Utility functions
+└── app.ts # Application entry point
 
-Create a `.env` file in the root directory with the following variables:
+## Security Features
 
-## Usage
-
-### 1. Client Registration
-Register your application to get client credentials:
-
-curl -X POST http://localhost:3000/api/clients/register \
--H "Content-Type: application/json" \
--d '{
-"name": "My App",
-"redirect_urls": ["http://localhost:3001/callback"],
-"allowed_origins": ["http://localhost:3001"]
-}'
-
-
-### 2. Authentication Flow
-
-1. Redirect users to the login endpoint:
-http://localhost:3000/login?client_id=your-client-id
-
-2. User connects their Polkadot wallet
-
-3. User signs the challenge message
-
-4. Service redirects back with authorization code:
-http://your-redirect-url?code=auth-code&state=state-value
-
-5. Exchange code for tokens:
-curl -X POST http://localhost:3000/token \
--H "Content-Type: application/json" \
--d '{
-"code": "auth-code",
-"client_id": "your-client-id",
-"client_secret": "your-client-secret"
-}'
-
-## Database Schema
+- Content Security Policy (CSP)
+- CORS protection
+- Rate limiting
+- Session security
+- Input validation and sanitization
+- SQL injection protection
+- Audit logging
 
 ## API Endpoints
 
-### 1. Client Registration
-- Challenges table for PKCE authentication
-CREATE TABLE challenges (
-id TEXT PRIMARY KEY,
-message TEXT NOT NULL,
-client_id TEXT NOT NULL,
-created_at INTEGER NOT NULL,
-expires_at INTEGER NOT NULL,
-code_verifier TEXT NOT NULL,
-code_challenge TEXT NOT NULL,
-state TEXT NOT NULL,
-used BOOLEAN NOT NULL DEFAULT 0
-);
--- Authorization codes for token exchange
-CREATE TABLE auth_codes (
-code TEXT PRIMARY KEY,
-address TEXT NOT NULL,
-client_id TEXT NOT NULL,
-created_at INTEGER NOT NULL,
-expires_at INTEGER NOT NULL,
-used BOOLEAN NOT NULL DEFAULT 0
-);
+### Authentication Flow
+- `GET /login` - Initiates login flow
+- `GET /challenge` - Generates signing challenge
+- `GET /verify` - Verifies signature
+- `POST /token` - Exchanges auth code for tokens
+
+### Token Management
+- `POST /api/tokens/refresh` - Refresh access token
 
 ## Development
-Run in development mode with hot reload
+Run in development mode
 npm run dev
+Build the project
+npm run build
+Run tests
+npm test
 
-Build client-side TypeScript
-npx tsc -p tsconfig.client.json
-Build server-side TypeScript
-npx tsc
+## Production Deployment
+1. Set environment variables
+2. Build the project: `npm run build`
+3. Start the server: `npm start`
 
-## Security Considerations
-kens are never exposed in URLs
-- PKCE prevents authorization code interception attacks
-- State parameter prevents CSRF attacks
-- Rate limiting prevents brute force attempts
-- CSP headers prevent XSS attacks
-- CORS protects against unauthorized origins
+## Contributing
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
 ## License
 MIT
