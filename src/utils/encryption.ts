@@ -3,7 +3,7 @@ import * as crypto from 'crypto';
 // Use a more secure encryption algorithm
 const ALGORITHM = 'aes-256-gcm';
 const KEY_LENGTH = 32; // 256 bits
-const IV_LENGTH = 16; // 128 bits
+const IV_LENGTH = 12; // 96 bits for GCM
 
 // Validate and derive encryption key
 function getEncryptionKey(): Buffer {
@@ -17,9 +17,8 @@ function getEncryptionKey(): Buffer {
     throw new Error('DATABASE_ENCRYPTION_KEY must be at least 32 characters long');
   }
   
-  // Use PBKDF2 to derive a proper key from the environment variable
-  const salt = crypto.randomBytes(16);
-  return crypto.pbkdf2Sync(envKey, salt, 100000, KEY_LENGTH, 'sha256');
+  // Use the first 32 bytes as the key
+  return Buffer.from(envKey).subarray(0, KEY_LENGTH);
 }
 
 export const encryptField = (text: string): string => {
@@ -27,7 +26,7 @@ export const encryptField = (text: string): string => {
     const key = getEncryptionKey();
     const iv = crypto.randomBytes(IV_LENGTH);
     
-    const cipher = crypto.createCipher(ALGORITHM, key);
+    const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
     cipher.setAAD(Buffer.from('polkadot-sso', 'utf8')); // Additional authenticated data
     
     let encrypted = cipher.update(text, 'utf8', 'hex');
@@ -51,10 +50,11 @@ export const decryptField = (encryptedText: string): string => {
       throw new Error('Invalid encrypted data format');
     }
     
-    const [, tagHex, encrypted] = parts;
+    const [ivHex, tagHex, encrypted] = parts;
+    const iv = Buffer.from(ivHex, 'hex');
     const tag = Buffer.from(tagHex, 'hex');
     
-    const decipher = crypto.createDecipher(ALGORITHM, key);
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
     decipher.setAAD(Buffer.from('polkadot-sso', 'utf8'));
     decipher.setAuthTag(tag);
     

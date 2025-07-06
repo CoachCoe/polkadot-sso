@@ -1,3 +1,5 @@
+import { config } from 'dotenv';
+config();
 import { initializeDatabase } from '../config/db';
 import { CredentialService } from '../services/credentialService';
 
@@ -8,6 +10,48 @@ async function runCredentialDemo() {
   const db = await initializeDatabase();
   const credentialService = new CredentialService(db);
 
+  // Clean up any existing demo data to avoid conflicts
+  console.log('🧹 Cleaning up existing demo data...');
+  try {
+    await db.run('DELETE FROM credential_shares WHERE shared_with_address IN (?, ?, ?)', [
+      '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
+      '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',
+      '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y'
+    ]);
+    await db.run('DELETE FROM credential_verifications WHERE verifier_address IN (?, ?, ?)', [
+      '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
+      '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',
+      '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y'
+    ]);
+    await db.run('DELETE FROM credentials WHERE user_address IN (?, ?, ?)', [
+      '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
+      '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',
+      '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y'
+    ]);
+    await db.run('DELETE FROM credential_types WHERE created_by IN (?, ?, ?)', [
+      '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
+      '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',
+      '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y'
+    ]);
+    await db.run('DELETE FROM issuance_requests WHERE requester_address IN (?, ?, ?) OR issuer_address IN (?, ?, ?)', [
+      '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
+      '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',
+      '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y',
+      '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
+      '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',
+      '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y'
+    ]);
+    await db.run('DELETE FROM user_profiles WHERE address IN (?, ?, ?)', [
+      '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
+      '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',
+      '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y'
+    ]);
+    console.log('✅ Demo data cleanup completed\n');
+  } catch (error) {
+    console.log('⚠️  Cleanup warning (this is normal for first run):', error instanceof Error ? error.message : 'Unknown error');
+    console.log('');
+  }
+
   try {
     
     const issuerAddress = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
@@ -16,28 +60,49 @@ async function runCredentialDemo() {
 
     console.log('📋 Creating user profiles...');
     
-    
-    await credentialService.createUserProfile(issuerAddress, {
-      display_name: 'Polkadot University',
-      email: 'admin@polkadot.edu',
-      bio: 'Official credential issuer for Polkadot University',
-      website: 'https://polkadot.edu',
-      verification_level: 3
-    });
+    // Create user profiles with error handling
+    const profiles = [
+      {
+        address: issuerAddress,
+        profile: {
+          display_name: 'Polkadot University',
+          email: 'admin@polkadot.edu',
+          bio: 'Official credential issuer for Polkadot University',
+          website: 'https://polkadot.edu',
+          verification_level: 3
+        }
+      },
+      {
+        address: userAddress,
+        profile: {
+          display_name: 'Alice Smith',
+          email: 'alice@example.com',
+          bio: 'Blockchain developer and Polkadot enthusiast',
+          verification_level: 2
+        }
+      },
+      {
+        address: verifierAddress,
+        profile: {
+          display_name: 'Blockchain Verification Service',
+          email: 'verify@blockchain.org',
+          bio: 'Professional credential verification service',
+          verification_level: 3
+        }
+      }
+    ];
 
-    await credentialService.createUserProfile(userAddress, {
-      display_name: 'Alice Smith',
-      email: 'alice@example.com',
-      bio: 'Blockchain developer and Polkadot enthusiast',
-      verification_level: 2
-    });
-
-    await credentialService.createUserProfile(verifierAddress, {
-      display_name: 'Blockchain Verification Service',
-      email: 'verify@blockchain.org',
-      bio: 'Professional credential verification service',
-      verification_level: 3
-    });
+    for (const { address, profile } of profiles) {
+      try {
+        await credentialService.createUserProfile(address, profile);
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('UNIQUE constraint failed')) {
+          console.log(`⚠️  User profile for ${address} already exists, skipping...`);
+        } else {
+          throw error;
+        }
+      }
+    }
 
     console.log('✅ User profiles created successfully\n');
 
