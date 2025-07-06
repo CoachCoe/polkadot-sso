@@ -12,7 +12,8 @@
     "demo:credentials": "ts-node src/demo/credentialDemo.ts",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "test": "jest"
+    "test": "jest",
+    "generate-secrets": "node scripts/generate-secrets.js"
   },
   "dependencies": {
     "@polkadot/api": "^10.13.1",

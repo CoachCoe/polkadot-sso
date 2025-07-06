@@ -80,20 +80,27 @@ cd polkadot-sso
 2. Install dependencies:
 npm install
 
-3. Create `.env` file:
-Required
-SESSION_SECRET=your-secret-here
-NODE_ENV=development
-JWT_SECRET=your-jwt-secret
-DATABASE_ENCRYPTION_KEY=your-db-encryption-key
-Optional
-PORT=3000
-LOG_LEVEL=info
-COOKIE_DOMAIN=localhost
-CLIENT_WHITELIST=http://localhost:3001
-ALLOWED_ORIGINS=http://localhost:3001
-Redis (only needed in production)
-REDIS_URL=redis://localhost:6379
+3. Generate secure secrets:
+```bash
+npm run generate-secrets
+```
+This will create a `.env` file with cryptographically secure secrets.
+
+Alternatively, create `.env` file manually:
+**Required Secrets:**
+- `SESSION_SECRET` - Secret for session encryption (min 32 chars)
+- `JWT_SECRET` - Secret for JWT token signing (min 32 chars)  
+- `DATABASE_ENCRYPTION_KEY` - Key for database field encryption (min 32 chars)
+
+**Optional Configuration:**
+- `NODE_ENV` - Environment (development/production)
+- `PORT` - Server port (default: 3000)
+- `LOG_LEVEL` - Logging level (default: info)
+- `COOKIE_DOMAIN` - Cookie domain (default: localhost)
+- `CLIENT_WHITELIST` - Allowed client origins
+- `ALLOWED_ORIGINS` - CORS allowed origins
+- `ADMIN_SECRET` - Secret for admin operations (min 16 chars)
+- `REDIS_URL` - Redis URL (for production sessions)
 
 4. Start the development server:
 npm run dev
@@ -370,6 +377,25 @@ CREATE TABLE credential_revocations (
   FOREIGN KEY (revoked_by_address) REFERENCES user_profiles(address)
 );
 ```
+
+## Security Features
+
+### Secret Management
+- **Cryptographically Secure Secrets**: All secrets are generated using Node.js crypto.randomBytes()
+- **Secret Validation**: Automatic validation of secret strength and entropy
+- **Secret Rotation**: Built-in support for rotating secrets
+- **Environment Isolation**: Different secrets for different environments
+
+### Encryption
+- **AES-256-GCM**: Uses authenticated encryption for database fields
+- **Key Derivation**: PBKDF2 key derivation for encryption keys
+- **Additional Authenticated Data**: Prevents tampering with encrypted data
+
+### Best Practices
+- **Never commit secrets**: .env files are gitignored
+- **Regular rotation**: Rotate secrets in production environments
+- **Environment separation**: Use different secrets for dev/staging/prod
+- **Secrets management**: Consider using AWS Secrets Manager, HashiCorp Vault, etc. in production
 
 ## Demo Scripts
 

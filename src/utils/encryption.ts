@@ -1,25 +1,87 @@
 import * as crypto from 'crypto';
 
+// Use a more secure encryption algorithm
+const ALGORITHM = 'aes-256-gcm';
+const KEY_LENGTH = 32; // 256 bits
+const IV_LENGTH = 16; // 128 bits
 
-const ENCRYPTION_KEY = process.env.DATABASE_ENCRYPTION_KEY || 'default-encryption-key-32-chars-long';
-const ALGORITHM = 'aes-256-cbc';
+// Validate and derive encryption key
+function getEncryptionKey(): Buffer {
+  const envKey = process.env.DATABASE_ENCRYPTION_KEY;
+  
+  if (!envKey) {
+    throw new Error('DATABASE_ENCRYPTION_KEY environment variable is required');
+  }
+  
+  if (envKey.length < 32) {
+    throw new Error('DATABASE_ENCRYPTION_KEY must be at least 32 characters long');
+  }
+  
+  // Use PBKDF2 to derive a proper key from the environment variable
+  const salt = crypto.randomBytes(16);
+  return crypto.pbkdf2Sync(envKey, salt, 100000, KEY_LENGTH, 'sha256');
+}
 
 export const encryptField = (text: string): string => {
-  const cipher = crypto.createCipher(ALGORITHM, ENCRYPTION_KEY);
-  let encrypted = cipher.update(text, 'utf8', 'hex');
-  encrypted += cipher.final('hex');
-  return encrypted;
+  try {
+    const key = getEncryptionKey();
+    const iv = crypto.randomBytes(IV_LENGTH);
+    
+    const cipher = crypto.createCipher(ALGORITHM, key);
+    cipher.setAAD(Buffer.from('polkadot-sso', 'utf8')); // Additional authenticated data
+    
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    
+    const tag = cipher.getAuthTag();
+    
+    // Return format: iv:tag:encrypted
+    return `${iv.toString('hex')}:${tag.toString('hex')}:${encrypted}`;
+  } catch (error) {
+    throw new Error(`Encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 };
 
 export const decryptField = (encryptedText: string): string => {
-  const textParts = encryptedText.split(':');
-  const encryptedData = textParts.join(':');
-  const decipher = crypto.createDecipher(ALGORITHM, ENCRYPTION_KEY);
-  let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-  return decrypted;
+  try {
+    const key = getEncryptionKey();
+    const parts = encryptedText.split(':');
+    
+    if (parts.length !== 3) {
+      throw new Error('Invalid encrypted data format');
+    }
+    
+    const [, tagHex, encrypted] = parts;
+    const tag = Buffer.from(tagHex, 'hex');
+    
+    const decipher = crypto.createDecipher(ALGORITHM, key);
+    decipher.setAAD(Buffer.from('polkadot-sso', 'utf8'));
+    decipher.setAuthTag(tag);
+    
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    
+    return decrypted;
+  } catch (error) {
+    throw new Error(`Decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 };
 
+// Generate a secure random key for environment variables
+export const generateSecureKey = (length: number = 64): string => {
+  return crypto.randomBytes(length).toString('base64');
+};
+
+// Validate secret strength
+export const validateSecret = (secret: string, minLength: number = 32): boolean => {
+  if (!secret || secret.length < minLength) {
+    return false;
+  }
+  
+  // Check for sufficient entropy (basic check)
+  const uniqueChars = new Set(secret).size;
+  return uniqueChars >= minLength / 2;
+};
 
 export const encryptData = encryptField;
 export const decryptData = decryptField; 

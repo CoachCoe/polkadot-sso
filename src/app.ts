@@ -2,6 +2,7 @@ import { config } from 'dotenv';
 config();
 
 import express, { Request, Response, NextFunction, RequestHandler, ErrorRequestHandler } from 'express';
+import { validateAllSecrets } from './utils/secrets';
 import path from 'path';
 import helmet from 'helmet';
 import { securityMiddleware, nonceMiddleware, ResponseWithLocals } from './middleware/security';
@@ -27,6 +28,13 @@ import { createBruteForceProtection } from './middleware/bruteForce';
 import { sanitizeRequestParams } from './middleware/validation';
 
 const logger = createLogger('app');
+
+// Validate secrets before starting the application
+const secretValidation = validateAllSecrets();
+if (!secretValidation.valid) {
+  logger.error('Secret validation failed:', secretValidation.errors);
+  process.exit(1);
+}
 
 const app = express();
 
