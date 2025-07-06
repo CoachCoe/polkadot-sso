@@ -1,4 +1,4 @@
-/// <reference path="../types/window.d.ts" />
+
 
 (function() {
   const statusDiv = document.getElementById('status') as HTMLDivElement;

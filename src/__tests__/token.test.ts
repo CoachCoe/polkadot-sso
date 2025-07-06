@@ -9,7 +9,7 @@ describe('TokenService', () => {
     mockDb = {
       get: jest.fn(),
       run: jest.fn(),
-    } as any;
+    } as unknown as jest.Mocked<Database>;
     tokenService = new TokenService(mockDb);
   });
 

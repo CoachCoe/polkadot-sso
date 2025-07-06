@@ -8,7 +8,7 @@ export const secureQueries = {
         [id, Date.now()]
       ),
 
-    create: async (db: Database, challenge: any) =>
+    create: async (db: Database, challenge: Record<string, unknown>) =>
       db.run(
         `INSERT INTO challenges (
           id, message, client_id, created_at, expires_at,
@@ -35,7 +35,7 @@ export const secureQueries = {
   },
 
   sessions: {
-    update: async (db: Database, params: any) =>
+    update: async (db: Database, params: Record<string, unknown>) =>
       db.run(
         `UPDATE sessions SET 
           access_token = ?,
@@ -69,7 +69,7 @@ export const secureQueries = {
   },
 
   authCodes: {
-    create: async (db: Database, params: any) =>
+    create: async (db: Database, params: Record<string, unknown>) =>
       db.run(
         `INSERT INTO auth_codes (
           code, address, client_id, created_at, expires_at, used

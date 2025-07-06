@@ -1,5 +1,5 @@
 import { Database } from 'sqlite';
-import { AuditEvent, AuditEventType } from '../types/audit';
+import { AuditEvent } from '../types/audit';
 
 export class AuditService {
   constructor(private db: Database) {}
@@ -35,13 +35,13 @@ export class AuditService {
     limit = 100
   ): Promise<AuditEvent[]> {
     const conditions: string[] = [];
-    const params: any[] = [];
+    const params: unknown[] = [];
 
     if (filters.user_address) {
       conditions.push('user_address = ?');
       params.push(filters.user_address);
     }
-    // ... add other filters
+    
 
     const whereClause = conditions.length > 0 
       ? `WHERE ${conditions.join(' AND ')}` 

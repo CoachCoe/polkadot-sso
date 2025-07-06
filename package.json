@@ -9,6 +9,7 @@
     "start": "node dist/app.js",
     "dev": "ts-node-dev src/app.ts",
     "demo": "ts-node-dev src/demo/app.ts",
+    "demo:credentials": "ts-node src/demo/credentialDemo.ts",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "test": "jest"

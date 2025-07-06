@@ -5,7 +5,13 @@ export type AuditEventType =
   | 'CHALLENGE_VERIFIED'
   | 'TOKEN_REFRESH'
   | 'CLIENT_ERROR'
-  | 'SECURITY_EVENT';
+  | 'SECURITY_EVENT'
+  | 'CREDENTIAL_PROFILE'
+  | 'CREDENTIAL_TYPE'
+  | 'CREDENTIAL'
+  | 'CREDENTIAL_SHARE'
+  | 'CREDENTIAL_VERIFICATION'
+  | 'ISSUANCE_REQUEST';
 
 export interface AuditEvent {
   type: AuditEventType;
@@ -13,7 +19,7 @@ export interface AuditEvent {
   client_id: string;
   action: string;
   status: 'success' | 'failure';
-  details?: any;
+  details?: unknown;
   ip_address: string;
   user_agent?: string;
   created_at?: number;

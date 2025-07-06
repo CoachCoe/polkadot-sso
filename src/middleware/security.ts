@@ -7,7 +7,7 @@ import { generateNonce } from '../utils/nonce';
 export interface ResponseWithLocals extends ExpressResponse {
   locals: {
     nonce: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -18,7 +18,7 @@ export const securityMiddleware: RequestHandler[] = [
         defaultSrc: ["'self'"],
         scriptSrc: [
           "'self'",
-          (_, res: any) => `'nonce-${res.locals.nonce}'`,
+          (_, res) => `'nonce-${(res as ResponseWithLocals).locals.nonce}'`,
           "https://cdn.jsdelivr.net",
           "https://polkadot.js.org"
         ],
@@ -52,7 +52,7 @@ export const securityMiddleware: RequestHandler[] = [
     },
     methods: ['GET', 'POST'],
     credentials: true,
-    maxAge: 86400, // 24 hours
+    maxAge: 86400, 
     allowedHeaders: ['Content-Type', 'Authorization'],
     exposedHeaders: ['X-Request-Id']
   })
@@ -69,8 +69,7 @@ export const csrfProtection = csurf({
 export const errorHandler = (
   err: Error,
   req: Request,
-  res: ResponseWithLocals,
-  next: NextFunction
+  res: ResponseWithLocals
 ) => {
   console.error('Global error:', err);
   res.status(500).json({

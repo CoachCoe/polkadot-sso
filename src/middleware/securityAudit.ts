@@ -1,10 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { AuditService } from '../services/auditService';
-import rateLimit from 'express-rate-limit';
 
 export const createSecurityAudit = (auditService: AuditService) => {
   return {
-    rateLimitHandler: (req: Request, res: Response, next: NextFunction) => {
+    rateLimitHandler: (req: Request, res: Response) => {
       auditService.log({
         type: 'SECURITY_EVENT',
         client_id: String(req.query.client_id || 'unknown'),
@@ -23,7 +22,7 @@ export const createSecurityAudit = (auditService: AuditService) => {
       });
     },
 
-    corsErrorHandler: (req: Request, res: Response, next: NextFunction) => {
+    corsErrorHandler: (req: Request) => {
       auditService.log({
         type: 'SECURITY_EVENT',
         client_id: String(req.query.client_id || 'unknown'),
@@ -36,7 +35,6 @@ export const createSecurityAudit = (auditService: AuditService) => {
         ip_address: req.ip || '0.0.0.0',
         user_agent: req.get('user-agent') || 'unknown'
       });
-      next();
     }
   };
 }; 

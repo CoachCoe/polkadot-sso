@@ -1,5 +1,6 @@
-import winston from 'winston';
+import * as winston from 'winston';
 import { Request } from 'express';
+import { RequestWithId } from '../types/auth';
 
 export const createLogger = (service: string) => {
   return winston.createLogger({
@@ -26,9 +27,10 @@ export const createLogger = (service: string) => {
 
 const defaultLogger = createLogger('default');
 
-export const logRequest = (req: Request, message: string, meta: any = {}) => {
+export const logRequest = (req: Request, message: string, meta: Record<string, unknown> = {}) => {
+  const reqWithId = req as RequestWithId;
   defaultLogger.info(message, {
-    requestId: req.id,
+    requestId: reqWithId.id,
     method: req.method,
     url: req.url,
     ip: req.ip,
@@ -36,9 +38,10 @@ export const logRequest = (req: Request, message: string, meta: any = {}) => {
   });
 };
 
-export const logError = (req: Request, error: Error, meta: any = {}) => {
+export const logError = (req: Request, error: Error, meta: Record<string, unknown> = {}) => {
+  const reqWithId = req as RequestWithId;
   defaultLogger.error(error.message, {
-    requestId: req.id,
+    requestId: reqWithId.id,
     method: req.method,
     url: req.url,
     ip: req.ip,

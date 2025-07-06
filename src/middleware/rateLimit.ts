@@ -2,9 +2,6 @@ import rateLimit from 'express-rate-limit';
 import { Request, Response } from 'express';
 import { AuditService } from '../services/auditService';
 
-// Store for tracking IP-based limits
-const ipStore = new Map();
-
 export const createRateLimiter = (
   windowMs: number,
   max: number,
@@ -36,11 +33,12 @@ export const createRateLimiter = (
   });
 };
 
-// Define rate limiters for different endpoints
+
 export const createRateLimiters = (auditService: AuditService) => ({
   login: createRateLimiter(15 * 60 * 1000, 5, 'login', auditService),
   challenge: createRateLimiter(5 * 60 * 1000, 3, 'challenge', auditService),
   verify: createRateLimiter(5 * 60 * 1000, 3, 'verify', auditService),
   token: createRateLimiter(60 * 1000, 2, 'token', auditService),
-  refresh: createRateLimiter(60 * 1000, 2, 'refresh', auditService)
+  refresh: createRateLimiter(60 * 1000, 2, 'refresh', auditService),
+  api: createRateLimiter(60 * 1000, 30, 'api', auditService) 
 }); 

@@ -1,9 +1,9 @@
-import { Router, Request, Response, NextFunction, RequestHandler } from 'express';
+import { Router, RequestHandler } from 'express';
 import { TokenService } from '../services/token';
 import { ChallengeService } from '../services/challengeService';
 import { Client, Challenge } from '../types/auth';
 import { cryptoWaitReady, signatureVerify } from '@polkadot/util-crypto';
-import { validateAuthRequest, validateSignature, validateClientCredentials } from '../utils/validation';
+import { validateAuthRequest, validateClientCredentials } from '../utils/validation';
 import crypto from 'crypto';
 import { Database } from 'sqlite';
 import { createHash } from 'crypto';
@@ -16,7 +16,7 @@ import { z } from 'zod';
 import { validateBody } from '../middleware/validation';
 import { logRequest, logError } from '../utils/logger';
 
-// Add schemas at the top of the file
+
 const loginSchema = z.object({
   query: z.object({
     client_id: z.string().min(1)
@@ -198,19 +198,19 @@ export const createAuthRouter = (
    try {
      const { signature, challenge_id, address, code_verifier, state } = req.query;
      
-     // Validate all required parameters
+     
      if (!signature || !challenge_id || !address || !code_verifier || !state) {
        return res.status(400).send('Missing required parameters');
      }
 
      const challenge = await challengeService.getChallenge(challenge_id as string);
      
-     // Validate challenge and state
+     
      if (!challenge || challenge.state !== state) {
        return res.status(400).send('Invalid challenge or state mismatch');
      }
 
-     // Verify code verifier
+     
      const code_challenge = await generateCodeChallenge(code_verifier as string);
      if (code_challenge !== challenge.code_challenge) {
        return res.status(400).send('Invalid code verifier');
@@ -229,7 +229,7 @@ export const createAuthRouter = (
 
      await challengeService.markChallengeUsed(challenge_id as string);
 
-     // Instead of redirecting with tokens, return an authorization code
+     
      const authCode = crypto.randomBytes(32).toString('hex');
      await db.run(
        `INSERT INTO auth_codes (
@@ -244,7 +244,7 @@ export const createAuthRouter = (
        ]
      );
 
-     // Redirect with auth code instead of tokens
+     
      const client = clients.get(challenge.client_id);
      res.redirect(
        `${client!.redirect_url}?` +
@@ -260,27 +260,27 @@ export const createAuthRouter = (
 
  const tokenHandler: RequestHandler = async (req, res) => {
    try {
-     const { code, client_id, client_secret } = req.body;
+     const { code, client_id } = req.body;
 
-     // Validate client credentials
-     const client = await validateClientCredentials(client_id, client_secret);
+     
+     const client = await validateClientCredentials();
      if (!client) {
        return res.status(401).send('Invalid client credentials');
      }
 
-     // Get and validate auth code
+     
      const authCode = await secureQueries.authCodes.verify(db, code, client_id);
      if (!authCode || Date.now() > authCode.expires_at) {
        return res.status(400).send('Invalid or expired authorization code');
      }
 
-     // Mark auth code as used
+     
      await secureQueries.authCodes.markUsed(db, code);
 
-     // Generate tokens
+     
      const tokens = tokenService.generateTokens(authCode.address, client_id);
 
-     // Return tokens in response body
+     
      res.json({
        access_token: tokens.accessToken,
        refresh_token: tokens.refreshToken,

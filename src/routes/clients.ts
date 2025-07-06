@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { Database } from 'sqlite';
 import crypto from 'crypto';
-//import { Client } from '../types/auth';
+
 
 export const createClientRouter = (db: Database) => {
   const router = Router();
@@ -51,7 +51,7 @@ export const createClientRouter = (db: Database) => {
     }
   });
 
-  // ... other client routes
+  
   
   return router;
 };
