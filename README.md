@@ -371,6 +371,42 @@ CREATE TABLE credential_revocations (
 );
 ```
 
+## Demo Scripts
+
+### SSO Demo (Login Flow)
+
+A simple Express app that demonstrates the Polkadot SSO login flow in action.
+
+To run the SSO demo app:
+```bash
+npm run demo
+```
+Or directly:
+```bash
+npx ts-node-dev src/demo/app.ts
+```
+This will start a demo server and allow you to test the SSO login flow in your browser.
+
+### Credential Management Demo
+
+A comprehensive CLI demo script that showcases the full credential lifecycle:
+- User profile creation
+- Credential type creation
+- Credential issuance
+- Credential sharing
+- Credential verification
+- Issuance request workflow
+
+To run the credential management demo:
+```bash
+npm run demo:credentials
+```
+Or directly:
+```bash
+npx ts-node src/demo/credentialDemo.ts
+```
+All output will be printed to your terminal.
+
 ## Development
 Run in development mode
 npm run dev
