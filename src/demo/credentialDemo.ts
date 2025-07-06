@@ -3,15 +3,50 @@ config();
 import { initializeDatabase } from '../config/db';
 import { CredentialService } from '../services/credentialService';
 
-async function runCredentialDemo() {
-  console.log('🚀 Starting Polkadot Credential Management Demo\n');
+// Utility function to add delays for better pacing
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-  
+// Color codes for terminal output
+const colors = {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+  white: '\x1b[37m'
+};
+
+const log = {
+  info: (msg: string) => console.log(`${colors.cyan}ℹ️  ${msg}${colors.reset}`),
+  success: (msg: string) => console.log(`${colors.green}✅ ${msg}${colors.reset}`),
+  warning: (msg: string) => console.log(`${colors.yellow}⚠️  ${msg}${colors.reset}`),
+  error: (msg: string) => console.log(`${colors.red}❌ ${msg}${colors.reset}`),
+  step: (msg: string) => console.log(`\n${colors.magenta}${colors.bright}🔹 ${msg}${colors.reset}`),
+  header: (msg: string) => console.log(`\n${colors.blue}${colors.bright}🎯 ${msg}${colors.reset}`),
+  section: (msg: string) => console.log(`\n${colors.yellow}${colors.bright}📋 ${msg}${colors.reset}`),
+  data: (msg: string) => console.log(`${colors.white}   ${msg}${colors.reset}`)
+};
+
+async function runCredentialDemo() {
+  console.clear();
+  log.header('🚀 Starting Polkadot Credential Management Demo');
+  console.log(`${colors.cyan}This demo showcases the complete credential lifecycle:${colors.reset}`);
+  console.log('   • User profile creation');
+  console.log('   • Credential type definition');
+  console.log('   • Credential issuance');
+  console.log('   • Credential sharing');
+  console.log('   • Credential verification');
+  console.log('   • Issuance request workflow');
+  await delay(2000);
+
   const db = await initializeDatabase();
   const credentialService = new CredentialService(db);
 
   // Clean up any existing demo data to avoid conflicts
-  console.log('🧹 Cleaning up existing demo data...');
+  log.section('🧹 Cleaning up existing demo data...');
   try {
     await db.run('DELETE FROM credential_shares WHERE shared_with_address IN (?, ?, ?)', [
       '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
@@ -46,24 +81,27 @@ async function runCredentialDemo() {
       '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',
       '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y'
     ]);
-    console.log('✅ Demo data cleanup completed\n');
+    log.success('Demo data cleanup completed');
   } catch (error) {
-    console.log('⚠️  Cleanup warning (this is normal for first run):', error instanceof Error ? error.message : 'Unknown error');
-    console.log('');
+    log.warning(`Cleanup warning (this is normal for first run): ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
+  await delay(1000);
 
   try {
-    
     const issuerAddress = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
     const userAddress = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
     const verifierAddress = '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y';
 
-    console.log('📋 Creating user profiles...');
-    
+    log.section('👥 Creating User Profiles');
+    console.log('Setting up three user profiles for the demo:');
+    await delay(500);
+
     // Create user profiles with error handling
     const profiles = [
       {
         address: issuerAddress,
+        name: 'Polkadot University',
+        role: 'Credential Issuer',
         profile: {
           display_name: 'Polkadot University',
           email: 'admin@polkadot.edu',
@@ -74,6 +112,8 @@ async function runCredentialDemo() {
       },
       {
         address: userAddress,
+        name: 'Alice Smith',
+        role: 'Credential Holder',
         profile: {
           display_name: 'Alice Smith',
           email: 'alice@example.com',
@@ -83,6 +123,8 @@ async function runCredentialDemo() {
       },
       {
         address: verifierAddress,
+        name: 'Blockchain Verification Service',
+        role: 'Credential Verifier',
         profile: {
           display_name: 'Blockchain Verification Service',
           email: 'verify@blockchain.org',
@@ -92,23 +134,31 @@ async function runCredentialDemo() {
       }
     ];
 
-    for (const { address, profile } of profiles) {
+    for (const { address, name, role, profile } of profiles) {
+      log.step(`Creating profile for ${name} (${role})`);
+      log.data(`Address: ${address.substring(0, 10)}...${address.substring(address.length - 10)}`);
       try {
         await credentialService.createUserProfile(address, profile);
+        log.success(`${name} profile created successfully`);
       } catch (error) {
         if (error instanceof Error && error.message.includes('UNIQUE constraint failed')) {
-          console.log(`⚠️  User profile for ${address} already exists, skipping...`);
+          log.warning(`${name} profile already exists, skipping...`);
         } else {
           throw error;
         }
       }
+      await delay(800);
     }
 
-    console.log('✅ User profiles created successfully\n');
+    log.success('All user profiles created successfully');
+    await delay(1000);
 
-    console.log('🎓 Creating credential types...');
+    log.section('🎓 Creating Credential Types');
+    console.log('Defining credential schemas and validation rules:');
+    await delay(500);
 
-    
+    log.step('Creating University Degree credential type');
+    log.data('Schema: Academic degree with GPA, honors, institution');
     const degreeCredentialType = await credentialService.createCredentialType(issuerAddress, {
       name: 'University Degree',
       description: 'Academic degree credential from accredited institutions',
@@ -134,7 +184,11 @@ async function runCredentialDemo() {
       }),
       is_active: true
     });
+    log.success(`Degree credential type created (ID: ${degreeCredentialType.id.substring(0, 8)}...)`);
+    await delay(800);
 
+    log.step('Creating Skill Certification credential type');
+    log.data('Schema: Professional skills with levels and scores');
     const skillCredentialType = await credentialService.createCredentialType(issuerAddress, {
       name: 'Skill Certification',
       description: 'Professional skill and competency certifications',
@@ -160,12 +214,17 @@ async function runCredentialDemo() {
       }),
       is_active: true
     });
+    log.success(`Skill credential type created (ID: ${skillCredentialType.id.substring(0, 8)}...)`);
+    await delay(1000);
 
-    console.log('✅ Credential types created successfully\n');
+    log.section('🎓 Issuing Credentials');
+    console.log('Creating and issuing credentials to Alice:');
+    await delay(500);
 
-    console.log('🎓 Issuing credentials...');
-
-    
+    log.step('Issuing University Degree credential');
+    log.data('Degree: Bachelor of Science in Computer Science');
+    log.data('Institution: Polkadot University');
+    log.data('GPA: 3.8 (magna cum laude)');
     const degreeCredential = await credentialService.createCredential(
       issuerAddress,
       userAddress,
@@ -186,8 +245,13 @@ async function runCredentialDemo() {
         }
       }
     );
+    log.success(`Degree credential issued (ID: ${degreeCredential.id.substring(0, 8)}...)`);
+    await delay(800);
 
-    
+    log.step('Issuing Skill Certification credential');
+    log.data('Skill: Substrate Development');
+    log.data('Level: Advanced');
+    log.data('Score: 95/100');
     await credentialService.createCredential(
       issuerAddress,
       userAddress,
@@ -208,30 +272,41 @@ async function runCredentialDemo() {
         }
       }
     );
+    log.success('Skill certification credential issued');
+    await delay(1000);
 
-    console.log('✅ Credentials issued successfully\n');
+    log.section('🔍 Retrieving and Displaying Credentials');
+    console.log('Fetching Alice\'s credentials from the database:');
+    await delay(500);
 
-    console.log('🔍 Retrieving and displaying credentials...');
-
-    
     const userCredentials = await credentialService.getUserCredentials(userAddress);
-    console.log(`📚 User has ${userCredentials.length} credentials:`);
-    
+    log.success(`Found ${userCredentials.length} credentials for Alice`);
+    await delay(500);
+
     for (const credential of userCredentials) {
       const credentialType = await credentialService.getCredentialType(credential.credential_type_id);
       const credentialData = await credentialService.getCredentialData(credential.id);
+
+      log.step(`${credentialType?.name || 'Unknown Credential'}`);
+      log.data(`ID: ${credential.id.substring(0, 8)}...`);
+      log.data(`Status: ${credential.status}`);
+      log.data(`Issued: ${new Date(credential.issued_at).toLocaleDateString()}`);
+      log.data(`Expires: ${credential.expires_at ? new Date(credential.expires_at).toLocaleDateString() : 'Never'}`);
       
-      console.log(`\n🎓 ${credentialType?.name}:`);
-      console.log(`   ID: ${credential.id}`);
-      console.log(`   Status: ${credential.status}`);
-      console.log(`   Issued: ${new Date(credential.issued_at).toLocaleDateString()}`);
-      console.log(`   Expires: ${credential.expires_at ? new Date(credential.expires_at).toLocaleDateString() : 'Never'}`);
-      console.log(`   Data:`, credentialData);
+      if (credentialData) {
+        console.log(`${colors.white}   Data: ${JSON.stringify(credentialData, null, 2).replace(/\n/g, '\n   ')}${colors.reset}`);
+      }
+      await delay(1000);
     }
 
-    console.log('\n🔐 Demonstrating credential sharing...');
+    log.section('🔐 Demonstrating Credential Sharing');
+    console.log('Alice shares her degree credential with the verification service:');
+    await delay(500);
 
-    
+    log.step('Sharing degree credential');
+    log.data(`Shared with: ${verifierAddress.substring(0, 10)}...${verifierAddress.substring(verifierAddress.length - 10)}`);
+    log.data('Permissions: read, verify');
+    log.data('Duration: 30 days');
     const share = await credentialService.shareCredential(userAddress, {
       credential_id: degreeCredential.id,
       shared_with_address: verifierAddress,
@@ -240,17 +315,21 @@ async function runCredentialDemo() {
       expires_at: Date.now() + (30 * 24 * 60 * 60 * 1000)
     });
 
-    console.log(`✅ Credential shared with ${verifierAddress}`);
-    console.log(`   Share ID: ${share.id}`);
-    console.log(`   Permissions: ${share.permissions}`);
+    log.success(`Credential shared successfully`);
+    log.data(`Share ID: ${share.id.substring(0, 8)}...`);
+    await delay(800);
 
-    
     const sharedCredentials = await credentialService.getSharedCredentials(verifierAddress);
-    console.log(`\n📋 Verifier has access to ${sharedCredentials.length} shared credentials`);
+    log.success(`Verifier now has access to ${sharedCredentials.length} shared credential(s)`);
+    await delay(1000);
 
-    console.log('\n✅ Demonstrating credential verification...');
+    log.section('✅ Demonstrating Credential Verification');
+    console.log('Verification service validates Alice\'s degree credential:');
+    await delay(500);
 
-    
+    log.step('Verifying degree credential');
+    log.data('Verification type: Manual institutional verification');
+    log.data('Verifier: Blockchain Verification Service');
     const verification = await credentialService.verifyCredential(verifierAddress, {
       credential_id: degreeCredential.id,
       verification_type: 'manual',
@@ -262,14 +341,20 @@ async function runCredentialDemo() {
       notes: 'Degree credential verified and validated'
     });
 
-    console.log(`✅ Credential verified successfully`);
-    console.log(`   Verification ID: ${verification.id}`);
-    console.log(`   Status: ${verification.status}`);
-    console.log(`   Verified at: ${new Date(verification.verified_at!).toLocaleString()}`);
+    log.success('Credential verification completed');
+    log.data(`Verification ID: ${verification.id.substring(0, 8)}...`);
+    log.data(`Status: ${verification.status}`);
+    log.data(`Verified at: ${new Date(verification.verified_at!).toLocaleString()}`);
+    await delay(1000);
 
-    console.log('\n📝 Demonstrating issuance request workflow...');
+    log.section('📝 Demonstrating Issuance Request Workflow');
+    console.log('Alice requests a new credential through the issuance workflow:');
+    await delay(500);
 
-    
+    log.step('Creating issuance request');
+    log.data('Requested skill: Rust Programming');
+    log.data('Level: Intermediate');
+    log.data('Target issuer: Polkadot University');
     const issuanceRequest = await credentialService.createIssuanceRequest(userAddress, {
       issuer_address: issuerAddress,
       credential_type_id: skillCredentialType.id,
@@ -283,41 +368,51 @@ async function runCredentialDemo() {
       expires_at: Date.now() + (7 * 24 * 60 * 60 * 1000)
     });
 
-    console.log(`📋 Issuance request created:`);
-    console.log(`   Request ID: ${issuanceRequest.id}`);
-    console.log(`   Status: ${issuanceRequest.status}`);
-    console.log(`   Requested skill: ${JSON.parse(issuanceRequest.request_data).skill}`);
+    log.success('Issuance request created');
+    log.data(`Request ID: ${issuanceRequest.id.substring(0, 8)}...`);
+    log.data(`Status: ${issuanceRequest.status}`);
+    await delay(800);
 
-    
     const pendingRequests = await credentialService.getPendingIssuanceRequests(issuerAddress);
-    console.log(`\n⏳ Issuer has ${pendingRequests.length} pending requests`);
+    log.info(`Issuer has ${pendingRequests.length} pending request(s)`);
+    await delay(500);
 
-    
+    log.step('Approving issuance request');
+    log.data('Approved by: Polkadot University');
     await credentialService.approveIssuanceRequest(issuanceRequest.id, issuerAddress);
-    console.log(`✅ Issuance request approved`);
+    log.success('Issuance request approved');
+    await delay(1000);
 
-    console.log('\n🧹 Running cleanup...');
-    
-    
+    log.section('🧹 Running Cleanup');
+    console.log('Cleaning up expired credentials and old data:');
+    await delay(500);
+
     await credentialService.cleanupExpiredCredentials();
-    console.log('✅ Cleanup completed');
+    log.success('Cleanup completed');
+    await delay(500);
 
-    console.log('\n🎉 Credential Management Demo completed successfully!');
-    console.log('\n📊 Summary:');
-    console.log(`   - Created ${3} user profiles`);
-    console.log(`   - Created ${2} credential types`);
-    console.log(`   - Issued ${2} credentials`);
-    console.log(`   - Shared ${1} credential`);
-    console.log(`   - Verified ${1} credential`);
-    console.log(`   - Processed ${1} issuance request`);
+    log.header('🎉 Credential Management Demo Completed Successfully!');
+    console.log('\n📊 Final Summary:');
+    console.log(`   ${colors.green}• Created ${3} user profiles${colors.reset}`);
+    console.log(`   ${colors.green}• Created ${2} credential types${colors.reset}`);
+    console.log(`   ${colors.green}• Issued ${2} credentials${colors.reset}`);
+    console.log(`   ${colors.green}• Shared ${1} credential${colors.reset}`);
+    console.log(`   ${colors.green}• Verified ${1} credential${colors.reset}`);
+    console.log(`   ${colors.green}• Processed ${1} issuance request${colors.reset}`);
+    
+    console.log(`\n${colors.cyan}This demonstrates a complete digital credential ecosystem with:${colors.reset}`);
+    console.log('   • Secure credential issuance and storage');
+    console.log('   • Flexible credential sharing with permissions');
+    console.log('   • Verifiable credential validation');
+    console.log('   • Request-based credential workflows');
+    console.log('   • Encrypted data protection');
 
   } catch (error) {
-    console.error('❌ Demo failed:', error);
+    log.error(`Demo failed: ${error}`);
   } finally {
     await db.close();
   }
 }
-
 
 if (require.main === module) {
   runCredentialDemo().catch(console.error);
