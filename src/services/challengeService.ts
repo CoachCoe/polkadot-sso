@@ -28,7 +28,7 @@ export class ChallengeService {
       state,
       client_id,
       created_at: Date.now(),
-      expires_at: Date.now() + (5 * 60 * 1000), // 5 minutes
+      expires_at: Date.now() + (5 * 60 * 1000), 
       used: false
     };
   }

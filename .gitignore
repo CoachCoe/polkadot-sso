@@ -1,3 +1,6 @@
 sso.db
 node_modules
 .env
+
+# Development scripts
+scripts/*.*

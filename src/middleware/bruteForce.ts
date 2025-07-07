@@ -4,7 +4,7 @@ import { AuditService } from '../services/auditService';
 const bruteForceProtection = new Map<string, number[]>();
 
 export const createBruteForceProtection = (auditService: AuditService) => {
-  // Clean up old entries every hour
+  
   setInterval(() => {
     const now = Date.now();
     bruteForceProtection.forEach((attempts, ip) => {

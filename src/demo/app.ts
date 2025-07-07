@@ -1,9 +1,8 @@
-// src/demo/app.ts
+
 import express, { Request, Response } from 'express';
-import path from 'path';
 import { config } from 'dotenv';
 
-// Load environment variables
+
 config();
 
 const app = express();

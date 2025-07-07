@@ -4,8 +4,8 @@ import { TokenPayload } from '../types/auth';
 export const JWT_CONFIG = {
   algorithm: 'HS512' as const,
   issuer: 'polkadot-sso',
-  accessTokenExpiry: 15 * 60, // 15 minutes
-  refreshTokenExpiry: 7 * 24 * 60 * 60 // 7 days
+  accessTokenExpiry: 15 * 60, 
+  refreshTokenExpiry: 7 * 24 * 60 * 60 
 };
 
 export const authLimiter = rateLimit({
