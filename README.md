@@ -3,6 +3,7 @@
 A comprehensive Single Sign-On (SSO) and credential management service using Polkadot wallets for authentication and secure credential storage.
 
 ## Features
+
 - 🔐 Secure authentication using Polkadot wallets
 - 🔑 OAuth2 PKCE flow for secure authorization
 - 🛡️ Advanced security features (CSP, CORS, Rate Limiting)
@@ -18,6 +19,7 @@ A comprehensive Single Sign-On (SSO) and credential management service using Pol
   - Issuance request workflow
 
 ## Core Functionality
+
 - OAuth2 PKCE-based SSO service using Polkadot wallet signatures
 - Challenge-response authentication with secure message signing
 - JWT-based token management with refresh capabilities
@@ -34,6 +36,7 @@ A comprehensive Single Sign-On (SSO) and credential management service using Pol
 ## Key Components
 
 ### Backend Services
+
 - **Authentication Service**
   - OAuth2 PKCE flow implementation
   - Challenge generation and verification
@@ -64,7 +67,6 @@ A comprehensive Single Sign-On (SSO) and credential management service using Pol
   - Rate limit and security violation logging
   - Credential lifecycle auditing
 
-
 ## Prerequisites
 
 - Node.js (v16 or higher)
@@ -74,25 +76,29 @@ A comprehensive Single Sign-On (SSO) and credential management service using Pol
 ## Installation
 
 1. Clone the repository:
-git clone https://github.com/yourusername/polkadot-sso.git
-cd polkadot-sso
+   git clone https://github.com/yourusername/polkadot-sso.git
+   cd polkadot-sso
 
 2. Install dependencies:
-npm install
+   npm install
 
 3. Generate secure secrets:
+
 ```bash
 npm run generate-secrets
 ```
+
 This will create a `.env` file with cryptographically secure secrets.
 
 Alternatively, create `.env` file manually:
 **Required Secrets:**
+
 - `SESSION_SECRET` - Secret for session encryption (min 32 chars)
-- `JWT_SECRET` - Secret for JWT token signing (min 32 chars)  
+- `JWT_SECRET` - Secret for JWT token signing (min 32 chars)
 - `DATABASE_ENCRYPTION_KEY` - Key for database field encryption (min 32 chars)
 
 **Optional Configuration:**
+
 - `NODE_ENV` - Environment (development/production)
 - `PORT` - Server port (default: 3000)
 - `LOG_LEVEL` - Logging level (default: info)
@@ -103,38 +109,71 @@ Alternatively, create `.env` file manually:
 - `REDIS_URL` - Redis URL (for production sessions)
 
 4. Start the development server:
-npm run dev
+   npm run dev
 
 ## Project Structure
-public/
-├── js/
-│   └── client/
-│       ├── login.js      # Compiled from src/client/login.ts
-│       └── challenge.js  # Compiled from src/client/challenge.ts
-├── styles/
-│   └── main.css          # Styles for the login/challenge pages
-└── favicon.ico           # Optional favicon
+
+### Modular Architecture
+
+The application is organized into clear, focused modules that handle specific responsibilities:
+
+```
 src/
-├── config/ # Configuration files
-│ ├── cors.ts # CORS configuration
-│ ├── db.ts # Database configuration
-│ └── session.ts # Session configuration
-├── middleware/ # Express middleware
-│ ├── bruteForce.ts # Brute force protection
-│ ├── rateLimit.ts # Rate limiting
-│ ├── security.ts # Security headers
-│ ├── securityAudit.ts # Security event logging
-│ └── validation.ts # Input validation & sanitization
-├── routes/ # API routes
-│ ├── auth.ts # Authentication routes
-│ ├── tokens.ts # Token management
-│ └── clients.ts # Client management
-├── services/ # Business logic
-├── types/ # TypeScript types
-├── utils/ # Utility functions
-└── app.ts # Application entry point
+├── modules/                    # Modular architecture
+│   ├── sso/                   # SSO Core Module
+│   │   ├── services/          # Authentication services
+│   │   ├── middleware/        # SSO-specific middleware
+│   │   └── index.ts           # Module exports
+│   ├── credentials/           # Credentials Core Module
+│   │   ├── services/          # Credential services
+│   │   └── index.ts           # Module exports
+│   ├── storage/               # Storage Core Module
+│   │   ├── services/          # IPFS & Kusama services
+│   │   └── index.ts           # Module exports
+│   ├── security/              # Security Core Module
+│   │   ├── services/          # Security services
+│   │   ├── middleware/        # Security middleware
+│   │   ├── utils/             # Security utilities
+│   │   └── index.ts           # Module exports
+│   ├── api/                   # API Gateway Module
+│   │   ├── routes/            # Route definitions
+│   │   ├── middleware/        # API middleware
+│   │   └── index.ts           # Module exports
+│   ├── config.ts              # Module configuration
+│   └── index.ts               # Main module exports
+├── config/                     # Configuration files
+│   ├── cors.ts                # CORS configuration
+│   ├── db.ts                  # Database configuration
+│   └── session.ts             # Session configuration
+├── middleware/                 # Legacy middleware (being migrated)
+├── routes/                     # Legacy routes (being migrated)
+├── services/                   # Legacy services (being migrated)
+├── types/                      # TypeScript type definitions
+├── utils/                      # Legacy utilities (being migrated)
+└── app.ts                      # Application entry point
+```
+
+### Module Dependencies
+
+```
+Security Core (1) - No dependencies
+├── SSO Core (2) - Depends on Security
+├── Storage Core (3) - Depends on Security
+    └── Credentials Core (4) - Depends on Security + Storage
+        └── API Gateway (5) - Depends on all other modules
+```
+
+### Benefits of Modular Architecture
+
+- **Clear Separation of Concerns**: Each module has a single, well-defined responsibility
+- **Improved Maintainability**: Changes to one module don't affect others
+- **Better Testing**: Each module can be tested independently
+- **Future Flexibility**: Modules can be extracted to separate packages
+- **Gradual Migration**: Existing code continues to work while adopting new structure
+- **Professional Standards**: Industry-standard modular design patterns
 
 ## Security Features
+
 - Content Security Policy (CSP) with nonce-based script execution
 - CORS protection with configurable origins
 - Multi-layer rate limiting:
@@ -167,40 +206,48 @@ src/
 ## API Endpoints
 
 ### Authentication Flow
+
 - `GET /login` - Initiates login flow
 - `GET /challenge` - Generates signing challenge
 - `GET /verify` - Verifies signature
 - `POST /token` - Exchanges auth code for tokens
 
 ### Token Management
+
 - `POST /api/tokens/refresh` - Refresh access token
 
 ### Credential Management
 
 #### User Profiles
+
 - `POST /api/credentials/profiles` - Create user profile
 - `GET /api/credentials/profiles/me` - Get current user profile
 - `PUT /api/credentials/profiles/me` - Update user profile
 
 #### Credential Types
+
 - `POST /api/credentials/types` - Create credential type
 - `GET /api/credentials/types` - List active credential types
 - `GET /api/credentials/types/:id` - Get specific credential type
 
 #### Credentials
+
 - `POST /api/credentials/credentials` - Issue new credential
 - `GET /api/credentials/credentials` - List user's credentials
 - `GET /api/credentials/credentials/:id` - Get specific credential
 - `GET /api/credentials/credentials/:id/data` - Get decrypted credential data
 
 #### Credential Sharing
+
 - `POST /api/credentials/credentials/:id/share` - Share credential with another user
 - `GET /api/credentials/credentials/shared` - List credentials shared with user
 
 #### Credential Verification
+
 - `POST /api/credentials/credentials/:id/verify` - Verify a credential
 
 #### Issuance Requests
+
 - `POST /api/credentials/issuance-requests` - Request credential issuance
 - `GET /api/credentials/issuance-requests/pending` - List pending requests (issuer only)
 - `POST /api/credentials/issuance-requests/:id/approve` - Approve issuance request
@@ -209,6 +256,7 @@ src/
 ### Database Schema
 
 #### SSO Tables
+
 ```sql
 CREATE TABLE challenges (
   id TEXT PRIMARY KEY,
@@ -248,6 +296,7 @@ CREATE TABLE sessions (
 ```
 
 #### Credential Management Tables
+
 ```sql
 -- User profiles extending beyond just addresses
 CREATE TABLE user_profiles (
@@ -381,17 +430,20 @@ CREATE TABLE credential_revocations (
 ## Security Features
 
 ### Secret Management
+
 - **Cryptographically Secure Secrets**: All secrets are generated using Node.js crypto.randomBytes()
 - **Secret Validation**: Automatic validation of secret strength and entropy
 - **Secret Rotation**: Built-in support for rotating secrets
 - **Environment Isolation**: Different secrets for different environments
 
 ### Encryption
+
 - **AES-256-GCM**: Uses authenticated encryption for database fields
 - **Key Derivation**: PBKDF2 key derivation for encryption keys
 - **Additional Authenticated Data**: Prevents tampering with encrypted data
 
 ### Best Practices
+
 - **Never commit secrets**: .env files are gitignored
 - **Regular rotation**: Rotate secrets in production environments
 - **Environment separation**: Use different secrets for dev/staging/prod
@@ -399,23 +451,43 @@ CREATE TABLE credential_revocations (
 
 ## Demo Scripts
 
+### Modular Architecture Demo
+
+Demonstrates the new modular architecture and module configuration:
+
+```bash
+npm run demo:modular
+```
+
+This shows:
+
+- Module configuration and dependencies
+- Initialization order
+- Dependency validation
+- Module usage examples
+
 ### SSO Demo (Login Flow)
 
 A simple Express app that demonstrates the Polkadot SSO login flow in action.
 
 To run the SSO demo app:
+
 ```bash
 npm run demo
 ```
+
 Or directly:
+
 ```bash
 npx ts-node-dev src/demo/app.ts
 ```
+
 This will start a demo server and allow you to test the SSO login flow in your browser.
 
 ### Credential Management Demo
 
 A comprehensive CLI demo script that showcases the full credential lifecycle:
+
 - User profile creation
 - Credential type creation
 - Credential issuance
@@ -424,34 +496,120 @@ A comprehensive CLI demo script that showcases the full credential lifecycle:
 - Issuance request workflow
 
 To run the credential management demo:
+
 ```bash
 npm run demo:credentials
 ```
+
 Or directly:
+
 ```bash
 npx ts-node src/demo/credentialDemo.ts
 ```
+
 All output will be printed to your terminal.
 
+### Security Testing Demo
+
+Tests all implemented security improvements:
+
+```bash
+npm run demo:security
+```
+
+### Kusama Integration Demo
+
+Tests Kusama blockchain integration:
+
+```bash
+npm run demo:kusama
+```
+
 ## Development
-Run in development mode
+
+### Using the Modular Architecture
+
+Import functionality from specific modules:
+
+```typescript
+// Import from specific modules
+import { SecretManager, enhancedEncryption } from './modules/security';
+import { ChallengeService, TokenService } from './modules/sso';
+import { CredentialService, HybridCredentialService } from './modules/credentials';
+import { IPFSService, KusamaService } from './modules/storage';
+import { createAuthRouter, createCredentialRouter } from './modules/api';
+
+// Or import from main modules index
+import { SecretManager, ChallengeService, CredentialService, IPFSService } from './modules';
+```
+
+### Development Commands
+
+Run in development mode:
+
+```bash
 npm run dev
-Build the project
+```
+
+Build the project:
+
+```bash
 npm run build
-Run tests
+```
+
+Run tests:
+
+```bash
 npm test
+```
+
+Code quality checks:
+
+```bash
+npm run lint:check      # Check for linting errors
+npm run type-check      # TypeScript compilation check
+npm run format:check    # Check code formatting
+npm run format          # Auto-format code
+```
 
 ## Production Deployment
+
 1. Set environment variables
 2. Build the project: `npm run build`
 3. Start the server: `npm start`
 
+## Recent Improvements
+
+### Modular Architecture Implementation (Latest)
+
+- **Complete modularization** of the codebase into focused modules
+- **Clear separation** between SSO, Credentials, Storage, and Security functionality
+- **Gradual migration path** with no breaking changes
+- **Professional architecture** following industry best practices
+
+### Code Quality & Security Enhancements
+
+- **Comprehensive security improvements** including enhanced encryption, security middleware, and monitoring
+- **Advanced coding standards** with ESLint, Prettier, and TypeScript strict mode
+- **Automated quality checks** with Git hooks and pre-commit validation
+- **Code cleanup** removing unused files and improving organization
+
+### Storage & Blockchain Integration
+
+- **Hybrid storage solution** combining local, IPFS, and Kusama storage
+- **Advanced Kusama integration** for immutable credential verification
+- **Secure credential storage** with encryption and integrity checks
+
 ## Contributing
+
 1. Fork the repository
 2. Create your feature branch
 3. Commit your changes
 4. Push to the branch
 5. Create a Pull Request
 
+**Note**: This project now uses strict coding standards. All commits must pass linting, type checking, and formatting validation.
+
 ## License
+
 MIT

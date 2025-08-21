@@ -62,12 +62,12 @@ export interface UserProfile {
   website?: string;
   location?: string;
   timezone?: string;
-  preferences?: string; 
+  preferences?: string;
   created_at: number;
   updated_at: number;
   last_login_at?: number;
   is_verified: boolean;
-  verification_level: number; 
+  verification_level: number;
 }
 
 export interface CredentialType {
@@ -75,15 +75,15 @@ export interface CredentialType {
   name: string;
   description?: string;
   schema_version: string;
-  schema_definition: string; 
-  issuer_pattern?: string; 
-  required_fields: string; 
-  optional_fields: string; 
-  validation_rules: string; 
+  schema_definition: string;
+  issuer_pattern?: string;
+  required_fields: string;
+  optional_fields: string;
+  validation_rules: string;
   is_active: boolean;
   created_at: number;
   updated_at: number;
-  created_by: string; 
+  created_by: string;
 }
 
 export interface Credential {
@@ -92,7 +92,7 @@ export interface Credential {
   credential_type_id: string;
   issuer_address: string;
   issuer_name?: string;
-  credential_data: string; 
+  credential_data: string;
   credential_hash: string;
   proof_signature?: string;
   proof_type?: string;
@@ -101,7 +101,7 @@ export interface Credential {
   expires_at?: number;
   created_at: number;
   updated_at: number;
-  metadata?: string; 
+  metadata?: string;
 }
 
 export interface CredentialShare {
@@ -110,11 +110,11 @@ export interface CredentialShare {
   owner_address: string;
   shared_with_address: string;
   shared_with_client_id?: string;
-  permissions: string; 
+  permissions: string;
   access_level: 'read' | 'write' | 'admin';
   expires_at?: number;
   created_at: number;
-  created_by: string; 
+  created_by: string;
   is_active: boolean;
 }
 
@@ -123,7 +123,7 @@ export interface CredentialVerification {
   credential_id: string;
   verifier_address: string;
   verification_type: 'proof' | 'signature' | 'manual' | 'automated';
-  verification_data?: string; 
+  verification_data?: string;
   verification_signature?: string;
   status: 'verified' | 'failed' | 'pending' | 'expired';
   verified_at?: number;
@@ -137,13 +137,13 @@ export interface CredentialTemplate {
   name: string;
   description?: string;
   credential_type_id: string;
-  template_data: string; 
+  template_data: string;
   issuer_address: string;
   is_public: boolean;
   usage_count: number;
   created_at: number;
   updated_at: number;
-  created_by: string; 
+  created_by: string;
 }
 
 export interface IssuanceRequest {
@@ -152,7 +152,7 @@ export interface IssuanceRequest {
   issuer_address: string;
   credential_type_id: string;
   template_id?: string;
-  request_data: string; 
+  request_data: string;
   status: 'pending' | 'approved' | 'rejected' | 'issued';
   approved_at?: number;
   rejected_at?: number;
@@ -183,6 +183,15 @@ export interface CreateCredentialRequest {
   credential_data: Record<string, unknown>;
   expires_at?: number;
   metadata?: Record<string, unknown>;
+}
+
+export interface HybridCredentialRequest extends CreateCredentialRequest {
+  storage_preference?: 'local' | 'ipfs' | 'hybrid';
+  pin_to_ipfs?: boolean;
+  store_on_kusama?: boolean;
+  issuer_name?: string;
+  proof_signature?: string;
+  proof_type?: string;
 }
 
 export interface ShareCredentialRequest {
