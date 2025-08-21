@@ -39,3 +39,11 @@
 {"timestamp":"2025-02-11T16:05:08.955Z","service":"default","level":"info","message":"Login attempt","requestId":"1545aa74-9a66-4135-b1c8-ebb5d0834f4b","method":"GET","url":"/login?client_id=demo-app","ip":"::1"}
 {"timestamp":"2025-07-06T18:11:29.000Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
 {"timestamp":"2025-07-06T18:11:55.601Z","service":"default","level":"info","message":"Login attempt","requestId":"e806d474-ab64-4e38-a5ed-9b35d22c5e60","method":"GET","url":"/login?client_id=demo-app","ip":"::1"}
+{"timestamp":"2025-07-06T18:24:49.296Z","service":"default","level":"info","message":"Login attempt","requestId":"00cd1dfe-6652-4385-ac99-e983f60869c2","method":"GET","url":"/login?client_id=demo-app","ip":"::1"}
+{"timestamp":"2025-07-06T18:44:57.284Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-07-06T18:45:25.016Z","service":"default","level":"info","message":"Login attempt","requestId":"9d1eb8f4-ba04-4b1d-9174-9ecdc65c82e6","method":"GET","url":"/login?client_id=demo-app","ip":"::1"}
+{"timestamp":"2025-07-06T18:51:03.521Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-07-06T18:51:26.526Z","service":"default","level":"info","message":"Login attempt","requestId":"404e91bc-4ee2-4666-bc25-8144b078a49b","method":"GET","url":"/login?client_id=demo-app","ip":"::1"}
+{"timestamp":"2025-08-20T19:02:27.964Z","service":"kusama-service","level":"info","message":"Initializing Kusama service","endpoint":"wss://kusama-rpc.polkadot.io"}
+{"timestamp":"2025-08-20T19:02:29.402Z","service":"kusama-service","level":"info","message":"Kusama service initialized successfully"}
+{"timestamp":"2025-08-20T19:02:29.621Z","service":"kusama-service","level":"info","message":"Kusama connection test successful","chain":"Kusama","nodeName":"Parity Polkadot","nodeVersion":"1.18.2-050919ba389","properties":{"isEthereum":false,"ss58Format":"2","tokenDecimals":["12"],"tokenSymbol":["KSM"]}}

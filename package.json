@@ -6,20 +6,39 @@
   "scripts": {
     "build": "esbuild src/client/challenge.ts --bundle --format=esm --platform=browser --outfile=public/challenge.js",
     "build:client": "tsc -p tsconfig.client.json",
+    "build:server": "tsc -p tsconfig.json",
+    "build:all": "npm run build:server && npm run build:client",
     "start": "node dist/app.js",
     "dev": "ts-node-dev src/app.ts",
     "demo": "ts-node-dev src/demo/app.ts",
     "demo:credentials": "ts-node src/demo/credentialDemo.ts",
+    "demo:kusama": "ts-node src/demo/kusamaTestDemo.ts",
+    "demo:security": "ts-node src/demo/securityTestDemo.ts",
+    "demo:modular": "ts-node src/demo/modularDemo.ts",
+    "setup:kusama": "node scripts/setup-kusama.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
+    "lint:check": "eslint src/**/*.ts --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{ts,js,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,js,json,md}\"",
+    "type-check": "tsc --noEmit",
     "test": "jest",
-    "generate-secrets": "node scripts/generate-secrets.js"
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "pre-commit": "npm run lint:check && npm run type-check && npm run test:ci",
+    "generate-secrets": "node scripts/generate-secrets.js",
+    "clean": "rm -rf dist public/js",
+    "clean:all": "rm -rf dist public/js node_modules package-lock.json",
+    "install:clean": "npm run clean:all && npm install",
+    "prepare": "husky"
   },
   "dependencies": {
     "@polkadot/api": "^10.13.1",
     "@polkadot/extension-dapp": "^0.58.3",
     "@polkadot/util": "^13.3.1",
     "@polkadot/util-crypto": "^12.6.2",
+    "@types/redis": "^4.0.10",
     "connect-redis": "^8.0.1",
     "cors": "^2.8.5",
     "csurf": "^1.10.0",
@@ -28,9 +47,10 @@
     "express-rate-limit": "^7.1.5",
     "express-session": "^1.18.1",
     "helmet": "^7.1.0",
+    "ipfs-http-client": "^60.0.1",
     "isomorphic-dompurify": "^2.21.0",
     "jsonwebtoken": "^9.0.2",
-    "redis": "^4.7.0",
+    "redis": "^4.7.1",
     "sql-template-strings": "^2.2.2",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.6",
@@ -54,10 +74,26 @@
     "@typescript-eslint/parser": "^6.15.0",
     "esbuild": "^0.25.0",
     "eslint": "^8.56.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-security": "^2.1.1",
+    "husky": "^9.0.11",
     "jest": "^29.7.0",
+    "lint-staged": "^15.2.2",
+    "prettier": "^3.2.5",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.7.3"
+  },
+  "lint-staged": {
+    "*.{ts,js}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   }
 }

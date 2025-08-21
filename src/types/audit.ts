@@ -1,4 +1,4 @@
-export type AuditEventType = 
+export type AuditEventType =
   | 'AUTH_ATTEMPT'
   | 'TOKEN_EXCHANGE'
   | 'CHALLENGE_CREATED'
@@ -11,7 +11,13 @@ export type AuditEventType =
   | 'CREDENTIAL'
   | 'CREDENTIAL_SHARE'
   | 'CREDENTIAL_VERIFICATION'
-  | 'ISSUANCE_REQUEST';
+  | 'ISSUANCE_REQUEST'
+  | 'API_ACCESS'
+  | 'HYBRID_CREDENTIAL'
+  | 'CREDENTIAL_INTEGRITY'
+  | 'CREDENTIAL_MIGRATION'
+  | 'DATA_RETENTION'
+  | 'SECURITY_ALERT';
 
 export interface AuditEvent {
   type: AuditEventType;
@@ -23,4 +29,4 @@ export interface AuditEvent {
   ip_address: string;
   user_agent?: string;
   created_at?: number;
-} 
+}

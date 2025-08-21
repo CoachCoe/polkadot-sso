@@ -1,28 +1,28 @@
 import * as crypto from 'crypto';
 import { Database } from 'sqlite';
-import { 
-  Credential, 
-  CredentialType, 
-  CredentialShare, 
-  CredentialVerification,
-  IssuanceRequest,
-  CredentialRevocation,
-  UserProfile,
-  CreateCredentialRequest,
-  ShareCredentialRequest,
-  VerifyCredentialRequest,
-  CreateIssuanceRequest
+import {
+    CreateCredentialRequest,
+    CreateIssuanceRequest,
+    Credential,
+    CredentialRevocation,
+    CredentialShare,
+    CredentialType,
+    CredentialVerification,
+    IssuanceRequest,
+    ShareCredentialRequest,
+    UserProfile,
+    VerifyCredentialRequest
 } from '../types/auth';
-import { encryptData, decryptData } from '../utils/encryption';
+import { decryptData, encryptData } from '../utils/encryption';
 
 export class CredentialService {
   constructor(private db: Database) {}
 
-  
+
   async createUserProfile(address: string, profileData: Partial<UserProfile>): Promise<UserProfile> {
     const id = crypto.randomUUID();
     const now = Date.now();
-    
+
     const profile: UserProfile = {
       id,
       address,
@@ -43,8 +43,8 @@ export class CredentialService {
 
     await this.db.run(
       `INSERT INTO user_profiles (
-        id, address, display_name, email, avatar_url, bio, website, 
-        location, timezone, preferences, created_at, updated_at, 
+        id, address, display_name, email, avatar_url, bio, website,
+        location, timezone, preferences, created_at, updated_at,
         last_login_at, is_verified, verification_level
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -121,7 +121,7 @@ export class CredentialService {
     );
   }
 
-  
+
   async createCredentialType(
     creatorAddress: string,
     typeData: Omit<CredentialType, 'id' | 'created_at' | 'updated_at' | 'created_by'>
@@ -169,7 +169,7 @@ export class CredentialService {
     );
   }
 
-  
+
   async createCredential(
     issuerAddress: string,
     userAddress: string,
@@ -178,10 +178,10 @@ export class CredentialService {
     const id = crypto.randomUUID();
     const now = Date.now();
 
-    
+
     const encryptedData = encryptData(JSON.stringify(request.credential_data));
-    
-    
+
+
     const dataHash = crypto.createHash('sha256')
       .update(JSON.stringify(request.credential_data))
       .digest('hex');
@@ -246,7 +246,7 @@ export class CredentialService {
     }
   }
 
-  
+
   async shareCredential(
     ownerAddress: string,
     request: ShareCredentialRequest
@@ -303,7 +303,7 @@ export class CredentialService {
     );
   }
 
-  
+
   async verifyCredential(
     verifierAddress: string,
     request: VerifyCredentialRequest
@@ -348,7 +348,7 @@ export class CredentialService {
     );
   }
 
-  
+
   async revokeCredential(
     credentialId: string,
     revokedByAddress: string,
@@ -357,13 +357,13 @@ export class CredentialService {
     const id = crypto.randomUUID();
     const now = Date.now();
 
-    
+
     await this.db.run(
       'UPDATE credentials SET status = ?, updated_at = ? WHERE id = ?',
       ['revoked', now, credentialId]
     );
 
-    
+
     const revocation: CredentialRevocation = {
       id,
       credential_id: credentialId,
@@ -388,7 +388,7 @@ export class CredentialService {
     return revocation;
   }
 
-  
+
   async createIssuanceRequest(
     requesterAddress: string,
     request: CreateIssuanceRequest
@@ -431,7 +431,7 @@ export class CredentialService {
 
   async getPendingIssuanceRequests(issuerAddress: string): Promise<IssuanceRequest[]> {
     return this.db.all<IssuanceRequest[]>(
-      `SELECT * FROM issuance_requests 
+      `SELECT * FROM issuance_requests
        WHERE issuer_address = ? AND status = 'pending'
        AND (expires_at IS NULL OR expires_at > ?)
        ORDER BY created_at ASC`,
@@ -446,7 +446,7 @@ export class CredentialService {
   ): Promise<void> {
     const now = Date.now();
     await this.db.run(
-      `UPDATE issuance_requests SET 
+      `UPDATE issuance_requests SET
        status = ?, approved_at = ?, issued_credential_id = ?, updated_at = ?
        WHERE id = ?`,
       ['issued', now, issuedCredentialId, now, requestId]
@@ -460,43 +460,43 @@ export class CredentialService {
   ): Promise<void> {
     const now = Date.now();
     await this.db.run(
-      `UPDATE issuance_requests SET 
+      `UPDATE issuance_requests SET
        status = ?, rejected_at = ?, rejection_reason = ?, updated_at = ?
        WHERE id = ?`,
       ['rejected', now, reason, now, requestId]
     );
   }
 
-  
+
   async cleanupExpiredCredentials(): Promise<void> {
     const now = Date.now();
-    
-    
+
+
     await this.db.run(
       `UPDATE credentials SET status = 'expired', updated_at = ?
        WHERE expires_at IS NOT NULL AND expires_at < ? AND status = 'active'`,
       [now, now]
     );
 
-    
+
     await this.db.run(
       `UPDATE credential_shares SET is_active = 0
        WHERE expires_at IS NOT NULL AND expires_at < ? AND is_active = 1`,
       [now]
     );
 
-    
+
     await this.db.run(
       `UPDATE credential_verifications SET status = 'expired'
        WHERE expires_at IS NOT NULL AND expires_at < ? AND status = 'verified'`,
       [now]
     );
 
-    
+
     await this.db.run(
       `UPDATE issuance_requests SET status = 'expired'
        WHERE expires_at IS NOT NULL AND expires_at < ? AND status = 'pending'`,
       [now]
     );
   }
-} 
+}

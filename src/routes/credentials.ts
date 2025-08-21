@@ -1,10 +1,9 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { CredentialService } from '../services/credentialService';
-import { AuditService } from '../services/auditService';
+import { NextFunction, Request, Response, Router } from 'express';
 import { z } from 'zod';
-import { validateBody } from '../middleware/validation';
 import { createRateLimiters } from '../middleware/rateLimit';
-import { sanitizeRequest } from '../middleware/validation';
+import { sanitizeRequest, validateBody } from '../middleware/validation';
+import { AuditService } from '../services/auditService';
+import { CredentialService } from '../services/credentialService';
 import { logError } from '../utils/logger';
 
 
@@ -81,7 +80,7 @@ const createCredentialTypeSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   schema_version: z.string().min(1),
-  schema_definition: z.string(), 
+  schema_definition: z.string(),
   issuer_pattern: z.string().optional(),
   required_fields: z.array(z.string()),
   optional_fields: z.array(z.string()),
@@ -95,7 +94,7 @@ export const createCredentialRouter = (
   const router = Router();
   const rateLimiters = createRateLimiters(auditService);
 
-  
+
   router.post('/profiles',
     rateLimiters.api,
     sanitizeRequest(),
@@ -107,14 +106,14 @@ export const createCredentialRouter = (
           return res.status(401).json({ error: 'Authentication required' });
         }
 
-        
+
         const existingProfile = await credentialService.getUserProfile(userAddress);
         if (existingProfile) {
           return res.status(409).json({ error: 'Profile already exists' });
         }
 
         const profile = await credentialService.createUserProfile(userAddress, req.body);
-        
+
         await auditService.log({
           type: 'CREDENTIAL_PROFILE',
           user_address: userAddress,
@@ -169,7 +168,7 @@ export const createCredentialRouter = (
         }
 
         await credentialService.updateUserProfile(userAddress, req.body);
-        
+
         await auditService.log({
           type: 'CREDENTIAL_PROFILE',
           user_address: userAddress,
@@ -189,7 +188,6 @@ export const createCredentialRouter = (
     }
   );
 
-  
   router.post('/types',
     rateLimiters.api,
     sanitizeRequest(),
@@ -258,7 +256,7 @@ export const createCredentialRouter = (
     }
   );
 
-  
+
   router.post('/credentials',
     rateLimiters.api,
     sanitizeRequest(),
@@ -283,7 +281,7 @@ export const createCredentialRouter = (
           client_id: 'credential-service',
           action: 'CREDENTIAL_ISSUED',
           status: 'success',
-          details: { 
+          details: {
             credential_id: credential.id,
             recipient_address: user_address,
             type_id: request.credential_type_id
@@ -334,12 +332,12 @@ export const createCredentialRouter = (
           return res.status(404).json({ error: 'Credential not found' });
         }
 
-        
+
         if (credential.user_address !== userAddress) {
-          
+
           const sharedCredentials = await credentialService.getSharedCredentials(userAddress);
           const hasAccess = sharedCredentials.some(share => share.credential_id === req.params.id);
-          
+
           if (!hasAccess) {
             return res.status(403).json({ error: 'Access denied' });
           }
@@ -368,11 +366,11 @@ export const createCredentialRouter = (
           return res.status(404).json({ error: 'Credential not found' });
         }
 
-        
+
         if (credential.user_address !== userAddress) {
           const sharedCredentials = await credentialService.getSharedCredentials(userAddress);
           const hasAccess = sharedCredentials.some(share => share.credential_id === req.params.id);
-          
+
           if (!hasAccess) {
             return res.status(403).json({ error: 'Access denied' });
           }
@@ -391,7 +389,7 @@ export const createCredentialRouter = (
     }
   );
 
-  
+
   router.post('/credentials/:id/share',
     rateLimiters.api,
     sanitizeRequest(),
@@ -419,7 +417,7 @@ export const createCredentialRouter = (
           client_id: 'credential-service',
           action: 'CREDENTIAL_SHARED',
           status: 'success',
-          details: { 
+          details: {
             credential_id: req.params.id,
             shared_with: req.body.shared_with_address,
             permissions: req.body.permissions
@@ -455,7 +453,7 @@ export const createCredentialRouter = (
     }
   );
 
-  
+
   router.post('/credentials/:id/verify',
     rateLimiters.api,
     sanitizeRequest(),
@@ -478,7 +476,7 @@ export const createCredentialRouter = (
           client_id: 'credential-service',
           action: 'CREDENTIAL_VERIFIED',
           status: 'success',
-          details: { 
+          details: {
             credential_id: req.params.id,
             verification_id: verification.id,
             verification_type: req.body.verification_type
@@ -495,7 +493,7 @@ export const createCredentialRouter = (
     }
   );
 
-  
+
   router.post('/issuance-requests',
     rateLimiters.api,
     sanitizeRequest(),
@@ -515,7 +513,7 @@ export const createCredentialRouter = (
           client_id: 'credential-service',
           action: 'REQUEST_CREATED',
           status: 'success',
-          details: { 
+          details: {
             request_id: request.id,
             issuer_address: req.body.issuer_address,
             credential_type_id: req.body.credential_type_id
@@ -605,7 +603,7 @@ export const createCredentialRouter = (
           client_id: 'credential-service',
           action: 'REQUEST_REJECTED',
           status: 'success',
-          details: { 
+          details: {
             request_id: req.params.id,
             reason
           },
@@ -622,4 +620,4 @@ export const createCredentialRouter = (
   );
 
   return router;
-}; 
+};
