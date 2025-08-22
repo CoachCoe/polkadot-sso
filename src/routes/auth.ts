@@ -364,15 +364,7 @@ export const createAuthRouter = (
           </div>
         </div>
 
-        <script>
-          function copyCode() {
-            navigator.clipboard.writeText('${codeStr}').then(() => {
-              alert('Authorization code copied to clipboard!');
-            }).catch(err => {
-              console.error('Failed to copy: ', err);
-            });
-          }
-        </script>
+        <script src="/js/callback.js"></script>
       </body>
       </html>
     `);

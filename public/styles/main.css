@@ -46,6 +46,10 @@
     cursor: not-allowed;
   }
 
+  .btn-success {
+    background: #4caf50 !important;
+  }
+
   #status {
     margin: 20px 0;
     padding: 15px;
