@@ -113,10 +113,28 @@ async function initializeApp() {
   const credentialService = new CredentialService(db);
 
 
+  // Create demo client with secret for testing
+  const demoClientSecret = 'demo-client-secret-32-chars-minimum-required';
+
+  // Insert demo client into database if it doesn't exist
+  await db.run(`
+    INSERT OR IGNORE INTO clients (
+      client_id, client_secret, name, redirect_urls, allowed_origins, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+  `, [
+    'demo-app',
+    demoClientSecret,
+    'Polkadot SSO Demo',
+    JSON.stringify(['http://localhost:3000/callback']),
+    JSON.stringify(['http://localhost:3000']),
+    Date.now(),
+    Date.now()
+  ]);
+
   const clients = new Map<string, Client>([
     ['demo-app', {
       client_id: 'demo-app',
-      name: 'Polkadot SSO',
+      name: 'Polkadot SSO Demo',
       redirect_url: 'http://localhost:3000/callback',
       allowed_origins: ['http://localhost:3000']
     }]

@@ -277,7 +277,7 @@ export const createAuthRouter = (
     try {
       const { code, client_id } = req.body;
 
-      const client = await validateClientCredentials();
+      const client = await validateClientCredentials(req);
       if (!client) {
         return res.status(401).send('Invalid client credentials');
       }
