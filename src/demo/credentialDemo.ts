@@ -359,7 +359,7 @@ async function runCredentialDemo() {
     log.success('Credential verification completed');
     log.data(`Verification ID: ${verification.id.substring(0, 8)}...`);
     log.data(`Status: ${verification.status}`);
-    log.data(`Verified at: ${new Date(verification.verified_at!).toLocaleString()}`);
+    log.data(`Verified at: ${new Date(verification.verified_at ?? Date.now()).toLocaleString()}`);
     await delay(1000);
 
     log.section('📝 Demonstrating Issuance Request Workflow');

@@ -23,7 +23,7 @@ export const createBruteForceProtection = (auditService: AuditService) => {
     if (bruteForceProtection.has(ip)) {
       const attempts = bruteForceProtection.get(ip)!.filter(time => now - time < 3600000);
       if (attempts.length >= 100) {
-        auditService.log({
+        void auditService.log({
           type: 'SECURITY_EVENT',
           client_id: String(req.query.client_id || 'unknown'),
           action: 'BRUTE_FORCE_DETECTED',

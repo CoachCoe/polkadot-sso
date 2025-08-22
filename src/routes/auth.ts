@@ -158,7 +158,7 @@ export const createAuthRouter = (
           <link rel="stylesheet" href="/styles/main.css">
           <script nonce="${res.locals.nonce}">
             window.CHALLENGE_DATA = {
-              address: "${escapeHtml(address as string)}",
+              address: "${escapeHtml(String(address ?? ''))}",
               message: "${escapeHtml(challenge.message)}",
               challengeId: "${escapeHtml(challenge.id)}",
               codeVerifier: "${escapeHtml(challenge.code_verifier)}",
@@ -174,7 +174,7 @@ export const createAuthRouter = (
             <h2>Sign Message</h2>
             <div class="message-box">
               <p><strong>Message:</strong> ${escapeHtml(challenge.message)}</p>
-              <p><strong>Address:</strong> ${escapeHtml(address as string)}</p>
+              <p><strong>Address:</strong> ${escapeHtml(String(address ?? ''))}</p>
             </div>
             <div id="status"></div>
             <button id="signButton">
