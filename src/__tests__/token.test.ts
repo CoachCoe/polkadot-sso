@@ -1,5 +1,5 @@
-import { TokenService } from '../services/token.js';
 import { Database } from 'sqlite';
+import { TokenService } from '../services/token';
 
 describe('TokenService', () => {
   let tokenService: TokenService;
@@ -11,6 +11,9 @@ describe('TokenService', () => {
       run: jest.fn(),
     } as unknown as jest.Mocked<Database>;
     tokenService = new TokenService(mockDb);
+
+    // Set up JWT secret for testing
+    process.env.JWT_SECRET = 'test-secret-key-for-testing-only';
   });
 
   it('should generate valid tokens', () => {
@@ -24,4 +27,3 @@ describe('TokenService', () => {
     expect(fingerprint).toBeDefined();
   });
 });
-

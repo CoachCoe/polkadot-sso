@@ -4,14 +4,14 @@ import { TokenPayload } from '../types/auth';
 export const JWT_CONFIG = {
   algorithm: 'HS512' as const,
   issuer: 'polkadot-sso',
-  accessTokenExpiry: 15 * 60, 
-  refreshTokenExpiry: 7 * 24 * 60 * 60 
+  accessTokenExpiry: 15 * 60,
+  refreshTokenExpiry: 7 * 24 * 60 * 60,
 };
 
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
-  message: 'Too many authentication attempts, please try again later'
+  message: 'Too many authentication attempts, please try again later',
 });
 
 export interface VerifyTokenResult {

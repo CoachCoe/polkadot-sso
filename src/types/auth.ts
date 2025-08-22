@@ -50,8 +50,6 @@ export interface TokenPayload {
   iss?: string;
 }
 
-
-
 export interface UserProfile {
   id: string;
   address: string;
@@ -172,7 +170,6 @@ export interface CredentialRevocation {
   revoked_at: number;
   created_at: number;
 }
-
 
 export interface RequestWithId extends Request {
   id: string;

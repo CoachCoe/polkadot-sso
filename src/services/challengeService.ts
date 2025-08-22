@@ -28,8 +28,8 @@ export class ChallengeService {
       state,
       client_id,
       created_at: Date.now(),
-      expires_at: Date.now() + (5 * 60 * 1000), 
-      used: false
+      expires_at: Date.now() + 5 * 60 * 1000,
+      used: false,
     };
   }
 
@@ -48,30 +48,21 @@ export class ChallengeService {
         challenge.code_verifier,
         challenge.code_challenge,
         challenge.state,
-        challenge.used
+        challenge.used,
       ]
     );
   }
 
   async getChallenge(id: string): Promise<Challenge | undefined> {
-    return this.db.get<Challenge>(
-      'SELECT * FROM challenges WHERE id = ? AND used = 0',
-      [id]
-    );
+    return this.db.get<Challenge>('SELECT * FROM challenges WHERE id = ? AND used = 0', [id]);
   }
 
   async markChallengeUsed(id: string): Promise<void> {
-    await this.db.run(
-      'UPDATE challenges SET used = 1 WHERE id = ?',
-      [id]
-    );
+    await this.db.run('UPDATE challenges SET used = 1 WHERE id = ?', [id]);
   }
 
   async cleanupExpiredChallenges(): Promise<void> {
     const now = Date.now();
-    await this.db.run(
-      'DELETE FROM challenges WHERE expires_at < ?',
-      [now]
-    );
+    await this.db.run('DELETE FROM challenges WHERE expires_at < ?', [now]);
   }
 }

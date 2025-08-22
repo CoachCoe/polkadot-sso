@@ -13,7 +13,11 @@ interface Window {
     web3Enable: (name: string) => Promise<unknown[]>;
     web3FromAddress: (address: string) => Promise<{
       signer: {
-        signRaw: (data: { address: string; data: string; type: 'bytes' }) => Promise<{ signature: string }>;
+        signRaw: (data: {
+          address: string;
+          data: string;
+          type: 'bytes';
+        }) => Promise<{ signature: string }>;
       };
     }>;
   };
@@ -28,4 +32,4 @@ interface Window {
     clientId: string;
     appName: string;
   };
-} 
+}

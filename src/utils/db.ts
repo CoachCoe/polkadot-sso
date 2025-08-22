@@ -2,11 +2,11 @@ import { Database } from 'sqlite';
 
 export const secureQueries = {
   challenges: {
-    get: async (db: Database, id: string) => 
-      db.get(
-        'SELECT * FROM challenges WHERE id = ? AND used = FALSE AND expires_at > ?',
-        [id, Date.now()]
-      ),
+    get: async (db: Database, id: string) =>
+      db.get('SELECT * FROM challenges WHERE id = ? AND used = FALSE AND expires_at > ?', [
+        id,
+        Date.now(),
+      ]),
 
     create: async (db: Database, challenge: Record<string, unknown>) =>
       db.run(
@@ -23,15 +23,12 @@ export const secureQueries = {
           challenge.code_verifier,
           challenge.code_challenge,
           challenge.state,
-          false
+          false,
         ]
       ),
 
     markUsed: async (db: Database, id: string) =>
-      db.run(
-        'UPDATE challenges SET used = TRUE WHERE id = ?',
-        [id]
-      )
+      db.run('UPDATE challenges SET used = TRUE WHERE id = ?', [id]),
   },
 
   sessions: {
@@ -57,15 +54,15 @@ export const secureQueries = {
           params.refreshExpires,
           Date.now(),
           params.address,
-          params.clientId
+          params.clientId,
         ]
       ),
 
     get: async (db: Database, address: string, clientId: string) =>
-      db.get(
-        'SELECT * FROM sessions WHERE address = ? AND client_id = ? AND is_active = 1',
-        [address, clientId]
-      )
+      db.get('SELECT * FROM sessions WHERE address = ? AND client_id = ? AND is_active = 1', [
+        address,
+        clientId,
+      ]),
   },
 
   authCodes: {
@@ -79,21 +76,18 @@ export const secureQueries = {
           params.address,
           params.clientId,
           Date.now(),
-          Date.now() + (5 * 60 * 1000),
-          false
+          Date.now() + 5 * 60 * 1000,
+          false,
         ]
       ),
 
     verify: async (db: Database, code: string, clientId: string) =>
-      db.get(
-        'SELECT * FROM auth_codes WHERE code = ? AND client_id = ? AND used = 0',
-        [code, clientId]
-      ),
+      db.get('SELECT * FROM auth_codes WHERE code = ? AND client_id = ? AND used = 0', [
+        code,
+        clientId,
+      ]),
 
     markUsed: async (db: Database, code: string) =>
-      db.run(
-        'UPDATE auth_codes SET used = 1 WHERE code = ?',
-        [code]
-      )
-  }
-}; 
+      db.run('UPDATE auth_codes SET used = 1 WHERE code = ?', [code]),
+  },
+};

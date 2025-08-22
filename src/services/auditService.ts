@@ -20,7 +20,7 @@ export class AuditService {
         JSON.stringify(event.details),
         event.ip_address,
         event.user_agent,
-        Date.now()
+        Date.now(),
       ]
     );
   }
@@ -41,11 +41,8 @@ export class AuditService {
       conditions.push('user_address = ?');
       params.push(filters.user_address);
     }
-    
 
-    const whereClause = conditions.length > 0 
-      ? `WHERE ${conditions.join(' AND ')}` 
-      : '';
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     return this.db.all<AuditEvent[]>(
       `SELECT * FROM audit_logs 
@@ -55,4 +52,4 @@ export class AuditService {
       [...params, limit]
     );
   }
-} 
+}

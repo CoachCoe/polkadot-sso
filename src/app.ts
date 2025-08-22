@@ -1,31 +1,31 @@
 import { config } from 'dotenv';
 config();
 
-import express, { Request, Response, NextFunction, RequestHandler, ErrorRequestHandler } from 'express';
-import { validateAllSecrets } from './utils/secrets';
-import path from 'path';
+import cors from 'cors';
+import express, { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
+import { rateLimit } from 'express-rate-limit';
+import session from 'express-session';
 import helmet from 'helmet';
-import { securityMiddleware, nonceMiddleware, ResponseWithLocals } from './middleware/security';
+import path from 'path';
+import { corsConfig } from './config/cors';
 import { initializeDatabase } from './config/db';
-import { TokenService } from './services/token';
-import { ChallengeService } from './services/challengeService';
-import { AuditService } from './services/auditService';
-import { CredentialService } from './services/credentialService';
+import { sessionConfig } from './config/session';
+import { createBruteForceProtection } from './middleware/bruteForce';
+import { addRequestId } from './middleware/requestId';
+import { nonceMiddleware, ResponseWithLocals, securityMiddleware } from './middleware/security';
+import { sanitizeRequestParams } from './middleware/validation';
 import { createAuthRouter } from './routes/auth';
-import { createTokenRouter } from './routes/tokens';
 import { createClientRouter } from './routes/clients';
 import { createCredentialRouter } from './routes/credentials';
+import { createTokenRouter } from './routes/tokens';
+import { AuditService } from './services/auditService';
+import { ChallengeService } from './services/challengeService';
+import { CredentialService } from './services/credentialService';
+import { TokenService } from './services/token';
 import { Client } from './types/auth';
-import session from 'express-session';
-import { rateLimit } from 'express-rate-limit';
-import { createLogger } from './utils/logger';
-import { addRequestId } from './middleware/requestId';
 import { RequestWithId } from './types/express';
-import { sessionConfig } from './config/session';
-import cors from 'cors';
-import { corsConfig } from './config/cors';
-import { createBruteForceProtection } from './middleware/bruteForce';
-import { sanitizeRequestParams } from './middleware/validation';
+import { createLogger } from './utils/logger';
+import { validateAllSecrets } from './utils/secrets';
 
 const logger = createLogger('app');
 
@@ -52,12 +52,15 @@ app.use(helmet({
         "'self'",
         (_, res: any) => `'nonce-${res.locals.nonce}'`,
         "https://cdn.jsdelivr.net",
-        "https://polkadot.js.org"
+        "https://polkadot.js.org",
+        "'unsafe-eval'" // Required for WebAssembly compilation in Polkadot.js
       ],
       connectSrc: ["'self'", "wss://rpc.polkadot.io"],
       frameAncestors: ["'none'"],
       objectSrc: ["'none'"],
-      upgradeInsecureRequests: []
+      upgradeInsecureRequests: [],
+      workerSrc: ["'self'", "blob:"], // Allow WebAssembly workers
+      childSrc: ["'self'", "blob:"] // Allow WebAssembly in iframes if needed
     }
   },
   referrerPolicy: { policy: 'same-origin' },
@@ -103,41 +106,41 @@ app.use(securityMiddleware);
 
 async function initializeApp() {
   const db = await initializeDatabase();
-  
+
   const tokenService = new TokenService(db);
   const challengeService = new ChallengeService(db);
   const auditService = new AuditService(db);
   const credentialService = new CredentialService(db);
 
-  
+
   const clients = new Map<string, Client>([
-    ['demo-app', { 
+    ['demo-app', {
       client_id: 'demo-app',
       name: 'Polkadot SSO',
-      redirect_url: 'http://localhost:3001/callback',
-      allowed_origins: ['http://localhost:3001']
+      redirect_url: 'http://localhost:3000/callback',
+      allowed_origins: ['http://localhost:3000']
     }]
   ]);
 
   const bruteForceMiddleware = createBruteForceProtection(auditService);
 
-  
+
   app.use('/', createAuthRouter(
-    tokenService, 
-    challengeService, 
+    tokenService,
+    challengeService,
     auditService,
-    clients, 
+    clients,
     db
   ));
   app.use('/api/tokens', createTokenRouter(tokenService, db, auditService));
   app.use('/api/clients', createClientRouter(db));
   app.use('/api/credentials', createCredentialRouter(credentialService, auditService));
 
-  
+
   app.use(bruteForceMiddleware);
   app.use(sanitizeRequestParams());
 
-  
+
   app.use(((err: Error, req: Request, res: Response, next: NextFunction) => {
     const requestId = (req as RequestWithId).id;
     logger.error({

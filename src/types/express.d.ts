@@ -13,4 +13,4 @@ export interface RequestWithId extends Request {
   id: string;
 }
 
-export {}; 
+export {};

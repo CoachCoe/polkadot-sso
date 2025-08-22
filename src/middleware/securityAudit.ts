@@ -11,14 +11,14 @@ export const createSecurityAudit = (auditService: AuditService) => {
         status: 'failure',
         details: {
           endpoint: req.path,
-          ip: req.ip
+          ip: req.ip,
         },
         ip_address: req.ip || '0.0.0.0',
-        user_agent: req.get('user-agent') || 'unknown'
+        user_agent: req.get('user-agent') || 'unknown',
       });
       res.status(429).json({
         error: 'Too many requests',
-        retryAfter: res.get('Retry-After')
+        retryAfter: res.get('Retry-After'),
       });
     },
 
@@ -30,11 +30,11 @@ export const createSecurityAudit = (auditService: AuditService) => {
         status: 'failure',
         details: {
           origin: req.get('origin'),
-          ip: req.ip
+          ip: req.ip,
         },
         ip_address: req.ip || '0.0.0.0',
-        user_agent: req.get('user-agent') || 'unknown'
+        user_agent: req.get('user-agent') || 'unknown',
       });
-    }
+    },
   };
-}; 
+};

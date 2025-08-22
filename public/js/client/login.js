@@ -7,7 +7,11 @@
     const loadingSpinner = document.getElementById('loadingSpinner');
     function setLoading(isLoading) {
         connectButton.disabled = isLoading;
-        loadingSpinner.style.display = isLoading ? 'inline-block' : 'none';
+        if (isLoading) {
+            loadingSpinner.classList.add('show');
+        } else {
+            loadingSpinner.classList.remove('show');
+        }
         buttonText.textContent = isLoading ? 'Connecting...' : 'Connect Wallet';
     }
     function updateStatus(message, type = 'info') {

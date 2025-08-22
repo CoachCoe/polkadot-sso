@@ -4,7 +4,6 @@ import { AuditService } from '../services/auditService';
 const bruteForceProtection = new Map<string, number[]>();
 
 export const createBruteForceProtection = (auditService: AuditService) => {
-  
   setInterval(() => {
     const now = Date.now();
     bruteForceProtection.forEach((attempts, ip) => {
@@ -31,11 +30,11 @@ export const createBruteForceProtection = (auditService: AuditService) => {
           status: 'failure',
           details: { ip, attempts: attempts.length },
           ip_address: ip,
-          user_agent: req.get('user-agent') || 'unknown'
+          user_agent: req.get('user-agent') || 'unknown',
         });
-        return res.status(429).json({ 
-          error: 'Too many requests', 
-          retryAfter: 3600 
+        return res.status(429).json({
+          error: 'Too many requests',
+          retryAfter: 3600,
         });
       }
       bruteForceProtection.set(ip, [...attempts, now]);
@@ -44,4 +43,4 @@ export const createBruteForceProtection = (auditService: AuditService) => {
     }
     next();
   };
-}; 
+};

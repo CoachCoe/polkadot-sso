@@ -1,10 +1,10 @@
 import * as crypto from 'crypto';
 import { SecretManager } from './secrets';
 const ALGORITHM = 'aes-256-gcm';
-const KEY_LENGTH = 32; 
-const IV_LENGTH = 12; 
-const SALT_LENGTH = 32; 
-const ITERATIONS = 100000; 
+const KEY_LENGTH = 32;
+const IV_LENGTH = 12;
+const SALT_LENGTH = 32;
+const ITERATIONS = 100000;
 const DIGEST = 'sha512';
 interface EncryptionContext {
   purpose: 'credential' | 'session' | 'database' | 'kusama';
@@ -21,7 +21,7 @@ interface EncryptedData {
   tag: string;
   encrypted: string;
   context: EncryptionContext;
-  signature?: string; 
+  signature?: string;
 }
 export class EnhancedEncryption {
   private static instance: EnhancedEncryption;

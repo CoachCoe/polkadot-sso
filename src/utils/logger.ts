@@ -13,15 +13,15 @@ export const createLogger = (service: string) => {
           service,
           level,
           message,
-          ...meta
+          ...meta,
         });
       })
     ),
     transports: [
       new winston.transports.Console(),
       new winston.transports.File({ filename: 'error.log', level: 'error' }),
-      new winston.transports.File({ filename: 'combined.log' })
-    ]
+      new winston.transports.File({ filename: 'combined.log' }),
+    ],
   });
 };
 
@@ -34,7 +34,7 @@ export const logRequest = (req: Request, message: string, meta: Record<string, u
     method: req.method,
     url: req.url,
     ip: req.ip,
-    ...meta
+    ...meta,
   });
 };
 
@@ -46,6 +46,6 @@ export const logError = (req: Request, error: Error, meta: Record<string, unknow
     url: req.url,
     ip: req.ip,
     stack: error.stack,
-    ...meta
+    ...meta,
   });
-}; 
+};

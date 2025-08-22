@@ -1,8 +1,4 @@
-import {
-  MODULE_CONFIG,
-  getModuleInitOrder,
-  validateModuleDependencies,
-} from '../modules/config';
+import { MODULE_CONFIG, getModuleInitOrder, validateModuleDependencies } from '../modules/config';
 async function demonstrateModularArchitecture() {
   console.log('🚀 Polkadot SSO Modular Architecture Demo\n');
   console.log('📋 Module Configuration:');
