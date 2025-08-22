@@ -102,7 +102,7 @@ export class KusamaMonitoringService {
             }
 
             // Schedule next check
-            const timeoutId = setTimeout(checkStatus, this.config.retryInterval);
+            const timeoutId = setTimeout(() => void checkStatus(), this.config.retryInterval);
             this.activeMonitors.set(transactionHash, timeoutId);
           }
         } catch (error) {

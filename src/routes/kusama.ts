@@ -171,7 +171,7 @@ router.post('/verify', async (req: Request, res: Response, next: NextFunction) =
       });
     }
 
-    logger.info(`Verifying credential ${credential.id}`);
+    logger.info(`Verifying credential ${String(credential.id ?? 'unknown')}`);
 
     const isValid = await kusamaIntegrationService.verifyCredential(credential);
 

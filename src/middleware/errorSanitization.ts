@@ -160,12 +160,12 @@ export class ErrorSanitizationMiddleware {
       RateLimitError,
     };
   }
-  static asyncErrorHandler(fn: Function) {
+  static asyncErrorHandler(fn: (req: Request, res: Response, next: NextFunction) => any) {
     return (req: Request, res: Response, next: NextFunction) => {
       Promise.resolve(fn(req, res, next)).catch(next);
     };
   }
-  static syncErrorHandler(fn: Function) {
+  static syncErrorHandler(fn: (req: Request, res: Response, next: NextFunction) => any) {
     return (req: Request, res: Response, next: NextFunction) => {
       try {
         fn(req, res, next);
