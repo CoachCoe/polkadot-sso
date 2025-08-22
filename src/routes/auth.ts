@@ -21,9 +21,11 @@ const loginSchema = z.object({
 });
 
 const tokenSchema = z.object({
-  code: z.string().min(32).max(64),
-  client_id: z.string().min(1),
-  client_secret: z.string().min(32),
+  body: z.object({
+    code: z.string().min(32).max(64),
+    client_id: z.string().min(1),
+    client_secret: z.string().min(32),
+  }),
 });
 
 const challengeSchema = z.object({
