@@ -61,7 +61,9 @@ export class AdvancedKusamaService {
         // Check account balance if connected
         try {
           const balance = await this.api.query.system.account(this.account.address);
-          const freeBalance = (balance as any).data.free.toString();
+          const freeBalance = (
+            balance as { data: { free: { toString: () => string } } }
+          ).data.free.toString();
           logger.info('Account balance check', {
             address: this.account.address,
             freeBalance: `${freeBalance} units`,

@@ -3,10 +3,8 @@ import { initializeDatabase } from '../config/db';
 import { CredentialService } from '../services/credentialService';
 config();
 
-// Utility function to add delays for better pacing
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Color codes for terminal output
 const colors = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
@@ -48,7 +46,6 @@ async function runCredentialDemo() {
   const db = await initializeDatabase();
   const credentialService = new CredentialService(db);
 
-  // Clean up any existing demo data to avoid conflicts
   log.section('🧹 Cleaning up existing demo data...');
   try {
     await db.run('DELETE FROM credential_shares WHERE shared_with_address IN (?, ?, ?)', [
@@ -104,7 +101,6 @@ async function runCredentialDemo() {
     console.log('Setting up three user profiles for the demo:');
     await delay(500);
 
-    // Create user profiles with error handling
     const profiles = [
       {
         address: issuerAddress,

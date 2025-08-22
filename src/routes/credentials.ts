@@ -4,6 +4,14 @@ import { createRateLimiters } from '../middleware/rateLimit';
 import { sanitizeRequest, validateBody } from '../middleware/validation';
 import { AuditService } from '../services/auditService';
 import { CredentialService } from '../services/credentialService';
+import {
+  CreateCredentialRequest,
+  CreateIssuanceRequest,
+  CredentialType,
+  ShareCredentialRequest,
+  UserProfile,
+  VerifyCredentialRequest,
+} from '../types/auth';
 import { logError } from '../utils/logger';
 
 interface AuthenticatedRequest extends Request {
@@ -108,7 +116,10 @@ export const createCredentialRouter = (
           return res.status(409).json({ error: 'Profile already exists' });
         }
 
-        const profile = await credentialService.createUserProfile(userAddress, req.body);
+        const profile = await credentialService.createUserProfile(
+          userAddress,
+          req.body as Partial<UserProfile>
+        );
 
         await auditService.log({
           type: 'CREDENTIAL_PROFILE',
@@ -165,7 +176,7 @@ export const createCredentialRouter = (
           return res.status(401).json({ error: 'Authentication required' });
         }
 
-        await credentialService.updateUserProfile(userAddress, req.body);
+        await credentialService.updateUserProfile(userAddress, req.body as Partial<UserProfile>);
 
         await auditService.log({
           type: 'CREDENTIAL_PROFILE',
@@ -199,7 +210,7 @@ export const createCredentialRouter = (
         }
 
         const credentialType = await credentialService.createCredentialType(userAddress, {
-          ...req.body,
+          ...(req.body as Omit<CredentialType, 'id' | 'created_at' | 'updated_at' | 'created_by'>),
           required_fields: JSON.stringify(req.body.required_fields),
           optional_fields: JSON.stringify(req.body.optional_fields),
           validation_rules: JSON.stringify(req.body.validation_rules),
@@ -269,7 +280,9 @@ export const createCredentialRouter = (
           return res.status(401).json({ error: 'Authentication required' });
         }
 
-        const { user_address, ...request } = req.body;
+        const { user_address, ...request } = req.body as {
+          user_address: string;
+        } & CreateCredentialRequest;
         const credential = await credentialService.createCredential(
           issuerAddress,
           user_address,
@@ -407,10 +420,10 @@ export const createCredentialRouter = (
           return res.status(403).json({ error: 'Access denied' });
         }
 
-        const share = await credentialService.shareCredential(ownerAddress, {
-          credential_id: req.params.id,
-          ...req.body,
-        });
+        const share = await credentialService.shareCredential(
+          ownerAddress,
+          req.body as ShareCredentialRequest
+        );
 
         await auditService.log({
           type: 'CREDENTIAL_SHARE',
@@ -467,10 +480,10 @@ export const createCredentialRouter = (
           return res.status(401).json({ error: 'Authentication required' });
         }
 
-        const verification = await credentialService.verifyCredential(verifierAddress, {
-          credential_id: req.params.id,
-          ...req.body,
-        });
+        const verification = await credentialService.verifyCredential(
+          verifierAddress,
+          req.body as VerifyCredentialRequest
+        );
 
         await auditService.log({
           type: 'CREDENTIAL_VERIFICATION',
@@ -507,7 +520,10 @@ export const createCredentialRouter = (
           return res.status(401).json({ error: 'Authentication required' });
         }
 
-        const request = await credentialService.createIssuanceRequest(requesterAddress, req.body);
+        const request = await credentialService.createIssuanceRequest(
+          requesterAddress,
+          req.body as CreateIssuanceRequest
+        );
 
         await auditService.log({
           type: 'ISSUANCE_REQUEST',
@@ -595,7 +611,7 @@ export const createCredentialRouter = (
           return res.status(401).json({ error: 'Authentication required' });
         }
 
-        const { reason } = req.body;
+        const { reason } = req.body as { reason: string };
         if (!reason) {
           return res.status(400).json({ error: 'Rejection reason is required' });
         }

@@ -1,13 +1,12 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { z } from 'zod';
 import { validateBody } from '../middleware/validation';
-import { kusamaIntegrationService } from '../services/kusamaIntegrationService';
+import { KusamaCredential, kusamaIntegrationService } from '../services/kusamaIntegrationService';
 import { createLogger } from '../utils/logger';
 
 const router = Router();
 const logger = createLogger('kusama-routes');
 
-// Schema for storing credentials
 const storeCredentialSchema = z.object({
   body: z.object({
     credentialData: z.any(),
@@ -17,7 +16,6 @@ const storeCredentialSchema = z.object({
   }),
 });
 
-// Schema for retrieving credentials
 const retrieveCredentialSchema = z.object({
   body: z.object({
     credentialId: z.string().min(1),
@@ -26,23 +24,23 @@ const retrieveCredentialSchema = z.object({
   }),
 });
 
-// Schema for listing user credentials
 const listCredentialsSchema = z.object({
   query: z.object({
     userAddress: z.string().min(1),
   }),
 });
 
-/**
- * Store a credential on Kusama
- * POST /api/kusama/store
- */
 router.post(
   '/store',
   validateBody(storeCredentialSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { credentialData, credentialType, userAddress, encryptionKey } = req.body;
+      const { credentialData, credentialType, userAddress, encryptionKey } = req.body as {
+        credentialData: unknown;
+        credentialType: string;
+        userAddress: string;
+        encryptionKey?: string;
+      };
 
       logger.info(`Storing credential of type ${credentialType} for address ${userAddress}`);
 
@@ -74,16 +72,16 @@ router.post(
   }
 );
 
-/**
- * Retrieve a credential from Kusama
- * POST /api/kusama/retrieve
- */
 router.post(
   '/retrieve',
   validateBody(retrieveCredentialSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { credentialId, userAddress, encryptionKey } = req.body;
+      const { credentialId, userAddress, encryptionKey } = req.body as {
+        credentialId: string;
+        userAddress: string;
+        encryptionKey?: string;
+      };
 
       logger.info(`Retrieving credential ${credentialId} for address ${userAddress}`);
 
@@ -107,20 +105,16 @@ router.post(
   }
 );
 
-/**
- * List all credentials for a user
- * GET /api/kusama/list?userAddress=...
- */
 router.get(
   '/list',
   validateBody(listCredentialsSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userAddress } = req.query;
+      const { userAddress } = req.query as { userAddress: string };
 
       logger.info(`Listing credentials for address ${userAddress}`);
 
-      const credentials = await kusamaIntegrationService.listUserCredentials(userAddress as string);
+      const credentials = await kusamaIntegrationService.listUserCredentials(userAddress);
 
       res.json({
         success: true,
@@ -133,10 +127,6 @@ router.get(
   }
 );
 
-/**
- * Get storage cost estimate
- * GET /api/kusama/cost-estimate?dataSize=...
- */
 router.get('/cost-estimate', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const dataSize = parseInt(req.query.dataSize as string) || 1000;
@@ -156,13 +146,9 @@ router.get('/cost-estimate', async (req: Request, res: Response, next: NextFunct
   }
 });
 
-/**
- * Verify credential integrity
- * POST /api/kusama/verify
- */
 router.post('/verify', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { credential } = req.body;
+    const { credential } = req.body as { credential: KusamaCredential };
 
     if (!credential) {
       return res.status(400).json({
@@ -185,10 +171,6 @@ router.post('/verify', async (req: Request, res: Response, next: NextFunction) =
   }
 });
 
-/**
- * Initialize Kusama service
- * POST /api/kusama/init
- */
 router.post('/init', async (req: Request, res: Response, next: NextFunction) => {
   try {
     logger.info('Initializing Kusama integration service...');
@@ -211,10 +193,6 @@ router.post('/init', async (req: Request, res: Response, next: NextFunction) => 
   }
 });
 
-/**
- * Get network health status
- * GET /api/kusama/health
- */
 router.get('/health', async (req: Request, res: Response, next: NextFunction) => {
   try {
     logger.info('Checking Kusama network health...');
@@ -234,10 +212,6 @@ router.get('/health', async (req: Request, res: Response, next: NextFunction) =>
   }
 });
 
-/**
- * Get active transaction monitors
- * GET /api/kusama/monitors
- */
 router.get('/monitors', async (req: Request, res: Response, next: NextFunction) => {
   try {
     logger.info('Getting active transaction monitors...');

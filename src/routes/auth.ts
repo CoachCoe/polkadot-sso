@@ -236,8 +236,6 @@ export const createAuthRouter = (
 
       await cryptoWaitReady();
 
-      // For signRaw with type: 'bytes', we need to handle the signature differently
-      // The signature from signRaw is already in the correct format for verification
       try {
         const { isValid } = signatureVerify(
           challenge.message,
@@ -305,7 +303,6 @@ export const createAuthRouter = (
     }
   };
 
-  // Callback route - handle OAuth callback
   router.get('/callback', (req, res) => {
     const { code, state } = req.query;
 
@@ -313,8 +310,8 @@ export const createAuthRouter = (
       return res.status(400).send('Missing required parameters');
     }
 
-    const codeStr: string = Array.isArray(code) ? code[0] : String(code ?? '');
-    const stateStr: string = Array.isArray(state) ? state[0] : String(state ?? '');
+    const codeStr = Array.isArray(code) ? String(code[0]) : String(code ?? '');
+    const stateStr = Array.isArray(state) ? String(state[0]) : String(state ?? '');
 
     res.send(`
       <!DOCTYPE html>
@@ -372,7 +369,6 @@ export const createAuthRouter = (
     `);
   });
 
-  // Root route - serve a simple landing page
   router.get('/', (req, res) => {
     res.send(`
       <!DOCTYPE html>

@@ -78,20 +78,24 @@ export class ErrorSanitizationMiddleware {
     return genericMessages[index];
   }
   private getStatusCode(error: Error): number {
-    if ((error as any).name === 'ValidationError') {
-      return 400;
-    }
-    if ((error as any).name === 'AuthenticationError') {
-      return 401;
-    }
-    if ((error as any).name === 'AuthorizationError') {
-      return 403;
-    }
-    if ((error as any).name === 'NotFoundError') {
-      return 404;
-    }
-    if ((error as any).name === 'RateLimitError') {
-      return 429;
+    // Use type guards to safely check error types
+    if (error instanceof Error && 'name' in error) {
+      const errorName = (error as Error & { name: string }).name;
+      if (errorName === 'ValidationError') {
+        return 400;
+      }
+      if (errorName === 'AuthenticationError') {
+        return 401;
+      }
+      if (errorName === 'AuthorizationError') {
+        return 403;
+      }
+      if (errorName === 'NotFoundError') {
+        return 404;
+      }
+      if (errorName === 'RateLimitError') {
+        return 429;
+      }
     }
     return 500;
   }
