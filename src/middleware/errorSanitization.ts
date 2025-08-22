@@ -176,11 +176,10 @@ export class ErrorSanitizationMiddleware {
   }
 }
 export const errorSanitization = new ErrorSanitizationMiddleware();
-// eslint-disable-next-line @typescript-eslint/unbound-method
+/* eslint-disable @typescript-eslint/unbound-method */
 export const { createCustomErrors, asyncErrorHandler, syncErrorHandler } =
   ErrorSanitizationMiddleware;
 export const { sanitizeErrors } = errorSanitization;
-// eslint-disable-next-line @typescript-eslint/unbound-method
 export const {
   ValidationError,
   AuthenticationError,
@@ -188,3 +187,4 @@ export const {
   NotFoundError,
   RateLimitError,
 } = ErrorSanitizationMiddleware.createCustomErrors();
+/* eslint-enable @typescript-eslint/unbound-method */

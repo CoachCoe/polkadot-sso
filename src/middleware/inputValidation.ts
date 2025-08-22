@@ -192,12 +192,23 @@ export class InputValidationMiddleware {
       mb: 1024 * 1024,
       gb: 1024 * 1024 * 1024,
     };
-    const match = sizeStr.toLowerCase().match(/^(\d+(?:\.\d+)?)\s*(b|kb|mb|gb)$/);
-    if (!match) {
+
+    // Use a safer approach without complex regex
+    const trimmed = sizeStr.toLowerCase().trim();
+    const unitMatch = trimmed.match(/(b|kb|mb|gb)$/);
+    if (!unitMatch) {
       return 1024 * 1024;
     }
-    const [, value, unit] = match;
-    return parseFloat(value) * units[unit];
+
+    const unit = unitMatch[1];
+    const valueStr = trimmed.slice(0, -unit.length).trim();
+    const value = parseFloat(valueStr);
+
+    if (isNaN(value) || value <= 0) {
+      return 1024 * 1024;
+    }
+
+    return value * units[unit];
   }
   private isValidAcceptHeader(accept: string): boolean {
     const validTypes = [
