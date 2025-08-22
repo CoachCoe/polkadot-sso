@@ -13,5 +13,5 @@ export const corsConfig: CorsOptions = {
   credentials: true,
   maxAge: 86400,
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
-  exposedHeaders: ['X-Request-ID']
-}; 
+  exposedHeaders: ['X-Request-ID'],
+};

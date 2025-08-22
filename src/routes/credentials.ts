@@ -6,13 +6,11 @@ import { AuditService } from '../services/auditService';
 import { CredentialService } from '../services/credentialService';
 import { logError } from '../utils/logger';
 
-
 interface AuthenticatedRequest extends Request {
   user?: {
     address: string;
   };
 }
-
 
 const validateCredentialBody = (schema: z.ZodSchema) => {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -23,7 +21,7 @@ const validateCredentialBody = (schema: z.ZodSchema) => {
       if (error instanceof z.ZodError) {
         res.status(400).json({
           error: 'Validation failed',
-          details: error.errors
+          details: error.errors,
         });
       } else {
         next(error);
@@ -31,7 +29,6 @@ const validateCredentialBody = (schema: z.ZodSchema) => {
     }
   };
 };
-
 
 const createUserProfileSchema = z.object({
   display_name: z.string().optional(),
@@ -41,7 +38,7 @@ const createUserProfileSchema = z.object({
   website: z.string().url().optional(),
   location: z.string().optional(),
   timezone: z.string().optional(),
-  preferences: z.record(z.any()).optional()
+  preferences: z.record(z.any()).optional(),
 });
 
 const createCredentialSchema = z.object({
@@ -49,7 +46,7 @@ const createCredentialSchema = z.object({
   credential_type_id: z.string().uuid(),
   credential_data: z.record(z.any()),
   expires_at: z.number().optional(),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.any()).optional(),
 });
 
 const shareCredentialSchema = z.object({
@@ -58,14 +55,14 @@ const shareCredentialSchema = z.object({
   shared_with_client_id: z.string().optional(),
   permissions: z.array(z.string()),
   access_level: z.enum(['read', 'write', 'admin']),
-  expires_at: z.number().optional()
+  expires_at: z.number().optional(),
 });
 
 const verifyCredentialSchema = z.object({
   credential_id: z.string().uuid(),
   verification_type: z.enum(['proof', 'signature', 'manual', 'automated']),
   verification_data: z.record(z.any()).optional(),
-  notes: z.string().optional()
+  notes: z.string().optional(),
 });
 
 const createIssuanceRequestSchema = z.object({
@@ -73,7 +70,7 @@ const createIssuanceRequestSchema = z.object({
   credential_type_id: z.string().uuid(),
   template_id: z.string().uuid().optional(),
   request_data: z.record(z.any()),
-  expires_at: z.number().optional()
+  expires_at: z.number().optional(),
 });
 
 const createCredentialTypeSchema = z.object({
@@ -84,7 +81,7 @@ const createCredentialTypeSchema = z.object({
   issuer_pattern: z.string().optional(),
   required_fields: z.array(z.string()),
   optional_fields: z.array(z.string()),
-  validation_rules: z.record(z.any())
+  validation_rules: z.record(z.any()),
 });
 
 export const createCredentialRouter = (
@@ -94,8 +91,8 @@ export const createCredentialRouter = (
   const router = Router();
   const rateLimiters = createRateLimiters(auditService);
 
-
-  router.post('/profiles',
+  router.post(
+    '/profiles',
     rateLimiters.api,
     sanitizeRequest(),
     validateCredentialBody(createUserProfileSchema),
@@ -105,7 +102,6 @@ export const createCredentialRouter = (
         if (!userAddress) {
           return res.status(401).json({ error: 'Authentication required' });
         }
-
 
         const existingProfile = await credentialService.getUserProfile(userAddress);
         if (existingProfile) {
@@ -122,7 +118,7 @@ export const createCredentialRouter = (
           status: 'success',
           details: { profile_id: profile.id },
           ip_address: req.ip || 'unknown',
-          user_agent: req.get('user-agent') || 'unknown'
+          user_agent: req.get('user-agent') || 'unknown',
         });
 
         res.status(201).json(profile);
@@ -133,7 +129,8 @@ export const createCredentialRouter = (
     }
   );
 
-  router.get('/profiles/me',
+  router.get(
+    '/profiles/me',
     rateLimiters.api,
     sanitizeRequest(),
     async (req: Request, res: Response, next: NextFunction) => {
@@ -156,7 +153,8 @@ export const createCredentialRouter = (
     }
   );
 
-  router.put('/profiles/me',
+  router.put(
+    '/profiles/me',
     rateLimiters.api,
     sanitizeRequest(),
     validateBody(createUserProfileSchema),
@@ -177,7 +175,7 @@ export const createCredentialRouter = (
           status: 'success',
           details: { updates: req.body },
           ip_address: req.ip || 'unknown',
-          user_agent: req.get('user-agent') || 'unknown'
+          user_agent: req.get('user-agent') || 'unknown',
         });
 
         res.json({ message: 'Profile updated successfully' });
@@ -188,7 +186,8 @@ export const createCredentialRouter = (
     }
   );
 
-  router.post('/types',
+  router.post(
+    '/types',
     rateLimiters.api,
     sanitizeRequest(),
     validateBody(createCredentialTypeSchema),
@@ -203,7 +202,7 @@ export const createCredentialRouter = (
           ...req.body,
           required_fields: JSON.stringify(req.body.required_fields),
           optional_fields: JSON.stringify(req.body.optional_fields),
-          validation_rules: JSON.stringify(req.body.validation_rules)
+          validation_rules: JSON.stringify(req.body.validation_rules),
         });
 
         await auditService.log({
@@ -214,7 +213,7 @@ export const createCredentialRouter = (
           status: 'success',
           details: { type_id: credentialType.id, name: credentialType.name },
           ip_address: req.ip || 'unknown',
-          user_agent: req.get('user-agent') || 'unknown'
+          user_agent: req.get('user-agent') || 'unknown',
         });
 
         res.status(201).json(credentialType);
@@ -225,7 +224,8 @@ export const createCredentialRouter = (
     }
   );
 
-  router.get('/types',
+  router.get(
+    '/types',
     rateLimiters.api,
     sanitizeRequest(),
     async (req: Request, res: Response, next: NextFunction) => {
@@ -239,7 +239,8 @@ export const createCredentialRouter = (
     }
   );
 
-  router.get('/types/:id',
+  router.get(
+    '/types/:id',
     rateLimiters.api,
     sanitizeRequest(),
     async (req: Request, res: Response, next: NextFunction) => {
@@ -256,8 +257,8 @@ export const createCredentialRouter = (
     }
   );
 
-
-  router.post('/credentials',
+  router.post(
+    '/credentials',
     rateLimiters.api,
     sanitizeRequest(),
     validateBody(createCredentialSchema),
@@ -284,10 +285,10 @@ export const createCredentialRouter = (
           details: {
             credential_id: credential.id,
             recipient_address: user_address,
-            type_id: request.credential_type_id
+            type_id: request.credential_type_id,
           },
           ip_address: req.ip || 'unknown',
-          user_agent: req.get('user-agent') || 'unknown'
+          user_agent: req.get('user-agent') || 'unknown',
         });
 
         res.status(201).json(credential);
@@ -298,7 +299,8 @@ export const createCredentialRouter = (
     }
   );
 
-  router.get('/credentials',
+  router.get(
+    '/credentials',
     rateLimiters.api,
     sanitizeRequest(),
     async (req: Request, res: Response, next: NextFunction) => {
@@ -317,7 +319,8 @@ export const createCredentialRouter = (
     }
   );
 
-  router.get('/credentials/:id',
+  router.get(
+    '/credentials/:id',
     rateLimiters.api,
     sanitizeRequest(),
     async (req: Request, res: Response, next: NextFunction) => {
@@ -332,9 +335,7 @@ export const createCredentialRouter = (
           return res.status(404).json({ error: 'Credential not found' });
         }
 
-
         if (credential.user_address !== userAddress) {
-
           const sharedCredentials = await credentialService.getSharedCredentials(userAddress);
           const hasAccess = sharedCredentials.some(share => share.credential_id === req.params.id);
 
@@ -351,7 +352,8 @@ export const createCredentialRouter = (
     }
   );
 
-  router.get('/credentials/:id/data',
+  router.get(
+    '/credentials/:id/data',
     rateLimiters.api,
     sanitizeRequest(),
     async (req: Request, res: Response, next: NextFunction) => {
@@ -365,7 +367,6 @@ export const createCredentialRouter = (
         if (!credential) {
           return res.status(404).json({ error: 'Credential not found' });
         }
-
 
         if (credential.user_address !== userAddress) {
           const sharedCredentials = await credentialService.getSharedCredentials(userAddress);
@@ -389,8 +390,8 @@ export const createCredentialRouter = (
     }
   );
 
-
-  router.post('/credentials/:id/share',
+  router.post(
+    '/credentials/:id/share',
     rateLimiters.api,
     sanitizeRequest(),
     validateBody(shareCredentialSchema),
@@ -408,7 +409,7 @@ export const createCredentialRouter = (
 
         const share = await credentialService.shareCredential(ownerAddress, {
           credential_id: req.params.id,
-          ...req.body
+          ...req.body,
         });
 
         await auditService.log({
@@ -420,10 +421,10 @@ export const createCredentialRouter = (
           details: {
             credential_id: req.params.id,
             shared_with: req.body.shared_with_address,
-            permissions: req.body.permissions
+            permissions: req.body.permissions,
           },
           ip_address: req.ip || 'unknown',
-          user_agent: req.get('user-agent') || 'unknown'
+          user_agent: req.get('user-agent') || 'unknown',
         });
 
         res.status(201).json(share);
@@ -434,7 +435,8 @@ export const createCredentialRouter = (
     }
   );
 
-  router.get('/credentials/shared',
+  router.get(
+    '/credentials/shared',
     rateLimiters.api,
     sanitizeRequest(),
     async (req: Request, res: Response, next: NextFunction) => {
@@ -453,8 +455,8 @@ export const createCredentialRouter = (
     }
   );
 
-
-  router.post('/credentials/:id/verify',
+  router.post(
+    '/credentials/:id/verify',
     rateLimiters.api,
     sanitizeRequest(),
     validateBody(verifyCredentialSchema),
@@ -467,7 +469,7 @@ export const createCredentialRouter = (
 
         const verification = await credentialService.verifyCredential(verifierAddress, {
           credential_id: req.params.id,
-          ...req.body
+          ...req.body,
         });
 
         await auditService.log({
@@ -479,10 +481,10 @@ export const createCredentialRouter = (
           details: {
             credential_id: req.params.id,
             verification_id: verification.id,
-            verification_type: req.body.verification_type
+            verification_type: req.body.verification_type,
           },
           ip_address: req.ip || 'unknown',
-          user_agent: req.get('user-agent') || 'unknown'
+          user_agent: req.get('user-agent') || 'unknown',
         });
 
         res.status(201).json(verification);
@@ -493,8 +495,8 @@ export const createCredentialRouter = (
     }
   );
 
-
-  router.post('/issuance-requests',
+  router.post(
+    '/issuance-requests',
     rateLimiters.api,
     sanitizeRequest(),
     validateBody(createIssuanceRequestSchema),
@@ -516,10 +518,10 @@ export const createCredentialRouter = (
           details: {
             request_id: request.id,
             issuer_address: req.body.issuer_address,
-            credential_type_id: req.body.credential_type_id
+            credential_type_id: req.body.credential_type_id,
           },
           ip_address: req.ip || 'unknown',
-          user_agent: req.get('user-agent') || 'unknown'
+          user_agent: req.get('user-agent') || 'unknown',
         });
 
         res.status(201).json(request);
@@ -530,7 +532,8 @@ export const createCredentialRouter = (
     }
   );
 
-  router.get('/issuance-requests/pending',
+  router.get(
+    '/issuance-requests/pending',
     rateLimiters.api,
     sanitizeRequest(),
     async (req: Request, res: Response, next: NextFunction) => {
@@ -549,7 +552,8 @@ export const createCredentialRouter = (
     }
   );
 
-  router.post('/issuance-requests/:id/approve',
+  router.post(
+    '/issuance-requests/:id/approve',
     rateLimiters.api,
     sanitizeRequest(),
     async (req: Request, res: Response, next: NextFunction) => {
@@ -569,7 +573,7 @@ export const createCredentialRouter = (
           status: 'success',
           details: { request_id: req.params.id },
           ip_address: req.ip || 'unknown',
-          user_agent: req.get('user-agent') || 'unknown'
+          user_agent: req.get('user-agent') || 'unknown',
         });
 
         res.json({ message: 'Request approved successfully' });
@@ -580,7 +584,8 @@ export const createCredentialRouter = (
     }
   );
 
-  router.post('/issuance-requests/:id/reject',
+  router.post(
+    '/issuance-requests/:id/reject',
     rateLimiters.api,
     sanitizeRequest(),
     async (req: Request, res: Response, next: NextFunction) => {
@@ -605,10 +610,10 @@ export const createCredentialRouter = (
           status: 'success',
           details: {
             request_id: req.params.id,
-            reason
+            reason,
           },
           ip_address: req.ip || 'unknown',
-          user_agent: req.get('user-agent') || 'unknown'
+          user_agent: req.get('user-agent') || 'unknown',
         });
 
         res.json({ message: 'Request rejected successfully' });

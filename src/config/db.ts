@@ -10,7 +10,7 @@ export async function createDbPool(): Promise<Database[]> {
   for (let i = 0; i < DB_POOL_SIZE; i++) {
     const db = await open({
       filename: './data/sso.db',
-      driver: sqlite3.Database
+      driver: sqlite3.Database,
     });
     pool.push(db);
   }
@@ -19,13 +19,12 @@ export async function createDbPool(): Promise<Database[]> {
 
 export async function initializeDatabase(): Promise<Database> {
   const dbPath = './data/sso.db';
-  
-  
+
   await mkdir(dirname(dbPath), { recursive: true });
 
   const db = await open({
     filename: dbPath,
-    driver: sqlite3.Database
+    driver: sqlite3.Database,
   });
 
   await db.exec(`

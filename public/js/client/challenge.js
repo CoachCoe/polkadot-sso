@@ -7,7 +7,11 @@
     const loadingSpinner = document.getElementById('loadingSpinner');
     function setLoading(isLoading) {
         signButton.disabled = isLoading;
-        loadingSpinner.style.display = isLoading ? 'inline-block' : 'none';
+        if (isLoading) {
+            loadingSpinner.classList.add('show');
+        } else {
+            loadingSpinner.classList.remove('show');
+        }
         buttonText.textContent = isLoading ? 'Signing...' : 'Sign with Wallet';
     }
     function updateStatus(message, type = 'info') {
@@ -27,11 +31,17 @@
                 throw new Error('Wallet does not support message signing');
             }
             updateStatus('Please sign the message in your wallet...', 'info');
+
+            console.log('Signing message:', window.CHALLENGE_DATA.message);
+            console.log('For address:', window.CHALLENGE_DATA.address);
+
             const { signature } = await injector.signer.signRaw({
                 address: window.CHALLENGE_DATA.address,
                 data: window.CHALLENGE_DATA.message,
                 type: 'bytes'
             });
+
+            console.log('Signature received:', signature);
             updateStatus('Message signed! Verifying...', 'success');
             window.location.href = '/verify?signature=' +
                 encodeURIComponent(signature) +
@@ -42,6 +52,11 @@
         }
         catch (error) {
             console.error('Signing error:', error);
+            console.error('Error details:', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            });
             updateStatus(error instanceof Error ? error.message : 'Unknown error', 'error');
         }
         finally {

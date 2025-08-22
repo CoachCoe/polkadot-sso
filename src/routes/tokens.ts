@@ -1,9 +1,9 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { TokenService } from '../services/token';
+import { NextFunction, Request, Response, Router } from 'express';
 import { Database } from 'sqlite';
 import { createRateLimiters } from '../middleware/rateLimit';
 import { sanitizeRequest } from '../middleware/validation';
 import { AuditService } from '../services/auditService';
+import { TokenService } from '../services/token';
 
 export const createTokenRouter = (
   tokenService: TokenService,
@@ -13,13 +13,14 @@ export const createTokenRouter = (
   const router = Router();
   const rateLimiters = createRateLimiters(auditService);
 
-  router.post('/refresh',
+  router.post(
+    '/refresh',
     rateLimiters.refresh,
     sanitizeRequest(),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const { refresh_token } = req.body;
-        
+
         if (!refresh_token) {
           res.status(400).json({ error: 'Refresh token required' });
           return;
@@ -33,16 +34,16 @@ export const createTokenRouter = (
 
         const { decoded } = verification;
 
-        const { 
-          accessToken, 
-          refreshToken, 
+        const {
+          accessToken,
+          refreshToken,
           fingerprint,
           accessJwtid,
-          refreshJwtid 
+          refreshJwtid
         } = tokenService.generateTokens(decoded.address, decoded.client_id);
-        
+
         await db.run(
-          `UPDATE sessions SET 
+          `UPDATE sessions SET
             access_token = ?,
             refresh_token = ?,
             access_token_id = ?,
@@ -58,11 +59,11 @@ export const createTokenRouter = (
             accessJwtid,
             refreshJwtid,
             fingerprint,
-            Date.now() + (15 * 60 * 1000),
-            Date.now() + (7 * 24 * 60 * 60 * 1000),
+            Date.now() + 15 * 60 * 1000,
+            Date.now() + 7 * 24 * 60 * 60 * 1000,
             Date.now(),
             decoded.address,
-            decoded.client_id
+            decoded.client_id,
           ]
         );
 
@@ -70,7 +71,7 @@ export const createTokenRouter = (
           access_token: accessToken,
           refresh_token: refreshToken,
           fingerprint,
-          expires_in: 900
+          expires_in: 900,
         });
       } catch (error) {
         next(error);

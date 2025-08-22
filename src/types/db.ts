@@ -19,4 +19,4 @@ export interface SessionParams {
   refreshExpires: number;
   address: string;
   clientId: string;
-} 
+}

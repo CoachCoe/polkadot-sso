@@ -7,11 +7,11 @@ export interface ValidationResult {
 
 export function validateAuthRequest(req: Request): ValidationResult {
   const { client_id } = req.query;
-  
+
   if (!client_id) {
     return {
       isValid: false,
-      error: 'Missing client_id'
+      error: 'Missing client_id',
     };
   }
 
@@ -22,7 +22,7 @@ export function validateSignature(signature: string): ValidationResult {
   if (!signature.startsWith('0x')) {
     return {
       isValid: false,
-      error: 'Invalid signature format'
+      error: 'Invalid signature format',
     };
   }
 
@@ -31,5 +31,5 @@ export function validateSignature(signature: string): ValidationResult {
 
 export async function validateClientCredentials(): Promise<boolean> {
   // TODO: Implement actual client credential validation
-  return true; 
+  return true;
 }

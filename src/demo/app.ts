@@ -1,7 +1,5 @@
-
 import express, { Request, Response } from 'express';
 import { config } from 'dotenv';
-
 
 config();
 
@@ -49,7 +47,7 @@ app.get('/', (_req: Request, res: Response) => {
 
 app.get('/callback', (req: Request, res: Response) => {
   const { access_token, refresh_token } = req.query;
-  
+
   res.send(`
     <html>
       <head>

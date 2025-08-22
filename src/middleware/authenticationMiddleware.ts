@@ -229,7 +229,7 @@ export const createUserRateLimiter = (auditService: AuditService) => {
     return async (req: Request, res: Response, next: NextFunction) => {
       const authReq = req as AuthenticatedRequest;
       if (!authReq.user) {
-        return next(); 
+        return next();
       }
       const userId = authReq.user.address;
       const now = Date.now();
@@ -268,5 +268,4 @@ export const createUserRateLimiter = (auditService: AuditService) => {
     };
   };
 };
-setInterval(() => {
-}, 60000); 
+setInterval(() => {}, 60000);

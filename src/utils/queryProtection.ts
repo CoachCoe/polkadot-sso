@@ -102,7 +102,7 @@ export class QueryProtection {
           fingerprint: queryFingerprint,
           risk: validation.risk,
           threats: validation.threats,
-          query: query.substring(0, 200), 
+          query: query.substring(0, 200),
         });
         return {
           success: false,
@@ -111,7 +111,7 @@ export class QueryProtection {
       }
       const sanitizedParams =
         options.validateParams !== false ? this.sanitizeParams(params) : params;
-      const timeout = options.timeout || 30000; 
+      const timeout = options.timeout || 30000;
       const result = await this.executeWithTimeout<T>(query, sanitizedParams, timeout);
       const executionTime = Date.now() - startTime;
       this.updateQueryStats(queryFingerprint, executionTime);

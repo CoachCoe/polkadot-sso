@@ -33,7 +33,7 @@ export interface AlertRule {
   eventTypes: SecurityEventType[];
   severity: ('low' | 'medium' | 'high' | 'critical')[];
   threshold: number;
-  timeWindow: number; 
+  timeWindow: number;
   enabled: boolean;
   actions: AlertAction[];
 }
@@ -187,7 +187,7 @@ export class SecurityMonitoringService extends EventEmitter {
     for (const ip of ipsToBlock) {
       this.blockedIPs.add(ip!);
       logger.warn(`IP address blocked: ${ip}`, { reason: 'Security alert triggered' });
-      const blockDuration = config['blockDuration'] || 3600000; 
+      const blockDuration = config['blockDuration'] || 3600000;
       setTimeout(() => {
         this.blockedIPs.delete(ip!);
         logger.info(`IP address unblocked: ${ip}`, { reason: 'Block duration expired' });
@@ -297,10 +297,10 @@ export class SecurityMonitoringService extends EventEmitter {
         eventTypes: ['BRUTE_FORCE_ATTACK', 'INVALID_TOKEN_USAGE'],
         severity: ['medium', 'high', 'critical'],
         threshold: 5,
-        timeWindow: 300000, 
+        timeWindow: 300000,
         enabled: true,
         actions: [
-          { type: 'block_ip', config: { blockDuration: 3600000 } }, 
+          { type: 'block_ip', config: { blockDuration: 3600000 } },
           { type: 'log', config: {} },
         ],
       },
@@ -310,10 +310,10 @@ export class SecurityMonitoringService extends EventEmitter {
         eventTypes: ['SQL_INJECTION_ATTEMPT'],
         severity: ['high', 'critical'],
         threshold: 1,
-        timeWindow: 60000, 
+        timeWindow: 60000,
         enabled: true,
         actions: [
-          { type: 'block_ip', config: { blockDuration: 7200000 } }, 
+          { type: 'block_ip', config: { blockDuration: 7200000 } },
           { type: 'log', config: {} },
         ],
       },
@@ -323,7 +323,7 @@ export class SecurityMonitoringService extends EventEmitter {
         eventTypes: ['PRIVILEGE_ESCALATION', 'UNAUTHORIZED_ACCESS'],
         severity: ['high', 'critical'],
         threshold: 1,
-        timeWindow: 300000, 
+        timeWindow: 300000,
         enabled: true,
         actions: [
           { type: 'disable_user', config: {} },
@@ -336,10 +336,10 @@ export class SecurityMonitoringService extends EventEmitter {
         eventTypes: ['DATA_EXFILTRATION', 'ANOMALOUS_ACTIVITY'],
         severity: ['critical'],
         threshold: 1,
-        timeWindow: 60000, 
+        timeWindow: 60000,
         enabled: true,
         actions: [
-          { type: 'block_ip', config: { blockDuration: 86400000 } }, 
+          { type: 'block_ip', config: { blockDuration: 86400000 } },
           { type: 'disable_user', config: {} },
           { type: 'log', config: {} },
         ],
@@ -362,7 +362,7 @@ export class SecurityMonitoringService extends EventEmitter {
         }
       },
       60 * 60 * 1000
-    ); 
+    );
   }
 }
 export const createSecurityMonitoringMiddleware = (

@@ -1,25 +1,27 @@
 import * as crypto from 'crypto';
 import { Database } from 'sqlite';
 import {
-    CreateCredentialRequest,
-    CreateIssuanceRequest,
-    Credential,
-    CredentialRevocation,
-    CredentialShare,
-    CredentialType,
-    CredentialVerification,
-    IssuanceRequest,
-    ShareCredentialRequest,
-    UserProfile,
-    VerifyCredentialRequest
+  CreateCredentialRequest,
+  CreateIssuanceRequest,
+  Credential,
+  CredentialRevocation,
+  CredentialShare,
+  CredentialType,
+  CredentialVerification,
+  IssuanceRequest,
+  ShareCredentialRequest,
+  UserProfile,
+  VerifyCredentialRequest,
 } from '../types/auth';
 import { decryptData, encryptData } from '../utils/encryption';
 
 export class CredentialService {
   constructor(private db: Database) {}
 
-
-  async createUserProfile(address: string, profileData: Partial<UserProfile>): Promise<UserProfile> {
+  async createUserProfile(
+    address: string,
+    profileData: Partial<UserProfile>
+  ): Promise<UserProfile> {
     const id = crypto.randomUUID();
     const now = Date.now();
 
@@ -38,7 +40,7 @@ export class CredentialService {
       updated_at: now,
       last_login_at: now,
       is_verified: false,
-      verification_level: 0
+      verification_level: 0,
     };
 
     await this.db.run(
@@ -48,11 +50,21 @@ export class CredentialService {
         last_login_at, is_verified, verification_level
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        profile.id, profile.address, profile.display_name, profile.email,
-        profile.avatar_url, profile.bio, profile.website, profile.location,
-        profile.timezone, profile.preferences, profile.created_at,
-        profile.updated_at, profile.last_login_at, profile.is_verified,
-        profile.verification_level
+        profile.id,
+        profile.address,
+        profile.display_name,
+        profile.email,
+        profile.avatar_url,
+        profile.bio,
+        profile.website,
+        profile.location,
+        profile.timezone,
+        profile.preferences,
+        profile.created_at,
+        profile.updated_at,
+        profile.last_login_at,
+        profile.is_verified,
+        profile.verification_level,
       ]
     );
 
@@ -60,10 +72,7 @@ export class CredentialService {
   }
 
   async getUserProfile(address: string): Promise<UserProfile | undefined> {
-    return this.db.get<UserProfile>(
-      'SELECT * FROM user_profiles WHERE address = ?',
-      [address]
-    );
+    return this.db.get<UserProfile>('SELECT * FROM user_profiles WHERE address = ?', [address]);
   }
 
   async updateUserProfile(address: string, updates: Partial<UserProfile>): Promise<void> {
@@ -100,7 +109,11 @@ export class CredentialService {
     }
     if (updates.preferences !== undefined) {
       setFields.push('preferences = ?');
-      values.push(typeof updates.preferences === 'string' ? updates.preferences : JSON.stringify(updates.preferences));
+      values.push(
+        typeof updates.preferences === 'string'
+          ? updates.preferences
+          : JSON.stringify(updates.preferences)
+      );
     }
     if (updates.is_verified !== undefined) {
       setFields.push('is_verified = ?');
@@ -115,12 +128,8 @@ export class CredentialService {
     values.push(Date.now());
     values.push(address);
 
-    await this.db.run(
-      `UPDATE user_profiles SET ${setFields.join(', ')} WHERE address = ?`,
-      values
-    );
+    await this.db.run(`UPDATE user_profiles SET ${setFields.join(', ')} WHERE address = ?`, values);
   }
-
 
   async createCredentialType(
     creatorAddress: string,
@@ -134,7 +143,7 @@ export class CredentialService {
       ...typeData,
       created_at: now,
       updated_at: now,
-      created_by: creatorAddress
+      created_by: creatorAddress,
     };
 
     await this.db.run(
@@ -144,12 +153,19 @@ export class CredentialService {
         is_active, created_at, updated_at, created_by
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        credentialType.id, credentialType.name, credentialType.description,
-        credentialType.schema_version, credentialType.schema_definition,
-        credentialType.issuer_pattern, credentialType.required_fields,
-        credentialType.optional_fields, credentialType.validation_rules,
-        credentialType.is_active, credentialType.created_at,
-        credentialType.updated_at, credentialType.created_by
+        credentialType.id,
+        credentialType.name,
+        credentialType.description,
+        credentialType.schema_version,
+        credentialType.schema_definition,
+        credentialType.issuer_pattern,
+        credentialType.required_fields,
+        credentialType.optional_fields,
+        credentialType.validation_rules,
+        credentialType.is_active,
+        credentialType.created_at,
+        credentialType.updated_at,
+        credentialType.created_by,
       ]
     );
 
@@ -169,7 +185,6 @@ export class CredentialService {
     );
   }
 
-
   async createCredential(
     issuerAddress: string,
     userAddress: string,
@@ -178,11 +193,10 @@ export class CredentialService {
     const id = crypto.randomUUID();
     const now = Date.now();
 
-
     const encryptedData = encryptData(JSON.stringify(request.credential_data));
 
-
-    const dataHash = crypto.createHash('sha256')
+    const dataHash = crypto
+      .createHash('sha256')
       .update(JSON.stringify(request.credential_data))
       .digest('hex');
 
@@ -198,7 +212,7 @@ export class CredentialService {
       expires_at: request.expires_at,
       created_at: now,
       updated_at: now,
-      metadata: request.metadata ? JSON.stringify(request.metadata) : undefined
+      metadata: request.metadata ? JSON.stringify(request.metadata) : undefined,
     };
 
     await this.db.run(
@@ -208,11 +222,21 @@ export class CredentialService {
         status, issued_at, expires_at, created_at, updated_at, metadata
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        credential.id, credential.user_address, credential.credential_type_id,
-        credential.issuer_address, credential.issuer_name, credential.credential_data,
-        credential.credential_hash, credential.proof_signature, credential.proof_type,
-        credential.status, credential.issued_at, credential.expires_at,
-        credential.created_at, credential.updated_at, credential.metadata
+        credential.id,
+        credential.user_address,
+        credential.credential_type_id,
+        credential.issuer_address,
+        credential.issuer_name,
+        credential.credential_data,
+        credential.credential_hash,
+        credential.proof_signature,
+        credential.proof_type,
+        credential.status,
+        credential.issued_at,
+        credential.expires_at,
+        credential.created_at,
+        credential.updated_at,
+        credential.metadata,
       ]
     );
 
@@ -220,10 +244,7 @@ export class CredentialService {
   }
 
   async getCredential(id: string): Promise<Credential | undefined> {
-    return this.db.get<Credential>(
-      'SELECT * FROM credentials WHERE id = ?',
-      [id]
-    );
+    return this.db.get<Credential>('SELECT * FROM credentials WHERE id = ?', [id]);
   }
 
   async getUserCredentials(userAddress: string): Promise<Credential[]> {
@@ -246,7 +267,6 @@ export class CredentialService {
     }
   }
 
-
   async shareCredential(
     ownerAddress: string,
     request: ShareCredentialRequest
@@ -265,7 +285,7 @@ export class CredentialService {
       expires_at: request.expires_at,
       created_at: now,
       created_by: ownerAddress,
-      is_active: true
+      is_active: true,
     };
 
     await this.db.run(
@@ -275,10 +295,17 @@ export class CredentialService {
         created_at, created_by, is_active
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        share.id, share.credential_id, share.owner_address,
-        share.shared_with_address, share.shared_with_client_id,
-        share.permissions, share.access_level, share.expires_at,
-        share.created_at, share.created_by, share.is_active
+        share.id,
+        share.credential_id,
+        share.owner_address,
+        share.shared_with_address,
+        share.shared_with_client_id,
+        share.permissions,
+        share.access_level,
+        share.expires_at,
+        share.created_at,
+        share.created_by,
+        share.is_active,
       ]
     );
 
@@ -297,12 +324,8 @@ export class CredentialService {
   }
 
   async revokeCredentialShare(shareId: string): Promise<void> {
-    await this.db.run(
-      'UPDATE credential_shares SET is_active = 0 WHERE id = ?',
-      [shareId]
-    );
+    await this.db.run('UPDATE credential_shares SET is_active = 0 WHERE id = ?', [shareId]);
   }
-
 
   async verifyCredential(
     verifierAddress: string,
@@ -316,11 +339,13 @@ export class CredentialService {
       credential_id: request.credential_id,
       verifier_address: verifierAddress,
       verification_type: request.verification_type,
-      verification_data: request.verification_data ? JSON.stringify(request.verification_data) : undefined,
+      verification_data: request.verification_data
+        ? JSON.stringify(request.verification_data)
+        : undefined,
       status: 'verified',
       verified_at: now,
       created_at: now,
-      notes: request.notes
+      notes: request.notes,
     };
 
     await this.db.run(
@@ -330,11 +355,17 @@ export class CredentialService {
         expires_at, created_at, notes
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        verification.id, verification.credential_id, verification.verifier_address,
-        verification.verification_type, verification.verification_data,
-        verification.verification_signature, verification.status,
-        verification.verified_at, verification.expires_at,
-        verification.created_at, verification.notes
+        verification.id,
+        verification.credential_id,
+        verification.verifier_address,
+        verification.verification_type,
+        verification.verification_data,
+        verification.verification_signature,
+        verification.status,
+        verification.verified_at,
+        verification.expires_at,
+        verification.created_at,
+        verification.notes,
       ]
     );
 
@@ -348,7 +379,6 @@ export class CredentialService {
     );
   }
 
-
   async revokeCredential(
     credentialId: string,
     revokedByAddress: string,
@@ -357,12 +387,11 @@ export class CredentialService {
     const id = crypto.randomUUID();
     const now = Date.now();
 
-
-    await this.db.run(
-      'UPDATE credentials SET status = ?, updated_at = ? WHERE id = ?',
-      ['revoked', now, credentialId]
-    );
-
+    await this.db.run('UPDATE credentials SET status = ?, updated_at = ? WHERE id = ?', [
+      'revoked',
+      now,
+      credentialId,
+    ]);
 
     const revocation: CredentialRevocation = {
       id,
@@ -370,7 +399,7 @@ export class CredentialService {
       revoked_by_address: revokedByAddress,
       revocation_reason: reason,
       revoked_at: now,
-      created_at: now
+      created_at: now,
     };
 
     await this.db.run(
@@ -379,15 +408,18 @@ export class CredentialService {
         revocation_signature, revoked_at, created_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
-        revocation.id, revocation.credential_id, revocation.revoked_by_address,
-        revocation.revocation_reason, revocation.revocation_signature,
-        revocation.revoked_at, revocation.created_at
+        revocation.id,
+        revocation.credential_id,
+        revocation.revoked_by_address,
+        revocation.revocation_reason,
+        revocation.revocation_signature,
+        revocation.revoked_at,
+        revocation.created_at,
       ]
     );
 
     return revocation;
   }
-
 
   async createIssuanceRequest(
     requesterAddress: string,
@@ -406,7 +438,7 @@ export class CredentialService {
       status: 'pending',
       created_at: now,
       updated_at: now,
-      expires_at: request.expires_at
+      expires_at: request.expires_at,
     };
 
     await this.db.run(
@@ -416,13 +448,20 @@ export class CredentialService {
         rejection_reason, issued_credential_id, created_at, updated_at, expires_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        issuanceRequest.id, issuanceRequest.requester_address,
-        issuanceRequest.issuer_address, issuanceRequest.credential_type_id,
-        issuanceRequest.template_id, issuanceRequest.request_data,
-        issuanceRequest.status, issuanceRequest.approved_at,
-        issuanceRequest.rejected_at, issuanceRequest.rejection_reason,
-        issuanceRequest.issued_credential_id, issuanceRequest.created_at,
-        issuanceRequest.updated_at, issuanceRequest.expires_at
+        issuanceRequest.id,
+        issuanceRequest.requester_address,
+        issuanceRequest.issuer_address,
+        issuanceRequest.credential_type_id,
+        issuanceRequest.template_id,
+        issuanceRequest.request_data,
+        issuanceRequest.status,
+        issuanceRequest.approved_at,
+        issuanceRequest.rejected_at,
+        issuanceRequest.rejection_reason,
+        issuanceRequest.issued_credential_id,
+        issuanceRequest.created_at,
+        issuanceRequest.updated_at,
+        issuanceRequest.expires_at,
       ]
     );
 
@@ -467,10 +506,8 @@ export class CredentialService {
     );
   }
 
-
   async cleanupExpiredCredentials(): Promise<void> {
     const now = Date.now();
-
 
     await this.db.run(
       `UPDATE credentials SET status = 'expired', updated_at = ?
@@ -478,20 +515,17 @@ export class CredentialService {
       [now, now]
     );
 
-
     await this.db.run(
       `UPDATE credential_shares SET is_active = 0
        WHERE expires_at IS NOT NULL AND expires_at < ? AND is_active = 1`,
       [now]
     );
 
-
     await this.db.run(
       `UPDATE credential_verifications SET status = 'expired'
        WHERE expires_at IS NOT NULL AND expires_at < ? AND status = 'verified'`,
       [now]
     );
-
 
     await this.db.run(
       `UPDATE issuance_requests SET status = 'expired'

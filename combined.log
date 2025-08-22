@@ -47,3 +47,29 @@
 {"timestamp":"2025-08-20T19:02:27.964Z","service":"kusama-service","level":"info","message":"Initializing Kusama service","endpoint":"wss://kusama-rpc.polkadot.io"}
 {"timestamp":"2025-08-20T19:02:29.402Z","service":"kusama-service","level":"info","message":"Kusama service initialized successfully"}
 {"timestamp":"2025-08-20T19:02:29.621Z","service":"kusama-service","level":"info","message":"Kusama connection test successful","chain":"Kusama","nodeName":"Parity Polkadot","nodeVersion":"1.18.2-050919ba389","properties":{"isEthereum":false,"ss58Format":"2","tokenDecimals":["12"],"tokenSymbol":["KSM"]}}
+{"timestamp":"2025-08-22T16:23:26.313Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:26:46.417Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:27:30.279Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:28:01.916Z","service":"default","level":"info","message":"Login attempt","requestId":"33a65aa4-dcf9-43fe-93ae-e6000f99d625","method":"GET","url":"/login?client_id=demo-app","ip":"::1"}
+{"timestamp":"2025-08-22T16:29:47.615Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:29:50.499Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:30:20.295Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:33:04.231Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:33:38.825Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:34:55.360Z","service":"default","level":"info","message":"Login attempt","requestId":"eed881fe-0910-4af6-bc70-4726b35e3bcd","method":"GET","url":"/login?client_id=demo-app","ip":"::1"}
+{"timestamp":"2025-08-22T16:36:09.287Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:36:24.387Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:36:56.739Z","service":"default","level":"info","message":"Login attempt","requestId":"65fd885e-8c04-4fcd-9dd1-7bca150a79b6","method":"GET","url":"/login?client_id=demo-app","ip":"::1"}
+{"timestamp":"2025-08-22T16:37:01.403Z","service":"default","level":"info","message":"Login attempt","requestId":"7b1b9bb2-45e2-4896-91f1-2decfd5819d3","method":"GET","url":"/login?client_id=demo-app","ip":"::1"}
+{"timestamp":"2025-08-22T16:38:11.235Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:38:50.676Z","service":"default","level":"info","message":"Login attempt","requestId":"18580a9a-0b75-498d-bdf5-73887d040b9f","method":"GET","url":"/login?client_id=demo-app","ip":"::1"}
+{"timestamp":"2025-08-22T16:40:07.369Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:40:27.149Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:40:58.651Z","service":"default","level":"info","message":"Login attempt","requestId":"24b8c5fa-c5fe-4ff6-9960-013f80d604dc","method":"GET","url":"/login?client_id=demo-app","ip":"::1"}
+{"timestamp":"2025-08-22T16:45:27.535Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:45:45.688Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:45:48.984Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:46:09.379Z","service":"default","level":"info","message":"Login attempt","requestId":"e0548424-9e0f-4d57-9af3-3f805ea7780f","method":"GET","url":"/login?client_id=demo-app","ip":"::1"}
+{"timestamp":"2025-08-22T16:54:57.501Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:55:29.742Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T16:57:10.736Z","service":"app","level":"info","message":"SSO Service running on port 3000"}

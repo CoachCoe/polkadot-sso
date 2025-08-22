@@ -3,16 +3,16 @@ import { Database } from 'sqlite';
 import { CredentialService } from '../modules/credentials';
 import { decryptData, encryptData } from '../modules/security';
 import {
-    CreateIssuanceRequest,
-    Credential,
-    CredentialShare,
-    CredentialType,
-    CredentialVerification,
-    HybridCredentialRequest,
-    IssuanceRequest,
-    ShareCredentialRequest,
-    UserProfile,
-    VerifyCredentialRequest,
+  CreateIssuanceRequest,
+  Credential,
+  CredentialShare,
+  CredentialType,
+  CredentialVerification,
+  HybridCredentialRequest,
+  IssuanceRequest,
+  ShareCredentialRequest,
+  UserProfile,
+  VerifyCredentialRequest,
 } from '../types/auth';
 import { createLogger } from '../utils/logger';
 import { IPFSService } from './ipfsService';

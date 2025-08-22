@@ -2,7 +2,6 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { Database } from 'sqlite';
 import crypto from 'crypto';
 
-
 export const createClientRouter = (db: Database) => {
   const router = Router();
 
@@ -35,7 +34,7 @@ export const createClientRouter = (db: Database) => {
           JSON.stringify(redirect_urls),
           JSON.stringify(allowed_origins),
           Date.now(),
-          Date.now()
+          Date.now(),
         ]
       );
 
@@ -44,14 +43,12 @@ export const createClientRouter = (db: Database) => {
         client_secret: clientSecret,
         name,
         redirect_urls,
-        allowed_origins
+        allowed_origins,
       });
     } catch (error) {
       next(error);
     }
   });
 
-  
-  
   return router;
 };

@@ -8,6 +8,11 @@ export class TokenService {
   constructor(private db: Database) {}
 
   generateTokens(address: string, client_id: string) {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET environment variable is required');
+    }
+
     const accessJwtid = crypto.randomBytes(32).toString('hex');
     const refreshJwtid = crypto.randomBytes(32).toString('hex');
     const fingerprint = crypto.randomBytes(16).toString('hex');
@@ -18,14 +23,14 @@ export class TokenService {
         client_id,
         type: 'access',
         jti: accessJwtid,
-        fingerprint
+        fingerprint,
       } as TokenPayload,
-      process.env.JWT_SECRET!,
+      jwtSecret,
       {
         algorithm: JWT_CONFIG.algorithm,
         expiresIn: JWT_CONFIG.accessTokenExpiry,
         audience: client_id,
-        issuer: JWT_CONFIG.issuer
+        issuer: JWT_CONFIG.issuer,
       }
     );
 
@@ -35,14 +40,14 @@ export class TokenService {
         client_id,
         type: 'refresh',
         jti: refreshJwtid,
-        fingerprint
+        fingerprint,
       } as TokenPayload,
-      process.env.JWT_SECRET!,
+      jwtSecret,
       {
         algorithm: JWT_CONFIG.algorithm,
         expiresIn: JWT_CONFIG.refreshTokenExpiry,
         audience: client_id,
-        issuer: JWT_CONFIG.issuer
+        issuer: JWT_CONFIG.issuer,
       }
     );
 
@@ -51,15 +56,20 @@ export class TokenService {
       refreshToken,
       fingerprint,
       accessJwtid,
-      refreshJwtid
+      refreshJwtid,
     };
   }
 
   async verifyToken(token: string, type: 'access' | 'refresh') {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!, {
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        throw new Error('JWT_SECRET environment variable is required');
+      }
+
+      const decoded = jwt.verify(token, jwtSecret, {
         algorithms: [JWT_CONFIG.algorithm],
-        issuer: JWT_CONFIG.issuer
+        issuer: JWT_CONFIG.issuer,
       }) as TokenPayload;
 
       if (decoded.type !== type) {
@@ -82,12 +92,12 @@ export class TokenService {
       return {
         valid: true,
         decoded,
-        session
+        session,
       };
     } catch (error) {
       return {
         valid: false,
-        error: error instanceof Error ? error.message : 'Token verification failed'
+        error: error instanceof Error ? error.message : 'Token verification failed',
       };
     }
   }

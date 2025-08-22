@@ -15,6 +15,7 @@
     "demo:kusama": "ts-node src/demo/kusamaTestDemo.ts",
     "demo:security": "ts-node src/demo/securityTestDemo.ts",
     "demo:modular": "ts-node src/demo/modularDemo.ts",
+    "test:api": "node scripts/test-api.js",
     "setup:kusama": "node scripts/setup-kusama.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
