@@ -313,8 +313,8 @@ export const createAuthRouter = (
       return res.status(400).send('Missing required parameters');
     }
 
-    const codeStr = Array.isArray(code) ? code[0] : String(code ?? '');
-    const stateStr = Array.isArray(state) ? state[0] : String(state ?? '');
+    const codeStr: string = Array.isArray(code) ? code[0] : String(code ?? '');
+    const stateStr: string = Array.isArray(state) ? state[0] : String(state ?? '');
 
     res.send(`
       <!DOCTYPE html>
