@@ -73,3 +73,4 @@
 {"timestamp":"2025-08-22T16:54:57.501Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
 {"timestamp":"2025-08-22T16:55:29.742Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
 {"timestamp":"2025-08-22T16:57:10.736Z","service":"app","level":"info","message":"SSO Service running on port 3000"}
+{"timestamp":"2025-08-22T17:01:43.849Z","service":"app","level":"info","message":"SSO Service running on port 3000"}

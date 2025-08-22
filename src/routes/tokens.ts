@@ -9,7 +9,7 @@ export const createTokenRouter = (
   tokenService: TokenService,
   db: Database,
   auditService: AuditService
-) => {
+): Router => {
   const router = Router();
   const rateLimiters = createRateLimiters(auditService);
 
@@ -17,7 +17,7 @@ export const createTokenRouter = (
     '/refresh',
     rateLimiters.refresh,
     sanitizeRequest(),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         const { refresh_token } = req.body;
 
@@ -33,14 +33,18 @@ export const createTokenRouter = (
         }
 
         const { decoded } = verification;
+        if (!decoded) {
+          res.status(401).json({ error: 'Invalid token data' });
+          return;
+        }
 
-        const {
-          accessToken,
-          refreshToken,
-          fingerprint,
-          accessJwtid,
-          refreshJwtid
-        } = tokenService.generateTokens(decoded.address, decoded.client_id);
+        if (!decoded.address || !decoded.client_id) {
+          res.status(401).json({ error: 'Invalid token data' });
+          return;
+        }
+
+        const tokens = tokenService.generateTokens(decoded.address, decoded.client_id);
+        const { accessToken, refreshToken, fingerprint, accessJwtid, refreshJwtid } = tokens;
 
         await db.run(
           `UPDATE sessions SET

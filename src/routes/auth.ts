@@ -41,7 +41,7 @@ const verifySchema = z.object({
   }),
 });
 
-async function generateCodeChallenge(verifier: string): Promise<string> {
+function generateCodeChallenge(verifier: string): string {
   const hash = createHash('sha256');
   hash.update(verifier);
   return hash.digest('base64url');
@@ -74,8 +74,8 @@ export const createAuthRouter = (
         return res.status(400).json({ error: 'Invalid client' });
       }
 
-      const escapedClientId = JSON.stringify(client_id);
-      const escapedAppName = JSON.stringify(client.name);
+      const escapedClientId = JSON.stringify(client_id ?? '');
+      const escapedAppName = JSON.stringify(client.name ?? '');
 
       await auditService.log({
         type: 'AUTH_ATTEMPT',
@@ -196,11 +196,17 @@ export const createAuthRouter = (
       const { signature, challenge_id, address, code_verifier, state } = req.query;
 
       console.log('Verification request:', {
-        signature: signature && typeof signature === 'string' ? `${signature.substring(0, 20)}...` : 'undefined',
+        signature:
+          signature && typeof signature === 'string'
+            ? `${signature.substring(0, 20)}...`
+            : 'undefined',
         challenge_id,
         address,
-        code_verifier: code_verifier && typeof code_verifier === 'string' ? `${code_verifier.substring(0, 20)}...` : 'undefined',
-        state
+        code_verifier:
+          code_verifier && typeof code_verifier === 'string'
+            ? `${code_verifier.substring(0, 20)}...`
+            : 'undefined',
+        state,
       });
 
       if (!signature || !challenge_id || !address || !code_verifier || !state) {
@@ -214,7 +220,7 @@ export const createAuthRouter = (
         message: challenge?.message,
         state: challenge?.state,
         expected_state: state,
-        used: challenge?.used
+        used: challenge?.used,
       });
 
       if (!challenge || challenge.state !== state) {
@@ -256,7 +262,10 @@ export const createAuthRouter = (
       );
 
       const client = clients.get(challenge.client_id);
-      res.redirect(`${client!.redirect_url}?` + `code=${authCode}&` + `state=${state}`);
+      if (!client) {
+        return res.status(400).send('Invalid client');
+      }
+      res.redirect(`${client.redirect_url}?code=${authCode}&state=${state}`);
     } catch (error) {
       logError(req, error as Error);
       console.error('Verify error:', error);
@@ -294,13 +303,16 @@ export const createAuthRouter = (
     }
   };
 
-    // Callback route - handle OAuth callback
+  // Callback route - handle OAuth callback
   router.get('/callback', (req, res) => {
     const { code, state } = req.query;
 
     if (!code || !state) {
       return res.status(400).send('Missing required parameters');
     }
+
+    const codeStr = Array.isArray(code) ? code[0] : code;
+    const stateStr = Array.isArray(state) ? state[0] : state;
 
     res.send(`
       <!DOCTYPE html>
@@ -328,11 +340,11 @@ export const createAuthRouter = (
             <h3>🔑 Authorization Details</h3>
             <div class="detail-group">
               <label>Authorization Code:</label>
-              <div class="code-display">${code}</div>
+              <div class="code-display">${codeStr}</div>
             </div>
             <div class="detail-group">
               <label>State:</label>
-              <div class="code-display">${state}</div>
+              <div class="code-display">${stateStr}</div>
             </div>
             <p class="info-text">This authorization code can now be exchanged for access tokens.</p>
           </div>
@@ -343,7 +355,7 @@ export const createAuthRouter = (
             <div class="code-block">
               <code>curl -X POST http://localhost:3000/token \\</code><br>
               <code>&nbsp;&nbsp;-H "Content-Type: application/json" \\</code><br>
-              <code>&nbsp;&nbsp;-d '{"code": "${code}", "client_id": "demo-app"}'</code>
+              <code>&nbsp;&nbsp;-d '{"code": "${codeStr}", "client_id": "demo-app"}'</code>
             </div>
             <div class="button-group">
               <a href="/" class="btn btn-secondary">← Back to Home</a>
@@ -354,7 +366,7 @@ export const createAuthRouter = (
 
         <script>
           function copyCode() {
-            navigator.clipboard.writeText('${code}').then(() => {
+            navigator.clipboard.writeText('${codeStr}').then(() => {
               alert('Authorization code copied to clipboard!');
             }).catch(err => {
               console.error('Failed to copy: ', err);
