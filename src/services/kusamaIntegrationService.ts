@@ -1,6 +1,6 @@
+import { decryptData, encryptData } from '../utils/encryption';
 import { createLogger } from '../utils/logger';
 import { AdvancedKusamaService } from './advancedKusamaService';
-import { encryptData, decryptData } from '../utils/encryption';
 
 export interface KusamaCredential extends Record<string, unknown> {
   id: string;
@@ -264,24 +264,24 @@ export class KusamaIntegrationService {
    */
   private encryptWithUserKey(data: string, userKey: string): string {
     const crypto = require('crypto');
-    
+
     // Ensure key is at least 32 characters
     if (userKey.length < 32) {
       throw new Error('Encryption key must be at least 32 characters long');
     }
-    
+
     // Derive a 32-byte key from user input
     const key = crypto.scryptSync(userKey, 'polkadot-sso-salt', 32);
     const iv = crypto.randomBytes(16);
-    
+
     const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
     cipher.setAAD(Buffer.from('kusama-credential', 'utf8'));
-    
+
     let encrypted = cipher.update(data, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    
+
     const tag = cipher.getAuthTag();
-    
+
     // Return format: iv:tag:encrypted
     return `${iv.toString('hex')}:${tag.toString('hex')}:${encrypted}`;
   }
@@ -291,26 +291,26 @@ export class KusamaIntegrationService {
    */
   private decryptWithUserKey(encryptedData: string, userKey: string): string {
     const crypto = require('crypto');
-    
+
     const parts = encryptedData.split(':');
     if (parts.length !== 3) {
       throw new Error('Invalid encrypted data format');
     }
-    
+
     const [ivHex, tagHex, encrypted] = parts;
     const iv = Buffer.from(ivHex, 'hex');
     const tag = Buffer.from(tagHex, 'hex');
-    
+
     // Derive the same key
     const key = crypto.scryptSync(userKey, 'polkadot-sso-salt', 32);
-    
+
     const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
     decipher.setAAD(Buffer.from('kusama-credential', 'utf8'));
     decipher.setAuthTag(tag);
-    
+
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   }
 

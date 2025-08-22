@@ -39,7 +39,7 @@ export class AdvancedKusamaService {
       if (this.config.accountSeed && this.config.accountSeed.length >= 32) {
         logger.info('Initializing Kusama account from seed');
         this.keyring = new Keyring({ type: this.config.accountType || 'sr25519' });
-        
+
         // Convert hex seed to buffer
         let seedBuffer: Buffer;
         if (this.config.accountSeed.startsWith('0x')) {
@@ -51,23 +51,23 @@ export class AdvancedKusamaService {
           // Use as-is for other formats
           seedBuffer = Buffer.from(this.config.accountSeed, 'utf8');
         }
-        
+
         this.account = this.keyring.addFromSeed(seedBuffer);
         logger.info('Kusama account initialized', {
           address: this.account.address,
           type: this.config.accountType || 'sr25519',
         });
-        
+
         // Check account balance if connected
         try {
           const balance = await this.api.query.system.account(this.account.address);
           const freeBalance = (balance as any).data.free.toString();
-          logger.info('Account balance check', { 
+          logger.info('Account balance check', {
             address: this.account.address,
             freeBalance: `${freeBalance} units`,
             hasBalance: BigInt(freeBalance) > 0n
           });
-          
+
           // Warn if balance is low
           if (BigInt(freeBalance) < BigInt('100000000000')) { // 0.1 KSM in Planck units
             logger.warn('Account balance is low - may not be sufficient for transactions', {
@@ -84,10 +84,10 @@ export class AdvancedKusamaService {
       } else {
         logger.warn('No account seed provided - running in read-only mode');
       }
-      
+
       // Initialize monitoring service
       this.monitoring = new KusamaMonitoringService(this.api);
-      
+
       this.isConnected = true;
       logger.info('Advanced Kusama service initialized successfully');
     } catch (error) {
@@ -121,7 +121,7 @@ export class AdvancedKusamaService {
           nonce: await this.api.rpc.system.accountNextIndex(this.account.address),
         });
         extrinsicHashes.push(hash.toString());
-        
+
         // Monitor transaction if monitoring service is available
         if (this.monitoring) {
           this.monitoring.monitorTransaction(hash.toString(), (status: TransactionStatus) => {
@@ -420,7 +420,7 @@ export class AdvancedKusamaService {
   async disconnect(): Promise<void> {
     // Stop all monitoring first
     this.monitoring?.stopAllMonitoring();
-    
+
     if (this.api) {
       await this.api.disconnect();
       this.isConnected = false;

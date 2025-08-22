@@ -64,7 +64,7 @@ export class KusamaMonitoringService {
 
           // Get transaction status
           const status = await this.getTransactionStatus(transactionHash);
-          
+
           this.logger.info('Transaction status check', {
             hash: transactionHash,
             status: status.status,
@@ -83,7 +83,7 @@ export class KusamaMonitoringService {
           // Continue monitoring if still pending
           if (status.status === 'pending') {
             retryCount++;
-            
+
             if (retryCount >= this.config.maxRetries) {
               this.cleanup(transactionHash);
               const failedStatus: TransactionStatus = {
@@ -141,10 +141,10 @@ export class KusamaMonitoringService {
       // Try to get transaction info
       const signedBlock = await this.api.rpc.chain.getBlock();
       const apiAt = await this.api.at(signedBlock.block.header.hash);
-      
+
       // Check if transaction is in recent blocks
       const currentBlockNumber = signedBlock.block.header.number.toNumber();
-      
+
       // Search recent blocks for the transaction
       for (let i = 0; i < 10; i++) {
         const blockNumber = currentBlockNumber - i;
@@ -153,7 +153,7 @@ export class KusamaMonitoringService {
         try {
           const blockHash = await this.api.rpc.chain.getBlockHash(blockNumber);
           const block = await this.api.rpc.chain.getBlock(blockHash);
-          
+
           // Check if our transaction is in this block
           const foundTx = block.block.extrinsics.find(
             ext => ext.hash.toString() === transactionHash
@@ -162,19 +162,19 @@ export class KusamaMonitoringService {
           if (foundTx) {
             // Get events for this block
             const events = await this.api.query.system.events.at(blockHash);
-            const txEvents = (events as unknown as any[]).filter(event => 
+            const txEvents = (events as unknown as any[]).filter(event =>
               event.phase.isApplyExtrinsic &&
               event.phase.asApplyExtrinsic.eq(block.block.extrinsics.indexOf(foundTx))
             );
 
             // Check if transaction was successful
             const hasFailedEvent = txEvents.some(event =>
-              event.event.section === 'system' && 
+              event.event.section === 'system' &&
               (event.event.method === 'ExtrinsicFailed' || event.event.method === 'DispatchError')
             );
 
             const hasSuccessEvent = txEvents.some(event =>
-              event.event.section === 'system' && 
+              event.event.section === 'system' &&
               event.event.method === 'ExtrinsicSuccess'
             );
 
