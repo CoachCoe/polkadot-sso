@@ -424,7 +424,7 @@ async function runCredentialDemo() {
     console.log('   • Request-based credential workflows');
     console.log('   • Encrypted data protection');
   } catch (error) {
-    log.error(`Demo failed: ${error}`);
+    log.error(`Demo failed: ${error instanceof Error ? error.message : String(error)}`);
   } finally {
     await db.close();
   }

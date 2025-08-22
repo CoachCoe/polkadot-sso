@@ -242,7 +242,7 @@ export const createAuthRouter = (
         const { isValid } = signatureVerify(
           challenge.message,
           signature as string,
-          address as string
+          String(address ?? '')
         );
 
         if (!isValid) {
