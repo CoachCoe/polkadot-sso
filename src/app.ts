@@ -18,6 +18,7 @@ import { createAuthRouter } from './routes/auth';
 import { createClientRouter } from './routes/clients';
 import { createCredentialRouter } from './routes/credentials';
 import { createTokenRouter } from './routes/tokens';
+import kusamaRoutes from './routes/kusama';
 import { AuditService } from './services/auditService';
 import { ChallengeService } from './services/challengeService';
 import { CredentialService } from './services/credentialService';
@@ -153,6 +154,12 @@ async function initializeApp() {
   app.use('/api/tokens', createTokenRouter(tokenService, db, auditService));
   app.use('/api/clients', createClientRouter(db));
   app.use('/api/credentials', createCredentialRouter(credentialService, auditService));
+  app.use('/api/kusama', kusamaRoutes);
+
+  // Demo page route
+  app.get('/kusama-demo', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/views/kusama-demo.html'));
+  });
 
 
   app.use(bruteForceMiddleware);
