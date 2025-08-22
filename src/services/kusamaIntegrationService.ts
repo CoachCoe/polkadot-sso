@@ -1,5 +1,6 @@
 import { createLogger } from '../utils/logger';
 import { AdvancedKusamaService } from './advancedKusamaService';
+import { encryptData, decryptData } from '../utils/encryption';
 
 export interface KusamaCredential extends Record<string, unknown> {
   id: string;
@@ -70,9 +71,14 @@ export class KusamaIntegrationService {
         address: userAddress
       });
 
-      // For now, we'll store data unencrypted
-      // In production, you'd implement proper encryption with the provided key
-      const encryptedData = dataToEncrypt;
+      // Encrypt data with user-provided key or system default
+      let encryptedData: string;
+      if (encryptionKey) {
+        encryptedData = this.encryptWithUserKey(dataToEncrypt, encryptionKey);
+      } else {
+        // Use system default encryption from environment
+        encryptedData = encryptData(dataToEncrypt);
+      }
 
       // Create credential object
       const credential: KusamaCredential = {
@@ -134,9 +140,22 @@ export class KusamaIntegrationService {
         throw new Error('Credential not found');
       }
 
-      // For now, return the data as-is since we're not encrypting
-      // In production, you'd implement proper decryption
-      return JSON.parse(mockCredential.data);
+      // Decrypt data based on encryption method used
+      if (mockCredential.encrypted && encryptionKey) {
+        const decryptedData = this.decryptWithUserKey(mockCredential.data, encryptionKey);
+        return JSON.parse(decryptedData);
+      } else if (mockCredential.encrypted && !encryptionKey) {
+        // Try system default decryption
+        try {
+          const decryptedData = decryptData(mockCredential.data);
+          return JSON.parse(decryptedData);
+        } catch (error) {
+          throw new Error('Credential is encrypted but no valid decryption key provided');
+        }
+      } else {
+        // Unencrypted data
+        return JSON.parse(mockCredential.data);
+      }
 
     } catch (error) {
       this.logger.error('Failed to retrieve credential from Kusama:', error);
@@ -203,9 +222,96 @@ export class KusamaIntegrationService {
     }
   }
 
+  /**
+   * Get network health status
+   */
+  async getNetworkHealth() {
+    try {
+      if (!this.isInitialized) {
+        await this.initialize();
+      }
+
+      return await this.kusamaService.getNetworkHealth();
+    } catch (error) {
+      this.logger.error('Failed to get network health:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get active transaction monitors
+   */
+  async getActiveMonitors(): Promise<string[]> {
+    try {
+      if (!this.isInitialized) {
+        await this.initialize();
+      }
+
+      return this.kusamaService.getActiveMonitors();
+    } catch (error) {
+      this.logger.error('Failed to get active monitors:', error);
+      return [];
+    }
+  }
+
   private generateHash(data: string): string {
     const crypto = require('crypto');
     return crypto.createHash('sha256').update(data).digest('hex');
+  }
+
+  /**
+   * Encrypt data with user-provided key using AES-256-GCM
+   */
+  private encryptWithUserKey(data: string, userKey: string): string {
+    const crypto = require('crypto');
+    
+    // Ensure key is at least 32 characters
+    if (userKey.length < 32) {
+      throw new Error('Encryption key must be at least 32 characters long');
+    }
+    
+    // Derive a 32-byte key from user input
+    const key = crypto.scryptSync(userKey, 'polkadot-sso-salt', 32);
+    const iv = crypto.randomBytes(16);
+    
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+    cipher.setAAD(Buffer.from('kusama-credential', 'utf8'));
+    
+    let encrypted = cipher.update(data, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    
+    const tag = cipher.getAuthTag();
+    
+    // Return format: iv:tag:encrypted
+    return `${iv.toString('hex')}:${tag.toString('hex')}:${encrypted}`;
+  }
+
+  /**
+   * Decrypt data with user-provided key
+   */
+  private decryptWithUserKey(encryptedData: string, userKey: string): string {
+    const crypto = require('crypto');
+    
+    const parts = encryptedData.split(':');
+    if (parts.length !== 3) {
+      throw new Error('Invalid encrypted data format');
+    }
+    
+    const [ivHex, tagHex, encrypted] = parts;
+    const iv = Buffer.from(ivHex, 'hex');
+    const tag = Buffer.from(tagHex, 'hex');
+    
+    // Derive the same key
+    const key = crypto.scryptSync(userKey, 'polkadot-sso-salt', 32);
+    
+    const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+    decipher.setAAD(Buffer.from('kusama-credential', 'utf8'));
+    decipher.setAuthTag(tag);
+    
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    
+    return decrypted;
   }
 
   // Mock methods for demonstration - replace with actual Kusama queries

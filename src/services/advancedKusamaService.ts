@@ -4,6 +4,7 @@ import { KeyringPair } from '@polkadot/keyring/types';
 import * as crypto from 'crypto';
 import { decryptData, encryptData } from '../utils/encryption';
 import { createLogger } from '../utils/logger';
+import KusamaMonitoringService, { TransactionStatus } from './kusamaMonitoringService';
 const logger = createLogger('advanced-kusama-service');
 export interface KusamaConfig {
   endpoint: string;
@@ -25,6 +26,7 @@ export class AdvancedKusamaService {
   private account: KeyringPair | null = null;
   private config: KusamaConfig;
   private isConnected: boolean = false;
+  private monitoring: KusamaMonitoringService | null = null;
   constructor(config: KusamaConfig) {
     this.config = config;
   }
@@ -34,14 +36,58 @@ export class AdvancedKusamaService {
       const provider = new WsProvider(this.config.endpoint);
       this.api = await ApiPromise.create({ provider });
       await this.api.isReady;
-      if (this.config.accountSeed) {
+      if (this.config.accountSeed && this.config.accountSeed.length >= 32) {
+        logger.info('Initializing Kusama account from seed');
         this.keyring = new Keyring({ type: this.config.accountType || 'sr25519' });
-        this.account = this.keyring.addFromSeed(Buffer.from(this.config.accountSeed, 'hex'));
+        
+        // Convert hex seed to buffer
+        let seedBuffer: Buffer;
+        if (this.config.accountSeed.startsWith('0x')) {
+          seedBuffer = Buffer.from(this.config.accountSeed.slice(2), 'hex');
+        } else if (this.config.accountSeed.length === 64) {
+          // Assume hex string without 0x prefix
+          seedBuffer = Buffer.from(this.config.accountSeed, 'hex');
+        } else {
+          // Use as-is for other formats
+          seedBuffer = Buffer.from(this.config.accountSeed, 'utf8');
+        }
+        
+        this.account = this.keyring.addFromSeed(seedBuffer);
         logger.info('Kusama account initialized', {
           address: this.account.address,
           type: this.config.accountType || 'sr25519',
         });
+        
+        // Check account balance if connected
+        try {
+          const balance = await this.api.query.system.account(this.account.address);
+          const freeBalance = (balance as any).data.free.toString();
+          logger.info('Account balance check', { 
+            address: this.account.address,
+            freeBalance: `${freeBalance} units`,
+            hasBalance: BigInt(freeBalance) > 0n
+          });
+          
+          // Warn if balance is low
+          if (BigInt(freeBalance) < BigInt('100000000000')) { // 0.1 KSM in Planck units
+            logger.warn('Account balance is low - may not be sufficient for transactions', {
+              address: this.account.address,
+              balance: freeBalance
+            });
+          }
+        } catch (balanceError) {
+          logger.warn('Could not check account balance', { error: balanceError });
+        }
+      } else if (this.config.accountSeed) {
+        logger.error('Account seed provided but invalid length (must be at least 32 characters)');
+        throw new Error('Invalid account seed length - must be at least 32 characters');
+      } else {
+        logger.warn('No account seed provided - running in read-only mode');
       }
+      
+      // Initialize monitoring service
+      this.monitoring = new KusamaMonitoringService(this.api);
+      
       this.isConnected = true;
       logger.info('Advanced Kusama service initialized successfully');
     } catch (error) {
@@ -75,6 +121,24 @@ export class AdvancedKusamaService {
           nonce: await this.api.rpc.system.accountNextIndex(this.account.address),
         });
         extrinsicHashes.push(hash.toString());
+        
+        // Monitor transaction if monitoring service is available
+        if (this.monitoring) {
+          this.monitoring.monitorTransaction(hash.toString(), (status: TransactionStatus) => {
+            logger.info('Transaction status update', {
+              chunk: i,
+              hash: hash.toString(),
+              status: status.status,
+              blockNumber: status.blockNumber
+            });
+          }).catch(error => {
+            logger.warn('Transaction monitoring failed', {
+              chunk: i,
+              hash: hash.toString(),
+              error: error instanceof Error ? error.message : 'Unknown error'
+            });
+          });
+        }
       }
       const block = { hash: extrinsicHashes[0] };
       const result: EncryptedCredentialData = {
@@ -329,7 +393,34 @@ export class AdvancedKusamaService {
     }
     return chunks;
   }
+  /**
+   * Get network health information
+   */
+  async getNetworkHealth() {
+    if (!this.monitoring) {
+      throw new Error('Monitoring service not initialized');
+    }
+    return await this.monitoring.getNetworkHealth();
+  }
+
+  /**
+   * Get active transaction monitors
+   */
+  getActiveMonitors(): string[] {
+    return this.monitoring?.getActiveMonitors() || [];
+  }
+
+  /**
+   * Stop monitoring a specific transaction
+   */
+  stopMonitoring(transactionHash: string): void {
+    this.monitoring?.stopMonitoring(transactionHash);
+  }
+
   async disconnect(): Promise<void> {
+    // Stop all monitoring first
+    this.monitoring?.stopAllMonitoring();
+    
     if (this.api) {
       await this.api.disconnect();
       this.isConnected = false;

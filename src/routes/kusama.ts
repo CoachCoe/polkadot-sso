@@ -208,4 +208,47 @@ router.post('/init', async (req: Request, res: Response, next: NextFunction) => 
   }
 });
 
+/**
+ * Get network health status
+ * GET /api/kusama/health
+ */
+router.get('/health', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    logger.info('Checking Kusama network health...');
+
+    const health = await kusamaIntegrationService.getNetworkHealth();
+
+    res.json({
+      success: true,
+      health
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to check network health',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+/**
+ * Get active transaction monitors
+ * GET /api/kusama/monitors
+ */
+router.get('/monitors', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    logger.info('Getting active transaction monitors...');
+
+    const monitors = await kusamaIntegrationService.getActiveMonitors();
+
+    res.json({
+      success: true,
+      activeMonitors: monitors,
+      count: monitors.length
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
