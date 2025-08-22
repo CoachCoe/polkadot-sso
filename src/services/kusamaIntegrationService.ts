@@ -28,7 +28,8 @@ export class KusamaIntegrationService {
   constructor() {
     this.kusamaService = new AdvancedKusamaService({
       endpoint: process.env.KUSAMA_ENDPOINT || 'wss://kusama-rpc.polkadot.io',
-      accountType: (process.env.KUSAMA_ACCOUNT_TYPE as 'sr25519' | 'ed25519' | 'ecdsa') || 'sr25519'
+      accountType:
+        (process.env.KUSAMA_ACCOUNT_TYPE as 'sr25519' | 'ed25519' | 'ecdsa') || 'sr25519',
     });
   }
 
@@ -68,7 +69,7 @@ export class KusamaIntegrationService {
         type: credentialType,
         data: credentialData,
         timestamp: Date.now(),
-        address: userAddress
+        address: userAddress,
       });
 
       // Encrypt data with user-provided key or system default
@@ -88,30 +89,26 @@ export class KusamaIntegrationService {
         encrypted: !!encryptionKey,
         hash: this.generateHash(dataToEncrypt),
         timestamp: Date.now(),
-        address: userAddress
+        address: userAddress,
       };
 
       this.logger.info(`Storing credential ${credentialId} on Kusama for address ${userAddress}`);
 
       // Store on Kusama using remarks
-      const result = await this.kusamaService.storeEncryptedDataInRemarks(
-        userAddress,
-        credential
-      );
+      const result = await this.kusamaService.storeEncryptedDataInRemarks(userAddress, credential);
 
       this.logger.info(`✅ Credential ${credentialId} stored successfully on Kusama`);
       return {
         success: true,
         transactionHash: result.extrinsicHash,
         cost: 0.001, // Approximate cost for remark storage
-        credentialId
+        credentialId,
       };
-
     } catch (error) {
       this.logger.error('Failed to store credential on Kusama:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -156,7 +153,6 @@ export class KusamaIntegrationService {
         // Unencrypted data
         return JSON.parse(mockCredential.data);
       }
-
     } catch (error) {
       this.logger.error('Failed to retrieve credential from Kusama:', error);
       throw error;
@@ -172,10 +168,7 @@ export class KusamaIntegrationService {
         await this.initialize();
       }
 
-      const estimate = await this.kusamaService.getStorageCostEstimate(
-        dataSize,
-        'remark'
-      );
+      const estimate = await this.kusamaService.getStorageCostEstimate(dataSize, 'remark');
 
       return parseFloat(estimate.estimatedCost) || 0;
     } catch (error) {
@@ -193,7 +186,7 @@ export class KusamaIntegrationService {
         type: credential.type,
         data: credential.data,
         timestamp: credential.timestamp,
-        address: credential.address
+        address: credential.address,
       });
 
       const expectedHash = this.generateHash(dataString);
@@ -317,7 +310,9 @@ export class KusamaIntegrationService {
   // Mock methods for demonstration - replace with actual Kusama queries
   private async getMockCredential(credentialId: string): Promise<KusamaCredential | null> {
     // This would be replaced with actual Kusama blockchain queries
-    const mockCredentials = this.getMockUserCredentials('5Dy3rM7WVhwv58ogVn1RGK9rmnq7HwUBqeZheT9U5B26mXZd');
+    const mockCredentials = this.getMockUserCredentials(
+      '5Dy3rM7WVhwv58ogVn1RGK9rmnq7HwUBqeZheT9U5B26mXZd'
+    );
     return mockCredentials.find(c => c.id === credentialId) || null;
   }
 
@@ -332,15 +327,15 @@ export class KusamaIntegrationService {
             institution: 'University of Example',
             degree: 'Bachelor of Science',
             year: '2023',
-            field: 'Computer Science'
+            field: 'Computer Science',
           },
           timestamp: Date.now(),
-          address: userAddress
+          address: userAddress,
         }),
         encrypted: false,
         hash: 'mock_hash_123',
         timestamp: Date.now(),
-        address: userAddress
+        address: userAddress,
       },
       {
         id: 'cred_1234567891_def456',
@@ -351,16 +346,16 @@ export class KusamaIntegrationService {
             organization: 'Blockchain Institute',
             certification: 'Polkadot Developer',
             year: '2024',
-            level: 'Advanced'
+            level: 'Advanced',
           },
           timestamp: Date.now(),
-          address: userAddress
+          address: userAddress,
         }),
         encrypted: true,
         hash: 'mock_hash_456',
         timestamp: Date.now(),
-        address: userAddress
-      }
+        address: userAddress,
+      },
     ];
   }
 }

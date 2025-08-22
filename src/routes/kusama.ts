@@ -37,7 +37,8 @@ const listCredentialsSchema = z.object({
  * Store a credential on Kusama
  * POST /api/kusama/store
  */
-router.post('/store',
+router.post(
+  '/store',
   validateBody(storeCredentialSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -58,13 +59,13 @@ router.post('/store',
           message: 'Credential stored successfully on Kusama',
           credentialId: result.credentialId,
           transactionHash: result.transactionHash,
-          cost: result.cost
+          cost: result.cost,
         });
       } else {
         res.status(400).json({
           success: false,
           message: 'Failed to store credential',
-          error: result.error
+          error: result.error,
         });
       }
     } catch (error) {
@@ -77,7 +78,8 @@ router.post('/store',
  * Retrieve a credential from Kusama
  * POST /api/kusama/retrieve
  */
-router.post('/retrieve',
+router.post(
+  '/retrieve',
   validateBody(retrieveCredentialSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -93,13 +95,13 @@ router.post('/retrieve',
 
       res.json({
         success: true,
-        credential
+        credential,
       });
     } catch (error) {
       res.status(404).json({
         success: false,
         message: 'Credential not found or access denied',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }
@@ -109,7 +111,8 @@ router.post('/retrieve',
  * List all credentials for a user
  * GET /api/kusama/list?userAddress=...
  */
-router.get('/list',
+router.get(
+  '/list',
   validateBody(listCredentialsSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -122,7 +125,7 @@ router.get('/list',
       res.json({
         success: true,
         credentials,
-        count: credentials.length
+        count: credentials.length,
       });
     } catch (error) {
       next(error);
@@ -146,7 +149,7 @@ router.get('/cost-estimate', async (req: Request, res: Response, next: NextFunct
       success: true,
       dataSize,
       estimatedCost: cost,
-      currency: 'KSM'
+      currency: 'KSM',
     });
   } catch (error) {
     next(error);
@@ -164,7 +167,7 @@ router.post('/verify', async (req: Request, res: Response, next: NextFunction) =
     if (!credential) {
       return res.status(400).json({
         success: false,
-        message: 'Credential object is required'
+        message: 'Credential object is required',
       });
     }
 
@@ -175,7 +178,7 @@ router.post('/verify', async (req: Request, res: Response, next: NextFunction) =
     res.json({
       success: true,
       isValid,
-      credentialId: credential.id
+      credentialId: credential.id,
     });
   } catch (error) {
     next(error);
@@ -195,12 +198,12 @@ router.post('/init', async (req: Request, res: Response, next: NextFunction) => 
     if (success) {
       res.json({
         success: true,
-        message: 'Kusama integration service initialized successfully'
+        message: 'Kusama integration service initialized successfully',
       });
     } else {
       res.status(500).json({
         success: false,
-        message: 'Failed to initialize Kusama integration service'
+        message: 'Failed to initialize Kusama integration service',
       });
     }
   } catch (error) {
@@ -220,13 +223,13 @@ router.get('/health', async (req: Request, res: Response, next: NextFunction) =>
 
     res.json({
       success: true,
-      health
+      health,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: 'Failed to check network health',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -244,7 +247,7 @@ router.get('/monitors', async (req: Request, res: Response, next: NextFunction) 
     res.json({
       success: true,
       activeMonitors: monitors,
-      count: monitors.length
+      count: monitors.length,
     });
   } catch (error) {
     next(error);

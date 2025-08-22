@@ -65,14 +65,15 @@ export class AdvancedKusamaService {
           logger.info('Account balance check', {
             address: this.account.address,
             freeBalance: `${freeBalance} units`,
-            hasBalance: BigInt(freeBalance) > 0n
+            hasBalance: BigInt(freeBalance) > 0n,
           });
 
           // Warn if balance is low
-          if (BigInt(freeBalance) < BigInt('100000000000')) { // 0.1 KSM in Planck units
+          if (BigInt(freeBalance) < BigInt('100000000000')) {
+            // 0.1 KSM in Planck units
             logger.warn('Account balance is low - may not be sufficient for transactions', {
               address: this.account.address,
-              balance: freeBalance
+              balance: freeBalance,
             });
           }
         } catch (balanceError) {
@@ -124,20 +125,22 @@ export class AdvancedKusamaService {
 
         // Monitor transaction if monitoring service is available
         if (this.monitoring) {
-          this.monitoring.monitorTransaction(hash.toString(), (status: TransactionStatus) => {
-            logger.info('Transaction status update', {
-              chunk: i,
-              hash: hash.toString(),
-              status: status.status,
-              blockNumber: status.blockNumber
+          this.monitoring
+            .monitorTransaction(hash.toString(), (status: TransactionStatus) => {
+              logger.info('Transaction status update', {
+                chunk: i,
+                hash: hash.toString(),
+                status: status.status,
+                blockNumber: status.blockNumber,
+              });
+            })
+            .catch(error => {
+              logger.warn('Transaction monitoring failed', {
+                chunk: i,
+                hash: hash.toString(),
+                error: error instanceof Error ? error.message : 'Unknown error',
+              });
             });
-          }).catch(error => {
-            logger.warn('Transaction monitoring failed', {
-              chunk: i,
-              hash: hash.toString(),
-              error: error instanceof Error ? error.message : 'Unknown error'
-            });
-          });
         }
       }
       const block = { hash: extrinsicHashes[0] };

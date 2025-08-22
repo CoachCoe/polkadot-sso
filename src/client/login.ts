@@ -5,7 +5,7 @@ interface InjectedExtension {
   }>;
 }
 
-(function() {
+(function () {
   const statusDiv = document.getElementById('status') as HTMLDivElement;
   const connectButton = document.getElementById('connectButton') as HTMLButtonElement;
   const buttonText = document.getElementById('buttonText') as HTMLSpanElement;
@@ -36,21 +36,21 @@ interface InjectedExtension {
     try {
       setLoading(true);
       updateStatus('Checking for extension...');
-      
+
       const extension = await waitForExtension();
       if (!extension) {
         throw new Error('Please install Polkadot.js extension first');
       }
 
       updateStatus('Enabling extension...');
-      
+
       const enabledExtension = await extension.enable((window as any).SSO_CONFIG.appName);
       if (!enabledExtension) {
         throw new Error('Failed to enable extension');
       }
 
       updateStatus('Requesting account access...');
-      
+
       const accounts = await enabledExtension.accounts.get();
       console.log('Found accounts:', accounts);
 
@@ -59,11 +59,12 @@ interface InjectedExtension {
       }
 
       updateStatus('Account found, proceeding...', 'success');
-      
-      window.location.href = '/challenge?address=' + 
-        encodeURIComponent(accounts[0].address) + 
-        '&client_id=' + encodeURIComponent((window as any).SSO_CONFIG.clientId);
 
+      window.location.href =
+        '/challenge?address=' +
+        encodeURIComponent(accounts[0].address) +
+        '&client_id=' +
+        encodeURIComponent((window as any).SSO_CONFIG.clientId);
     } catch (error) {
       console.error('Connection error:', error);
       updateStatus(error instanceof Error ? error.message : 'Unknown error', 'error');

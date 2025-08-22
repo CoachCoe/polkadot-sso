@@ -39,41 +39,39 @@ if (!secretValidation.valid) {
 
 const app = express();
 
-
 app.use(addRequestId);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
-
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: [
-        "'self'",
-        (_, res: any) => `'nonce-${res.locals.nonce}'`,
-        "https://cdn.jsdelivr.net",
-        "https://polkadot.js.org",
-        "'unsafe-eval'" // Required for WebAssembly compilation in Polkadot.js
-      ],
-      connectSrc: ["'self'", "wss://rpc.polkadot.io"],
-      frameAncestors: ["'none'"],
-      objectSrc: ["'none'"],
-      upgradeInsecureRequests: [],
-      workerSrc: ["'self'", "blob:"], // Allow WebAssembly workers
-      childSrc: ["'self'", "blob:"] // Allow WebAssembly in iframes if needed
-    }
-  },
-  referrerPolicy: { policy: 'same-origin' },
-  permittedCrossDomainPolicies: { permittedPolicies: 'none' },
-  crossOriginEmbedderPolicy: true,
-  crossOriginOpenerPolicy: { policy: 'same-origin' },
-  crossOriginResourcePolicy: { policy: 'same-site' }
-}));
-
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          (_, res: any) => `'nonce-${res.locals.nonce}'`,
+          'https://cdn.jsdelivr.net',
+          'https://polkadot.js.org',
+          "'unsafe-eval'", // Required for WebAssembly compilation in Polkadot.js
+        ],
+        connectSrc: ["'self'", 'wss://rpc.polkadot.io'],
+        frameAncestors: ["'none'"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+        workerSrc: ["'self'", 'blob:'], // Allow WebAssembly workers
+        childSrc: ["'self'", 'blob:'], // Allow WebAssembly in iframes if needed
+      },
+    },
+    referrerPolicy: { policy: 'same-origin' },
+    permittedCrossDomainPolicies: { permittedPolicies: 'none' },
+    crossOriginEmbedderPolicy: true,
+    crossOriginOpenerPolicy: { policy: 'same-origin' },
+    crossOriginResourcePolicy: { policy: 'same-site' },
+  })
+);
 
 app.options('*', cors(corsConfig));
-
 
 app.use((req, res, next) => {
   res.setHeader('X-Request-ID', (req as RequestWithId).id);
@@ -85,25 +83,22 @@ app.use((req, res, next) => {
   next();
 });
 
-
 app.use(session(sessionConfig));
 
-
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false
-}));
-
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+);
 
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-
 app.use((req, res, next) => nonceMiddleware(req, res as ResponseWithLocals, next));
 app.use(securityMiddleware);
-
 
 async function initializeApp() {
   const db = await initializeDatabase();
@@ -113,44 +108,42 @@ async function initializeApp() {
   const auditService = new AuditService(db);
   const credentialService = new CredentialService(db);
 
-
   // Create demo client with secret for testing
   const demoClientSecret = 'demo-client-secret-32-chars-minimum-required';
 
   // Insert demo client into database if it doesn't exist
-  await db.run(`
+  await db.run(
+    `
     INSERT OR IGNORE INTO clients (
       client_id, client_secret, name, redirect_urls, allowed_origins, created_at, updated_at
     ) VALUES (?, ?, ?, ?, ?, ?, ?)
-  `, [
-    'demo-app',
-    demoClientSecret,
-    'Polkadot SSO Demo',
-    JSON.stringify(['http://localhost:3000/callback']),
-    JSON.stringify(['http://localhost:3000']),
-    Date.now(),
-    Date.now()
-  ]);
+  `,
+    [
+      'demo-app',
+      demoClientSecret,
+      'Polkadot SSO Demo',
+      JSON.stringify(['http://localhost:3000/callback']),
+      JSON.stringify(['http://localhost:3000']),
+      Date.now(),
+      Date.now(),
+    ]
+  );
 
   const clients = new Map<string, Client>([
-    ['demo-app', {
-      client_id: 'demo-app',
-      name: 'Polkadot SSO Demo',
-      redirect_url: 'http://localhost:3000/callback',
-      allowed_origins: ['http://localhost:3000']
-    }]
+    [
+      'demo-app',
+      {
+        client_id: 'demo-app',
+        name: 'Polkadot SSO Demo',
+        redirect_url: 'http://localhost:3000/callback',
+        allowed_origins: ['http://localhost:3000'],
+      },
+    ],
   ]);
 
   const bruteForceMiddleware = createBruteForceProtection(auditService);
 
-
-  app.use('/', createAuthRouter(
-    tokenService,
-    challengeService,
-    auditService,
-    clients,
-    db
-  ));
+  app.use('/', createAuthRouter(tokenService, challengeService, auditService, clients, db));
   app.use('/api/tokens', createTokenRouter(tokenService, db, auditService));
   app.use('/api/clients', createClientRouter(db));
   app.use('/api/credentials', createCredentialRouter(credentialService, auditService));
@@ -161,10 +154,8 @@ async function initializeApp() {
     res.sendFile(path.join(__dirname, '../public/views/kusama-demo.html'));
   });
 
-
   app.use(bruteForceMiddleware);
   app.use(sanitizeRequestParams());
-
 
   app.use(((err: Error, req: Request, res: Response, next: NextFunction) => {
     const requestId = (req as RequestWithId).id;
@@ -174,20 +165,20 @@ async function initializeApp() {
         name: err.name,
         message: err.message,
         stack: err.stack,
-        details: err
+        details: err,
       },
       method: req.method,
       url: req.url,
       query: req.query,
       body: req.body,
-      ip: req.ip || 'unknown'
+      ip: req.ip || 'unknown',
     });
 
     res.status(500).json({
       status: 'error',
       message: 'Internal server error',
       requestId,
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined,
     });
   }) as ErrorRequestHandler);
 

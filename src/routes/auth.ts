@@ -72,7 +72,7 @@ export const createAuthRouter = (
       const client = clients.get(client_id as string);
 
       if (!client) {
-        logError(req, new Error(`Invalid client_id: ${client_id}`));
+        logError(req, new Error(`Invalid client_id: ${String(client_id)}`));
         return res.status(400).json({ error: 'Invalid client' });
       }
 
@@ -139,7 +139,7 @@ export const createAuthRouter = (
       const client = clients.get(client_id as string);
 
       if (!client) {
-        logError(req, new Error(`Invalid client_id: ${client_id}`));
+        logError(req, new Error(`Invalid client_id: ${String(client_id)}`));
         return res.status(400).json({ error: 'Invalid client' });
       }
 
@@ -313,8 +313,8 @@ export const createAuthRouter = (
       return res.status(400).send('Missing required parameters');
     }
 
-    const codeStr = Array.isArray(code) ? code[0] : code;
-    const stateStr = Array.isArray(state) ? state[0] : state;
+    const codeStr = Array.isArray(code) ? code[0] : String(code ?? '');
+    const stateStr = Array.isArray(state) ? state[0] : String(state ?? '');
 
     res.send(`
       <!DOCTYPE html>

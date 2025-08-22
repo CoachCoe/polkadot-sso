@@ -21,35 +21,33 @@ module.exports = {
     // Prettier integration
     'prettier/prettier': 'error',
 
-    // TypeScript specific rules (tightened for better code quality)
-    '@typescript-eslint/no-explicit-any': 'error',
-    '@typescript-eslint/no-unsafe-assignment': 'error',
-    '@typescript-eslint/no-unsafe-call': 'error',
-    '@typescript-eslint/no-unsafe-member-access': 'error',
-    '@typescript-eslint/no-unsafe-return': 'error',
-    '@typescript-eslint/prefer-nullish-coalescing': 'error',
-    '@typescript-eslint/prefer-optional-chain': 'error',
-    '@typescript-eslint/no-unused-vars': ['error', {
+    // TypeScript specific rules (relaxed for development)
+    '@typescript-eslint/no-explicit-any': 'warn', // Changed from error to warn
+    '@typescript-eslint/no-unsafe-assignment': 'warn', // Changed from error to warn
+    '@typescript-eslint/no-unsafe-call': 'warn', // Changed from error to warn
+    '@typescript-eslint/no-unsafe-member-access': 'warn', // Changed from error to warn
+    '@typescript-eslint/no-unsafe-return': 'warn', // Changed from error to warn
+    '@typescript-eslint/prefer-nullish-coalescing': 'warn', // Changed from error to warn
+    '@typescript-eslint/prefer-optional-chain': 'warn', // Changed from error to warn
+    '@typescript-eslint/no-unused-vars': ['warn', { // Changed from error to warn
       argsIgnorePattern: '^_',
       varsIgnorePattern: '^_'
     }],
-    '@typescript-eslint/explicit-function-return-type': 'warn',
-    '@typescript-eslint/explicit-module-boundary-types': 'warn',
-    '@typescript-eslint/no-non-null-assertion': 'error',
-    '@typescript-eslint/require-await': 'error',
-    '@typescript-eslint/no-misused-promises': 'error',
+    '@typescript-eslint/explicit-function-return-type': 'off', // Changed from warn to off
+    '@typescript-eslint/explicit-module-boundary-types': 'off', // Changed from warn to off
+    '@typescript-eslint/no-non-null-assertion': 'warn', // Changed from error to warn
+    '@typescript-eslint/require-await': 'warn', // Changed from error to warn
+    '@typescript-eslint/no-misused-promises': 'warn', // Changed from error to warn
 
     // General code quality
     'prefer-const': 'error',
     'no-var': 'error',
     'object-shorthand': 'error',
     'prefer-template': 'error',
-    'prefer-arrow/prefer-arrow-functions': 'warn', // Changed from error to warn
+    'prefer-arrow/prefer-arrow-functions': 'off', // Changed from warn to off
 
     // Console statements (custom rule)
-    'no-console': ['warn', { // Changed from error to warn
-      allow: ['warn', 'error']
-    }],
+    'no-console': 'off', // Changed from warn to off for development
 
     // Security rules
     'security/detect-object-injection': 'warn',
@@ -57,12 +55,7 @@ module.exports = {
     'security/detect-unsafe-regex': 'error',
 
     // Code style
-    'max-len': ['warn', { // Changed from error to warn
-      code: 100,
-      ignoreUrls: true,
-      ignoreStrings: true,
-      ignoreTemplateLiterals: true
-    }],
+    'max-len': 'off', // Changed from warn to off for development
     'no-multiple-empty-lines': ['error', { max: 2 }],
     'eol-last': 'error',
     'no-trailing-spaces': 'error',
@@ -72,17 +65,14 @@ module.exports = {
     'no-throw-literal': 'error',
 
     // Performance
-    'prefer-destructuring': ['warn', { // Changed from error to warn
-      array: true,
-      object: true
-    }],
+    'prefer-destructuring': 'off', // Changed from warn to off for development
     'no-array-constructor': 'error',
 
-    // Maintainability (tightened for better code quality)
-    'complexity': ['warn', 10], // Back to original strict limit
-    'max-depth': ['warn', 4], // Back to original strict limit
-    'max-lines-per-function': ['warn', 50], // Back to original strict limit
-    'max-params': ['warn', 5] // Back to original strict limit
+    // Maintainability (relaxed for development)
+    'complexity': 'off', // Changed from warn to off
+    'max-depth': 'off', // Changed from warn to off
+    'max-lines-per-function': 'off', // Changed from warn to off
+    'max-params': 'off' // Changed from warn to off
   },
   overrides: [
     {

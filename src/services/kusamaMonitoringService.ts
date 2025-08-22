@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { createLogger } from '../utils/logger';
 
-const logger = createLogger('kusama-monitoring');
+const _logger = createLogger('kusama-monitoring');
 
 export interface TransactionStatus {
   hash: string;
@@ -31,7 +31,7 @@ export class KusamaMonitoringService {
       maxRetries: 10,
       retryInterval: 6000, // 6 seconds (block time)
       timeoutDuration: 300000, // 5 minutes
-      ...config
+      ...config,
     };
   }
 
@@ -55,7 +55,7 @@ export class KusamaMonitoringService {
               hash: transactionHash,
               status: 'failed',
               timestamp: Date.now(),
-              error: 'Transaction monitoring timeout'
+              error: 'Transaction monitoring timeout',
             };
             onStatusUpdate?.(timeoutStatus);
             resolve(timeoutStatus);
@@ -69,12 +69,16 @@ export class KusamaMonitoringService {
             hash: transactionHash,
             status: status.status,
             blockNumber: status.blockNumber,
-            retry: retryCount
+            retry: retryCount,
           });
 
           onStatusUpdate?.(status);
 
-          if (status.status === 'finalized' || status.status === 'failed' || status.status === 'invalid') {
+          if (
+            status.status === 'finalized' ||
+            status.status === 'failed' ||
+            status.status === 'invalid'
+          ) {
             this.cleanup(transactionHash);
             resolve(status);
             return;
@@ -90,7 +94,7 @@ export class KusamaMonitoringService {
                 hash: transactionHash,
                 status: 'failed',
                 timestamp: Date.now(),
-                error: 'Maximum retries exceeded'
+                error: 'Maximum retries exceeded',
               };
               onStatusUpdate?.(failedStatus);
               resolve(failedStatus);
@@ -101,12 +105,11 @@ export class KusamaMonitoringService {
             const timeoutId = setTimeout(checkStatus, this.config.retryInterval);
             this.activeMonitors.set(transactionHash, timeoutId);
           }
-
         } catch (error) {
           this.logger.error('Error monitoring transaction', {
             hash: transactionHash,
             error: error instanceof Error ? error.message : 'Unknown error',
-            retry: retryCount
+            retry: retryCount,
           });
 
           retryCount++;
@@ -116,7 +119,7 @@ export class KusamaMonitoringService {
               hash: transactionHash,
               status: 'failed',
               timestamp: Date.now(),
-              error: error instanceof Error ? error.message : 'Unknown monitoring error'
+              error: error instanceof Error ? error.message : 'Unknown monitoring error',
             };
             onStatusUpdate?.(errorStatus);
             resolve(errorStatus);
@@ -129,7 +132,7 @@ export class KusamaMonitoringService {
       };
 
       // Start monitoring
-      checkStatus();
+      void checkStatus();
     });
   }
 
@@ -162,20 +165,21 @@ export class KusamaMonitoringService {
           if (foundTx) {
             // Get events for this block
             const events = await this.api.query.system.events.at(blockHash);
-            const txEvents = (events as unknown as any[]).filter(event =>
-              event.phase.isApplyExtrinsic &&
-              event.phase.asApplyExtrinsic.eq(block.block.extrinsics.indexOf(foundTx))
+            const txEvents = (events as unknown as any[]).filter(
+              event =>
+                event.phase.isApplyExtrinsic &&
+                event.phase.asApplyExtrinsic.eq(block.block.extrinsics.indexOf(foundTx))
             );
 
             // Check if transaction was successful
-            const hasFailedEvent = txEvents.some(event =>
-              event.event.section === 'system' &&
-              (event.event.method === 'ExtrinsicFailed' || event.event.method === 'DispatchError')
+            const hasFailedEvent = txEvents.some(
+              event =>
+                event.event.section === 'system' &&
+                (event.event.method === 'ExtrinsicFailed' || event.event.method === 'DispatchError')
             );
 
-            const hasSuccessEvent = txEvents.some(event =>
-              event.event.section === 'system' &&
-              event.event.method === 'ExtrinsicSuccess'
+            const hasSuccessEvent = txEvents.some(
+              event => event.event.section === 'system' && event.event.method === 'ExtrinsicSuccess'
             );
 
             return {
@@ -187,8 +191,8 @@ export class KusamaMonitoringService {
               events: txEvents.map(e => ({
                 section: e.event.section,
                 method: e.event.method,
-                data: e.event.data.toString()
-              }))
+                data: e.event.data.toString(),
+              })),
             };
           }
         } catch (blockError) {
@@ -201,20 +205,19 @@ export class KusamaMonitoringService {
       return {
         hash: transactionHash,
         status: 'pending',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
-
     } catch (error) {
       this.logger.error('Failed to get transaction status', {
         hash: transactionHash,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
 
       return {
         hash: transactionHash,
         status: 'failed',
         timestamp: Date.now(),
-        error: error instanceof Error ? error.message : 'Status check failed'
+        error: error instanceof Error ? error.message : 'Status check failed',
       };
     }
   }
@@ -250,7 +253,9 @@ export class KusamaMonitoringService {
    */
   async estimateTransactionFee(extrinsic: any): Promise<string> {
     try {
-      const paymentInfo = await this.api.tx.system.remark('').paymentInfo('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY');
+      const paymentInfo = await this.api.tx.system
+        .remark('')
+        .paymentInfo('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY');
       return paymentInfo.partialFee.toString();
     } catch (error) {
       this.logger.error('Failed to estimate transaction fee', { error });
@@ -271,7 +276,7 @@ export class KusamaMonitoringService {
       const [header, health, peers] = await Promise.all([
         this.api.rpc.chain.getHeader(),
         this.api.rpc.system.health(),
-        this.api.rpc.system.peers()
+        this.api.rpc.system.peers(),
       ]);
 
       return {
@@ -281,8 +286,8 @@ export class KusamaMonitoringService {
         syncState: {
           isSyncing: health.isSyncing.isTrue,
           shouldHavePeers: health.shouldHavePeers.isTrue,
-          peers: health.peers.toNumber()
-        }
+          peers: health.peers.toNumber(),
+        },
       };
     } catch (error) {
       this.logger.error('Failed to get network health', { error });
@@ -290,7 +295,7 @@ export class KusamaMonitoringService {
         isHealthy: false,
         latestBlock: 0,
         peerCount: 0,
-        syncState: { error: error instanceof Error ? error.message : 'Unknown error' }
+        syncState: { error: error instanceof Error ? error.message : 'Unknown error' },
       };
     }
   }
