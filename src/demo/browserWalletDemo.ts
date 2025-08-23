@@ -114,7 +114,8 @@ export class BrowserWalletDemo {
         logger.info('   1. Install Polkadot.js Extension');
         logger.info('   2. Install Talisman Wallet');
         logger.info('   3. Install SubWallet');
-        logger.info('   4. Have at least one account in one of these wallets');
+        logger.info('   4. Install Nova Wallet (mobile app)');
+        logger.info('   5. Have at least one account in one of these wallets');
       } else {
         logger.info('🎉 Found wallet providers:', providers);
       }
