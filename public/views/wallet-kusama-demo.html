@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet-Based Kusama Storage Demo</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <style>
+        .demo-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+
+        .wallet-info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .credential-form {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .credentials-list {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .credential-item {
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+        }
+
+        .credential-item h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+
+        .credential-item p {
+            margin: 5px 0;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <h1>🔐 Wallet-Based Kusama Storage Demo</h1>
+        <p class="subtitle">Store credentials using your own wallet instead of hardcoded seeds</p>
+    </header>
+
+    <div class="container">
+        <div class="demo-section">
+            <h2>🚀 How It Works</h2>
+            <p>This demo shows how to use the SSO system to authenticate with your Polkadot wallet and then store credentials on Kusama using your own account instead of a hardcoded seed phrase.</p>
+
+            <div class="wallet-info">
+                <h3>🔑 Key Benefits:</h3>
+                <ul>
+                    <li><strong>No hardcoded seeds:</strong> Each user uses their own wallet</li>
+                    <li><strong>Real ownership:</strong> You control your own credentials</li>
+                    <li><strong>Secure authentication:</strong> Uses the existing SSO flow</li>
+                    <li><strong>No centralized risk:</strong> No single account that could be compromised</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🔗 Step 1: Connect Your Wallet</h2>
+            <p>First, you need to authenticate with your Polkadot wallet through the SSO system.</p>
+
+            <div class="form-group">
+                <label for="walletAddress">Your Wallet Address:</label>
+                <input type="text" id="walletAddress" placeholder="5Dy3rM7WVhwv58ogVn1RGK9rmnq7HwUBqeZ9U5B26mXZd" />
+            </div>
+
+            <button class="btn-primary" onclick="connectWallet()">Connect Wallet via SSO</button>
+
+            <div id="walletStatus" class="status" style="display: none;"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>💾 Step 2: Store Credentials</h2>
+            <p>Once authenticated, you can store credentials using your wallet address.</p>
+
+            <div class="credential-form">
+                <div class="form-group">
+                    <label for="credentialType">Credential Type:</label>
+                    <select id="credentialType">
+                        <option value="identity">Identity Document</option>
+                        <option value="academic">Academic Degree</option>
+                        <option value="professional">Professional Certification</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="credentialData">Credential Data (JSON):</label>
+                    <textarea id="credentialData" rows="4" placeholder='{"name": "John Doe", "email": "john@example.com"}'></textarea>
+                </div>
+
+                <button class="btn-primary" onclick="storeCredential()">Store Credential</button>
+                <button class="btn-secondary" onclick="estimateCost()">Estimate Cost</button>
+            </div>
+
+            <div id="storeStatus" class="status" style="display: none;"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>📋 Step 3: Manage Credentials</h2>
+            <p>View and manage your stored credentials.</p>
+
+            <button class="btn-primary" onclick="listCredentials()">List My Credentials</button>
+            <button class="btn-secondary" onclick="checkHealth()">Check Network Health</button>
+
+            <div id="credentialsList" class="credentials-list" style="display: none;">
+                <h3>Your Credentials</h3>
+                <div id="credentialsContent"></div>
+            </div>
+
+            <div id="manageStatus" class="status" style="display: none;"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🔍 API Endpoints</h2>
+            <p>These are the new wallet-based endpoints that replace the hardcoded seed approach:</p>
+
+            <div class="wallet-info">
+                <h4>New Wallet-Based Endpoints:</h4>
+                <ul>
+                    <li><code>POST /api/wallet-kusama/store</code> - Store credential with wallet auth</li>
+                    <li><code>POST /api/wallet-kusama/retrieve</code> - Retrieve credential with wallet auth</li>
+                    <li><code>GET /api/wallet-kusama/list</code> - List credentials with wallet auth</li>
+                    <li><code>GET /api/wallet-kusama/cost-estimate</code> - Estimate storage cost</li>
+                    <li><code>GET /api/wallet-kusama/health</code> - Check network health</li>
+                </ul>
+
+                <h4>Old Hardcoded Endpoints (for comparison):</h4>
+                <ul>
+                    <li><code>POST /api/kusama/store</code> - Uses hardcoded seed (deprecated)</li>
+                    <li><code>POST /api/kusama/retrieve</code> - Uses hardcoded seed (deprecated)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentWalletAddress = '';
+        let mockToken = 'mock-jwt-token-for-demo-' + Math.random().toString(36).substring(7);
+
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+            element.style.display = 'block';
+        }
+
+        function connectWallet() {
+            const address = document.getElementById('walletAddress').value.trim();
+            if (!address) {
+                showStatus('walletStatus', 'Please enter a wallet address', 'error');
+                return;
+            }
+
+            currentWalletAddress = address;
+            showStatus('walletStatus', `✅ Wallet connected: ${address}`, 'success');
+
+            // In a real implementation, this would redirect to the SSO flow
+            // For demo purposes, we'll simulate the connection
+            setTimeout(() => {
+                showStatus('walletStatus', `✅ Wallet authenticated via SSO: ${address}`, 'success');
+            }, 1000);
+        }
+
+        async function storeCredential() {
+            if (!currentWalletAddress) {
+                showStatus('storeStatus', 'Please connect your wallet first', 'error');
+                return;
+            }
+
+            const type = document.getElementById('credentialType').value;
+            const data = document.getElementById('credentialData').value.trim();
+
+            if (!data) {
+                showStatus('storeStatus', 'Please enter credential data', 'error');
+                return;
+            }
+
+            try {
+                const credentialData = JSON.parse(data);
+
+                const response = await fetch('/api/wallet-kusama/store', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${mockToken}`
+                    },
+                    body: JSON.stringify({
+                        credentialData,
+                        credentialType: type,
+                        userAddress: currentWalletAddress
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus('storeStatus', `✅ Credential stored successfully! ID: ${result.credentialId}`, 'success');
+                } else {
+                    showStatus('storeStatus', `❌ Failed to store credential: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus('storeStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function estimateCost() {
+            if (!currentWalletAddress) {
+                showStatus('storeStatus', 'Please connect your wallet first', 'error');
+                return;
+            }
+
+            const data = document.getElementById('credentialData').value.trim();
+            const dataSize = data ? new Blob([data]).size : 1024;
+
+            try {
+                const response = await fetch(`/api/wallet-kusama/cost-estimate?dataSize=${dataSize}&userAddress=${currentWalletAddress}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus('storeStatus', `💰 Estimated cost: ${result.estimatedCost} ${result.currency}`, 'info');
+                } else {
+                    showStatus('storeStatus', `❌ Failed to estimate cost: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus('storeStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function listCredentials() {
+            if (!currentWalletAddress) {
+                showStatus('manageStatus', 'Please connect your wallet first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/wallet-kusama/list?userAddress=${currentWalletAddress}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const listElement = document.getElementById('credentialsList');
+                    const contentElement = document.getElementById('credentialsContent');
+
+                    if (result.credentials.length === 0) {
+                        contentElement.innerHTML = '<p>No credentials found.</p>';
+                    } else {
+                        contentElement.innerHTML = result.credentials.map(cred => `
+                            <div class="credential-item">
+                                <h4>${cred.type}</h4>
+                                <p><strong>ID:</strong> ${cred.id}</p>
+                                <p><strong>Data:</strong> ${JSON.stringify(cred.data)}</p>
+                                <p><strong>Timestamp:</strong> ${new Date(cred.timestamp).toLocaleString()}</p>
+                                <p><strong>Address:</strong> ${cred.address}</p>
+                            </div>
+                        `).join('');
+                    }
+
+                    listElement.style.display = 'block';
+                    showStatus('manageStatus', `✅ Found ${result.credentials.length} credentials`, 'success');
+                } else {
+                    showStatus('manageStatus', `❌ Failed to list credentials: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus('manageStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkHealth() {
+            try {
+                const response = await fetch('/api/wallet-kusama/health');
+                const result = await response.json();
+
+                if (result.success) {
+                    const health = result.health;
+                    if (health.isHealthy) {
+                        showStatus('manageStatus', `✅ Network healthy: ${health.details.chain}`, 'success');
+                    } else {
+                        showStatus('manageStatus', `⚠️ Network issues: ${health.details.error}`, 'error');
+                    }
+                } else {
+                    showStatus('manageStatus', `❌ Health check failed: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus('manageStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-fill demo data
+        document.getElementById('credentialData').value = JSON.stringify({
+            name: "John Doe",
+            email: "john@example.com",
+            organization: "Example Corp",
+            role: "Developer"
+        }, null, 2);
+    </script>
+</body>
+</html>
