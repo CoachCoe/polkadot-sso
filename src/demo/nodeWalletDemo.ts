@@ -151,7 +151,6 @@ export class NodeWalletDemo {
           });
         }
       }
-
     } catch (error) {
       logger.error('Failed to demonstrate credential operations', { error });
     }
@@ -210,7 +209,6 @@ export class NodeWalletDemo {
         currency: costEstimate.currency,
         storageMethod: costEstimate.storageMethod,
       });
-
     } catch (error) {
       logger.error('Failed to test transaction simulation', { error });
     }
@@ -259,7 +257,6 @@ export class NodeWalletDemo {
           error: error instanceof Error ? error.message : 'Unknown error',
         });
       }
-
     } catch (error) {
       logger.error('Failed to validate service architecture', { error });
     }
@@ -302,7 +299,7 @@ export class NodeWalletDemo {
  */
 if (require.main === module) {
   const demo = new NodeWalletDemo();
-  demo.run().catch((error) => {
+  demo.run().catch(error => {
     logger.error('Demo failed', { error });
     process.exit(1);
   });

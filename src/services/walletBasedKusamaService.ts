@@ -1,4 +1,5 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import type { SubmittableExtrinsic } from '@polkadot/api/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import crypto from 'crypto';
 import { createLogger } from '../utils/logger';
@@ -469,7 +470,7 @@ export class WalletBasedKusamaService {
     credentialType: string,
     userSignature?: string,
     userMessage?: string
-  ): Promise<{ extrinsic: any; nonce: number; tip: string }> {
+  ): Promise<{ extrinsic: SubmittableExtrinsic<'promise'>; nonce: number; tip: string }> {
     try {
       if (!this.api || !this.isConnected) {
         throw new Error('Kusama service not initialized');
@@ -519,7 +520,7 @@ export class WalletBasedKusamaService {
    * This method takes a pre-signed extrinsic and submits it
    */
   async submitSignedTransaction(
-    signedExtrinsic: any,
+    signedExtrinsic: SubmittableExtrinsic<'promise'>,
     userAddress: string
   ): Promise<{ success: boolean; blockHash: string; txHash: string }> {
     try {
