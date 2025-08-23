@@ -36,7 +36,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { credentialData, credentialType, userAddress, encryptionKey } = req.body as {
-        credentialData: unknown;
+        credentialData: Record<string, unknown>;
         credentialType: string;
         userAddress: string;
         encryptionKey?: string;

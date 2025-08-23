@@ -142,7 +142,7 @@ export class WalletSecurityMiddleware {
 
       // Check if user is blocked
       if (userData.blocked && now < userData.blockExpiry) {
-        this.auditService.log({
+        void this.auditService.log({
           type: 'SECURITY_EVENT',
           client_id: 'wallet-security',
           action: 'RATE_LIMIT_BLOCKED',
@@ -184,7 +184,7 @@ export class WalletSecurityMiddleware {
         userData.blocked = true;
         userData.blockExpiry = now + this.config.rateLimitWindow;
 
-        this.auditService.log({
+        void this.auditService.log({
           type: 'SECURITY_EVENT',
           client_id: 'wallet-security',
           action: 'RATE_LIMIT_EXCEEDED',

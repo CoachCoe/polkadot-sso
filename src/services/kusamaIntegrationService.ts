@@ -6,7 +6,7 @@ import { createLogger } from '../utils/logger';
 export interface KusamaCredential extends Record<string, unknown> {
   id: string;
   type: string;
-  data: any;
+  data: string;
   encrypted: boolean;
   hash: string;
   timestamp: number;
@@ -52,7 +52,7 @@ export class KusamaIntegrationService {
    * Store encrypted credentials on Kusama
    */
   async storeCredential(
-    credentialData: any,
+    credentialData: Record<string, unknown>,
     credentialType: string,
     userAddress: string,
     encryptionKey?: string

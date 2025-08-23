@@ -1,4 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
+import type { SubmittableExtrinsic } from '@polkadot/api/types';
 import { web3Accounts } from '@polkadot/extension-dapp';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { createLogger } from '../utils/logger';
@@ -15,7 +16,7 @@ export interface BrowserWalletAccount {
 export interface BrowserWalletConnection {
   account: BrowserWalletAccount;
   sign(data: Uint8Array): Promise<Uint8Array>;
-  signTransaction(extrinsic: any): Promise<any>;
+  signTransaction(extrinsic: SubmittableExtrinsic<'promise'>): Promise<SubmittableExtrinsic<'promise'>>;
   disconnect(): Promise<void>;
 }
 
@@ -265,7 +266,7 @@ export class BrowserWalletService {
   /**
    * Sign a transaction with a connected wallet
    */
-  async signTransaction(address: string, extrinsic: any): Promise<any | null> {
+  async signTransaction(address: string, extrinsic: SubmittableExtrinsic<'promise'>): Promise<SubmittableExtrinsic<'promise'> | null> {
     try {
       const connection = this.connections.get(address);
       if (!connection) {
@@ -357,7 +358,7 @@ class PolkadotJsBrowserConnection implements BrowserWalletConnection {
     throw new Error('Actual signing not yet implemented - requires extension integration');
   }
 
-  async signTransaction(extrinsic: any): Promise<any> {
+  async signTransaction(extrinsic: SubmittableExtrinsic<'promise'>): Promise<SubmittableExtrinsic<'promise'>> {
     // This would need to be implemented using the actual extension API
     logger.info('Signing transaction with Polkadot.js Extension', {
       address: this.account.address,

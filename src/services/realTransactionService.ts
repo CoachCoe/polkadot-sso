@@ -214,7 +214,7 @@ export class RealTransactionService {
    * Submit a signed transaction to Kusama
    */
   private async submitTransaction(
-    signedExtrinsic: any,
+    signedExtrinsic: SubmittableExtrinsic<'promise'>,
     userAddress: string
   ): Promise<TransactionResult> {
     try {
@@ -225,7 +225,7 @@ export class RealTransactionService {
       logger.info('Submitting signed transaction to Kusama', { userAddress });
 
       // Submit the transaction
-      const unsubscribe = await signedExtrinsic.send((result: any) => {
+      const unsubscribe = await signedExtrinsic.send((result: ISubmittableResult) => {
         if (result.isInBlock) {
           logger.info('Transaction included in block', {
             blockHash: result.status.asInBlock.toString(),

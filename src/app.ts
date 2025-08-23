@@ -51,7 +51,6 @@ app.use(
         defaultSrc: ["'self'"],
         scriptSrc: [
           "'self'",
-          (_, res: any) => `'nonce-${res.locals.nonce}'`,
           'https://cdn.jsdelivr.net',
           'https://polkadot.js.org',
           "'unsafe-eval'", // Required for WebAssembly compilation in Polkadot.js

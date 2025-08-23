@@ -18,7 +18,7 @@ export class WalletSecurityDemo {
   constructor() {
     // Create a mock audit service that doesn't require a database
     this.auditService = {
-      log: async (event: any) => {
+      log: async (event: { type: string; action: string }) => {
         logger.info('Mock audit log:', { type: event.type, action: event.action });
       },
     } as any;

@@ -1,4 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
+import type { SubmittableExtrinsic } from '@polkadot/api/types';
 import { Keyring } from '@polkadot/keyring';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { createLogger } from '../utils/logger';
@@ -15,7 +16,7 @@ export interface WalletConnection {
   address: string;
   publicKey: Uint8Array;
   sign(data: Uint8Array): Promise<Uint8Array>;
-  signTransaction(extrinsic: any): Promise<any>;
+  signTransaction(extrinsic: SubmittableExtrinsic<'promise'>): Promise<SubmittableExtrinsic<'promise'>>;
   disconnect(): Promise<void>;
 }
 
@@ -224,7 +225,7 @@ class PolkadotJsConnection implements WalletConnection {
     return this.keypair.sign(data);
   }
 
-  async signTransaction(extrinsic: any): Promise<any> {
+  async signTransaction(extrinsic: SubmittableExtrinsic<'promise'>): Promise<SubmittableExtrinsic<'promise'>> {
     // This would need to be implemented based on the specific extrinsic type
     // For now, return the extrinsic as-is
     return extrinsic;
