@@ -2,6 +2,7 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import crypto from 'crypto';
 import { createLogger } from '../utils/logger';
+import { WalletConnection, WalletConnectionService } from './walletConnectionService';
 
 /**
  * Wallet-Based Kusama Service
@@ -14,6 +15,7 @@ import { createLogger } from '../utils/logger';
 const logger = createLogger('wallet-based-kusama');
 
 export interface WalletCredentialData {
+  credentialId: string;
   userAddress: string;
   credentialData: Record<string, unknown>;
   credentialType: string;
@@ -35,6 +37,7 @@ export class WalletBasedKusamaService {
   private api: ApiPromise | null = null;
   private isConnected = false;
   private readonly endpoint: string;
+  private walletConnectionService: WalletConnectionService | null = null;
 
   constructor() {
     this.endpoint = process.env.KUSAMA_ENDPOINT || 'wss://kusama-rpc.polkadot.io';
@@ -51,6 +54,9 @@ export class WalletBasedKusamaService {
 
       await this.api.isReady;
       this.isConnected = true;
+
+      // Initialize wallet connection service
+      this.walletConnectionService = new WalletConnectionService(this.api);
 
       logger.info('✅ Wallet-Based Kusama service initialized successfully');
     } catch (error) {
@@ -129,6 +135,7 @@ export class WalletBasedKusamaService {
 
       // For now, return mock data as placeholder
       const mockCredential: WalletCredentialData = {
+        credentialId,
         userAddress,
         credentialData: { type: 'kusama_stored', id: credentialId },
         credentialType: 'kusama_credential',
@@ -168,6 +175,7 @@ export class WalletBasedKusamaService {
       // For now, return mock data as placeholder
       const mockCredentials: WalletCredentialData[] = [
         {
+          credentialId: `cred_${Date.now() - 86400000}_${crypto.randomBytes(8).toString('hex')}`,
           userAddress,
           credentialData: { type: 'kusama_stored_degree', institution: 'University of Example' },
           credentialType: 'kusama_credential',
@@ -176,6 +184,7 @@ export class WalletBasedKusamaService {
           dataHash: 'kusama_hash',
         },
         {
+          credentialId: `cred_${Date.now() - 172800000}_${crypto.randomBytes(8).toString('hex')}`,
           userAddress,
           credentialData: {
             type: 'kusama_stored_certification',
@@ -596,14 +605,79 @@ export class WalletBasedKusamaService {
     }
   }
 
+  /**
+   * Get available wallet providers
+   */
+  getAvailableWalletProviders(): string[] {
+    if (!this.walletConnectionService) {
+      throw new Error('Wallet connection service not initialized');
+    }
+    return this.walletConnectionService.getAvailableProviders();
+  }
+
+  /**
+   * Connect to a wallet provider
+   */
+  async connectWallet(
+    providerName: string
+  ): Promise<{ success: boolean; address?: string; error?: string }> {
+    try {
+      if (!this.walletConnectionService) {
+        throw new Error('Wallet connection service not initialized');
+      }
+
+      const result = await this.walletConnectionService.connectToProvider(providerName);
+      return {
+        success: result.success,
+        address: result.connection?.address,
+        error: result.error,
+      };
+    } catch (error) {
+      logger.error('Failed to connect wallet', { provider: providerName, error });
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Check if a wallet is connected
+   */
+  isWalletConnected(address: string): boolean {
+    if (!this.walletConnectionService) {
+      return false;
+    }
+    return this.walletConnectionService.isWalletConnected(address);
+  }
+
+  /**
+   * Get wallet connection for signing
+   */
+  private getWalletConnection(address: string): WalletConnection | null {
+    if (!this.walletConnectionService) {
+      return null;
+    }
+    return this.walletConnectionService.getConnection(address) || null;
+  }
+
   async disconnect(): Promise<void> {
     try {
       if (this.api) {
         await this.api.disconnect();
         this.api = null;
         this.isConnected = false;
-        logger.info('✅ Wallet-Based Kusama service disconnected');
       }
+
+      // Disconnect all wallets
+      if (this.walletConnectionService) {
+        const connections = this.walletConnectionService.getActiveConnections();
+        for (const [address] of connections) {
+          await this.walletConnectionService.disconnectWallet(address);
+        }
+      }
+
+      logger.info('✅ Wallet-Based Kusama service disconnected');
     } catch (error) {
       logger.error('Error disconnecting from Kusama', { error });
     }
