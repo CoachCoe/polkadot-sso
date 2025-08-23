@@ -61,8 +61,8 @@ export class AdvancedKusamaService {
         // Check account balance if connected
         try {
           const balance = await this.api.query.system.account(this.account.address);
-          // Type the balance properly to avoid unsafe argument types
-          const balanceData = balance as { data: { free: { toString(): string } } };
+          // Use a more flexible type assertion to avoid TypeScript errors
+          const balanceData = balance as unknown as { data: { free: { toString(): string } } };
           const freeBalance = balanceData.data.free.toString();
           logger.info('Account balance check', {
             address: this.account.address,
@@ -75,7 +75,8 @@ export class AdvancedKusamaService {
             // 0.1 KSM in Planck units
             logger.warn('Account balance is low - may not be sufficient for transactions', {
               address: this.account.address,
-              balance: freeBalance,
+              freeBalance: `${freeBalance} units`,
+              recommended: '100000000000 units (0.1 KSM)',
             });
           }
         } catch (balanceError) {

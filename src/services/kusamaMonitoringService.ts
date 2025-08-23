@@ -234,7 +234,9 @@ export class KusamaMonitoringService {
    * Stop monitoring all transactions
    */
   stopAllMonitoring(): void {
-    for (const [hash, timeoutId] of this.activeMonitors.entries()) {
+    // Use Array.from to avoid Map iteration issues with older TypeScript targets
+    const entries = Array.from(this.activeMonitors.entries());
+    for (const [hash, timeoutId] of entries) {
       clearTimeout(timeoutId);
       this.logger.info('Stopped monitoring transaction', { hash });
     }
@@ -286,7 +288,8 @@ export class KusamaMonitoringService {
         syncState: {
           isSyncing: health.isSyncing.isTrue,
           shouldHavePeers: health.shouldHavePeers.isTrue,
-          peers: health.peers.toNumber(),
+          // Use toString() instead of toNumber() to avoid compatibility issues
+          peers: health.peers.toString(),
         },
       };
     } catch (error) {

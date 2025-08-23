@@ -1,7 +1,7 @@
+import * as crypto from 'crypto';
+import { decryptData, encryptData } from '../utils/encryption';
 import { createLogger } from '../utils/logger';
 import { AdvancedKusamaService } from './advancedKusamaService';
-import { encryptData, decryptData } from '../utils/encryption';
-import * as crypto from 'crypto';
 
 export interface KusamaCredential extends Record<string, unknown> {
   id: string;
@@ -140,12 +140,14 @@ export class KusamaIntegrationService {
 
       // Decrypt data based on encryption method used
       if (mockCredential.encrypted && encryptionKey) {
-        const decryptedData = this.decryptWithUserKey(mockCredential.data, encryptionKey);
+        const dataString = String(mockCredential.data);
+        const decryptedData = this.decryptWithUserKey(dataString, encryptionKey);
         return JSON.parse(decryptedData);
       } else if (mockCredential.encrypted && !encryptionKey) {
         // Try system default decryption
         try {
-          const decryptedData = decryptData(mockCredential.data);
+          const dataString = String(mockCredential.data);
+          const decryptedData = decryptData(dataString);
           return JSON.parse(decryptedData);
         } catch (error) {
           throw new Error('Credential is encrypted but no valid decryption key provided');
