@@ -30,6 +30,12 @@ A comprehensive Single Sign-On (SSO) and credential management service using Pol
     - Integrated with SSO authentication flow
     - Real user ownership and control
     - Eliminates centralized security risks
+  - **🆕 Real Wallet Integration (Latest)**
+    - Browser wallet extension support (Polkadot.js, Talisman, SubWallet)
+    - Real transaction signing and submission
+    - Live blockchain interaction
+    - Transaction status monitoring
+    - Fee estimation and cost management
 
 ## Core Functionality
 
@@ -81,6 +87,12 @@ A comprehensive Single Sign-On (SSO) and credential management service using Pol
   - Multiple storage strategies (remarks, batch, custom pallets)
   - Real-time transaction status tracking
   - Network health and peer monitoring
+- **🆕 Wallet Integration Services (Latest)**
+  - BrowserWalletService for real wallet extension integration
+  - RealTransactionService for actual blockchain transactions
+  - Support for Polkadot.js Extension, Talisman, and SubWallet
+  - Real transaction signing, fee estimation, and status monitoring
+  - Browser and Node.js compatible demos
 
 - **Audit Service**
   - Comprehensive security event logging
@@ -200,6 +212,51 @@ Security Core (1) - No dependencies
 - **Gradual Migration**: Existing code continues to work while adopting new structure
 - **Professional Standards**: Industry-standard modular design patterns
 
+## 🆕 Real Wallet Integration Architecture (Latest)
+
+### Overview
+
+The new wallet integration system provides real browser wallet extension support, enabling users to interact with the Kusama blockchain using their own wallets without requiring hardcoded seed phrases or centralized account management.
+
+### Key Components
+
+#### BrowserWalletService
+- **Wallet Detection**: Automatically detects installed wallet extensions
+- **Provider Support**: Polkadot.js Extension, Talisman, SubWallet
+- **Connection Management**: Handles wallet connections and account access
+- **Account Discovery**: Retrieves available accounts from connected wallets
+
+#### RealTransactionService
+- **Transaction Creation**: Builds real Kusama extrinsics
+- **Fee Estimation**: Calculates actual transaction costs
+- **Transaction Submission**: Submits signed transactions to blockchain
+- **Status Monitoring**: Tracks transaction confirmation and finalization
+
+### Supported Wallet Providers
+
+1. **Polkadot.js Extension**
+   - Most popular Polkadot wallet
+   - Full account management
+   - Secure transaction signing
+
+2. **Talisman Wallet**
+   - Modern wallet interface
+   - Multi-chain support
+   - Advanced security features
+
+3. **SubWallet**
+   - Lightweight wallet solution
+   - Cross-platform support
+   - User-friendly interface
+
+### Architecture Benefits
+
+- **Security**: No seed phrase exposure
+- **User Control**: Each user owns their credentials
+- **Scalability**: No centralized account management
+- **Compliance**: Better for enterprise requirements
+- **Future-Proof**: Ready for multi-chain expansion
+
 ## Kusama Blockchain Integration
 
 ### Overview
@@ -280,6 +337,32 @@ The system supports two encryption modes:
 
 ## Demo & Testing
 
+### 🆕 Real Wallet Integration Demo (Latest)
+
+Test the new real wallet integration with browser extensions:
+
+```bash
+npm run demo:browser    # Browser wallet integration demo
+npm run demo:node       # Node.js development demo
+npm run demo:wallet     # Legacy wallet integration demo
+```
+
+#### Browser Wallet Demo Features
+
+- **Real Wallet Detection**: Automatically detects installed wallet extensions
+- **Wallet Connection**: Connect to Polkadot.js, Talisman, or SubWallet
+- **Transaction Creation**: Create real Kusama extrinsics
+- **Fee Estimation**: Calculate actual transaction costs
+- **Status Monitoring**: Track transaction confirmation
+- **Error Handling**: Comprehensive error management
+
+#### Node.js Demo Features
+
+- **Service Validation**: Test all wallet integration services
+- **Credential Operations**: Store, retrieve, and list credentials
+- **Transaction Simulation**: Test transaction creation and submission
+- **Architecture Validation**: Verify service dependencies and health
+
 ### 🆕 Wallet-Based Kusama Demo (Recommended)
 
 Visit `/wallet-kusama-demo` in your browser to test the new wallet-based Kusama storage system:
@@ -300,6 +383,52 @@ Visit `/kusama-demo` in your browser to test the legacy hardcoded seed approach:
 - **Cost Estimation**: See real-time cost estimates for different data sizes
 - **Network Health**: Monitor Kusama network status
 - **Transaction Monitoring**: Track active blockchain transactions
+
+### 🆕 Real Wallet Integration API Examples (Latest)
+
+#### Browser Wallet Connection
+
+```typescript
+// Connect to a wallet provider
+const browserWalletService = new BrowserWalletService(api);
+const providers = browserWalletService.getAvailableProviders();
+
+// Connect to Polkadot.js Extension
+const result = await browserWalletService.connectToProvider('polkadot-js');
+if (result.success) {
+  const connection = result.connection;
+  console.log('Connected to:', connection.account.address);
+}
+```
+
+#### Real Transaction Creation
+
+```typescript
+// Create a real Kusama transaction
+const realTransactionService = new RealTransactionService(api, browserWalletService);
+const transaction = await realTransactionService.createCredentialTransaction(
+  userAddress,
+  credentialData,
+  'academic_degree'
+);
+
+// Sign and submit the transaction
+const result = await realTransactionService.signAndSubmitTransaction(
+  userAddress,
+  transaction
+);
+```
+
+#### Transaction Status Monitoring
+
+```typescript
+// Monitor transaction status
+const status = await realTransactionService.getTransactionStatus(txHash);
+console.log('Transaction status:', status.status);
+
+// Wait for confirmation
+const confirmation = await realTransactionService.waitForTransactionConfirmation(txHash);
+```
 
 ### 🆕 Wallet-Based API Testing Examples (Recommended)
 
@@ -414,6 +543,14 @@ The new wallet-based Kusama storage system provides significant advantages over 
 ### Token Management
 
 - `POST /api/tokens/refresh` - Refresh access token
+
+### 🆕 Real Wallet Integration (Latest)
+
+- **Browser Wallet Service**: Connect to wallet extensions
+- **Real Transaction Service**: Create and submit blockchain transactions
+- **Transaction Monitoring**: Track transaction status and confirmation
+- **Fee Estimation**: Calculate real transaction costs
+- **Wallet Provider Support**: Polkadot.js, Talisman, SubWallet
 
 ### 🆕 Wallet-Based Kusama Storage (Recommended)
 
@@ -666,6 +803,44 @@ CREATE TABLE credential_revocations (
 
 ## Demo Scripts
 
+### 🆕 Real Wallet Integration Demos (Latest)
+
+Test the new wallet integration services:
+
+```bash
+npm run demo:browser    # Browser wallet integration demo
+npm run demo:node       # Node.js development demo
+npm run demo:wallet     # Legacy wallet integration demo
+```
+
+#### Browser Demo Features
+- Real wallet extension detection
+- Wallet connection and account management
+- Transaction creation and signing
+- Fee estimation and cost management
+- Transaction status monitoring
+
+#### Node.js Demo Features
+- Service architecture validation
+- Credential operations testing
+- Transaction simulation
+- Error handling verification
+
+### Available Demo Scripts
+
+```bash
+# New wallet integration demos
+npm run demo:browser    # Browser wallet extension integration
+npm run demo:node       # Node.js development testing
+
+# Legacy demos
+npm run demo:wallet     # Wallet-based Kusama storage
+npm run demo:kusama     # Legacy Kusama integration
+npm run demo:modular    # Modular architecture demo
+npm run demo:credentials # Credential management demo
+npm run demo:security   # Security testing demo
+```
+
 ### Modular Architecture Demo
 
 Demonstrates the new modular architecture and module configuration:
@@ -842,7 +1017,16 @@ npm run format          # Auto-format code
 
 ## Recent Improvements
 
-### Modular Architecture Implementation (Latest)
+### 🆕 Real Wallet Integration (Latest)
+
+- **Browser Wallet Integration**: Full support for Polkadot.js, Talisman, and SubWallet extensions
+- **Real Transaction Service**: Actual blockchain transaction creation and submission
+- **Transaction Monitoring**: Real-time status tracking and confirmation
+- **Fee Estimation**: Accurate transaction cost calculation
+- **Multi-Environment Support**: Both browser and Node.js compatible demos
+- **Production-Ready Architecture**: Clean service separation and error handling
+
+### Modular Architecture Implementation
 
 - **Complete modularization** of the codebase into focused modules
 - **Clear separation** between SSO, Credentials, Storage, and Security functionality
