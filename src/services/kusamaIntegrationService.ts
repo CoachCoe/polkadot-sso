@@ -1,6 +1,7 @@
-import { decryptData, encryptData } from '../utils/encryption';
 import { createLogger } from '../utils/logger';
 import { AdvancedKusamaService } from './advancedKusamaService';
+import { encryptData, decryptData } from '../utils/encryption';
+import * as crypto from 'crypto';
 
 export interface KusamaCredential extends Record<string, unknown> {
   id: string;
@@ -150,8 +151,9 @@ export class KusamaIntegrationService {
           throw new Error('Credential is encrypted but no valid decryption key provided');
         }
       } else {
-        // Unencrypted data
-        return JSON.parse(mockCredential.data);
+        // Unencrypted data - ensure data is a string before parsing
+        const dataString = String(mockCredential.data);
+        return JSON.parse(dataString);
       }
     } catch (error) {
       this.logger.error('Failed to retrieve credential from Kusama:', error);
@@ -248,7 +250,6 @@ export class KusamaIntegrationService {
   }
 
   private generateHash(data: string): string {
-    const crypto = require('crypto');
     return crypto.createHash('sha256').update(data).digest('hex');
   }
 
@@ -256,8 +257,6 @@ export class KusamaIntegrationService {
    * Encrypt data with user-provided key using AES-256-GCM
    */
   private encryptWithUserKey(data: string, userKey: string): string {
-    const crypto = require('crypto');
-
     // Ensure key is at least 32 characters
     if (userKey.length < 32) {
       throw new Error('Encryption key must be at least 32 characters long');
@@ -283,8 +282,6 @@ export class KusamaIntegrationService {
    * Decrypt data with user-provided key
    */
   private decryptWithUserKey(encryptedData: string, userKey: string): string {
-    const crypto = require('crypto');
-
     const parts = encryptedData.split(':');
     if (parts.length !== 3) {
       throw new Error('Invalid encrypted data format');

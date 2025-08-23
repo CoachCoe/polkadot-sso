@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { NextFunction, Request, Response } from 'express';
 import { createLogger } from '../utils/logger';
 const logger = createLogger('error-sanitization');
@@ -36,7 +37,7 @@ export class ErrorSanitizationMiddleware {
         });
       }
       const isAllowedError = this.config.allowedErrorTypes.some(
-        type => error.constructor.name === type || (error as any).name === type
+        type => error.constructor.name === type || (error as Error & { name: string }).name === type
       );
       const sanitizedMessage = this.sanitizeErrorMessage(error.message, isAllowedError);
       const responseError: Record<string, unknown> = {
@@ -164,12 +165,14 @@ export class ErrorSanitizationMiddleware {
       RateLimitError,
     };
   }
-  static asyncErrorHandler(fn: (req: Request, res: Response, next: NextFunction) => any) {
+  static asyncErrorHandler(
+    fn: (req: Request, res: Response, next: NextFunction) => Promise<void> | void
+  ) {
     return (req: Request, res: Response, next: NextFunction) => {
       Promise.resolve(fn(req, res, next)).catch(next);
     };
   }
-  static syncErrorHandler(fn: (req: Request, res: Response, next: NextFunction) => any) {
+  static syncErrorHandler(fn: (req: Request, res: Response, next: NextFunction) => void) {
     return (req: Request, res: Response, next: NextFunction) => {
       try {
         fn(req, res, next);

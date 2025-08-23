@@ -1,6 +1,6 @@
 import { cryptoWaitReady, signatureVerify } from '@polkadot/util-crypto';
 import crypto, { createHash } from 'crypto';
-import { RequestHandler, Router } from 'express';
+import { NextFunction, Request, Response, RequestHandler, Router } from 'express';
 import { Database } from 'sqlite';
 import { z } from 'zod';
 import { createRateLimiters } from '../middleware/rateLimit';
@@ -13,6 +13,16 @@ import { secureQueries } from '../utils/db';
 import { logError, logRequest } from '../utils/logger';
 import { escapeHtml } from '../utils/sanitization';
 import { validateAuthRequest, validateClientCredentials } from '../utils/validation';
+
+// Define the expected auth code structure
+interface AuthCode {
+  code: string;
+  address: string;
+  client_id: string;
+  created_at: number;
+  expires_at: number;
+  used: number;
+}
 
 const loginSchema = z.object({
   query: z.object({
@@ -229,7 +239,7 @@ export const createAuthRouter = (
         return res.status(400).send('Invalid challenge or state mismatch');
       }
 
-      const code_challenge = await generateCodeChallenge(code_verifier as string);
+      const code_challenge = generateCodeChallenge(code_verifier as string);
       if (code_challenge !== challenge.code_challenge) {
         return res.status(400).send('Invalid code verifier');
       }
@@ -277,19 +287,42 @@ export const createAuthRouter = (
     try {
       const { code, client_id } = req.body;
 
+      // Type guard for code and client_id
+      if (!code || typeof code !== 'string') {
+        return res.status(400).send('Invalid code');
+      }
+      if (!client_id || typeof client_id !== 'string') {
+        return res.status(400).send('Invalid client_id');
+      }
+
       const client = await validateClientCredentials(req);
       if (!client) {
         return res.status(401).send('Invalid client credentials');
       }
 
       const authCode = await secureQueries.authCodes.verify(db, code, client_id);
-      if (!authCode || Date.now() > authCode.expires_at) {
+      if (!authCode || Date.now() > (authCode.expires_at as number)) {
         return res.status(400).send('Invalid or expired authorization code');
+      }
+
+      // Type guard to ensure authCode has the expected structure
+      if (
+        !authCode ||
+        typeof authCode !== 'object' ||
+        !('address' in authCode) ||
+        !('expires_at' in authCode)
+      ) {
+        return res.status(400).send('Invalid authorization code format');
+      }
+
+      const typedAuthCode = authCode as AuthCode;
+      if (Date.now() > typedAuthCode.expires_at) {
+        return res.status(400).send('Authorization code expired');
       }
 
       await secureQueries.authCodes.markUsed(db, code);
 
-      const tokens = tokenService.generateTokens(authCode.address, client_id);
+      const tokens = tokenService.generateTokens(typedAuthCode.address, client_id);
 
       res.json({
         access_token: tokens.accessToken,

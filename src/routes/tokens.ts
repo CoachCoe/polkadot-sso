@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { Database } from 'sqlite';
+import { VerifyTokenResult } from '../config/auth';
 import { createRateLimiters } from '../middleware/rateLimit';
 import { sanitizeRequest } from '../middleware/validation';
 import { AuditService } from '../services/auditService';
@@ -21,19 +22,34 @@ export const createTokenRouter = (
       try {
         const { refresh_token } = req.body;
 
-        if (!refresh_token) {
-          res.status(400).json({ error: 'Refresh token required' });
+        // Type guard for refresh_token
+        if (!refresh_token || typeof refresh_token !== 'string') {
+          res.status(400).json({ error: 'Invalid refresh token' });
           return;
         }
 
-        const verification = await tokenService.verifyToken(refresh_token, 'refresh');
+        const verification: VerifyTokenResult = await tokenService.verifyToken(
+          refresh_token,
+          'refresh'
+        );
         if (!verification.valid || !verification.decoded) {
-          res.status(401).json({ error: verification.error });
+          res.status(401).json({ error: verification.error || 'Verification failed' });
           return;
         }
 
         const { decoded } = verification;
         if (!decoded) {
+          res.status(401).json({ error: 'Invalid token data' });
+          return;
+        }
+
+        // Type guard to ensure decoded has the expected structure
+        if (
+          !decoded ||
+          typeof decoded !== 'object' ||
+          !('address' in decoded) ||
+          !('client_id' in decoded)
+        ) {
           res.status(401).json({ error: 'Invalid token data' });
           return;
         }
