@@ -101,7 +101,7 @@ export const createAuthRouter = (
         return res.status(400).json({ error: validation.error });
       }
 
-      const { client_id } = req.query;
+      const { client_id, wallet } = req.query;
       const client = clients.get(client_id as string);
 
       if (!client) {
@@ -122,15 +122,20 @@ export const createAuthRouter = (
       });
 
       res.send(`
-      <html>
+      <!DOCTYPE html>
+      <html lang="en">
         <head>
-          <title>${client.name}</title>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>${client.name} - Polkadot SSO</title>
           <link rel="stylesheet" href="/styles/main.css">
+          <link rel="stylesheet" href="/styles/home.css">
           <link rel="icon" type="image/x-icon" href="/favicon.ico">
           <script nonce="${res.locals.nonce}">
             window.SSO_CONFIG = {
               clientId: ${escapedClientId},
-              appName: ${escapedAppName}
+              appName: ${escapedAppName},
+              walletType: ${JSON.stringify(wallet || 'auto')}
             };
           </script>
           <!-- Load Polkadot.js extension libraries -->
@@ -139,18 +144,57 @@ export const createAuthRouter = (
           <script src="https://cdn.jsdelivr.net/npm/@polkadot/extension-dapp@0.58.3/bundle-polkadot-extension-dapp.min.js"></script>
         </head>
         <body>
-          <header class="app-header">
-            <h1>${client.name}</h1>
-            <p class="subtitle">A secure authentication service using Polkadot wallets</p>
-          </header>
-          <div class="container">
-            <div id="status">Ready to connect...</div>
-            <button id="connectButton">
-              <span id="buttonText">Connect Wallet</span>
-              <span id="loadingSpinner" class="loading"></span>
-            </button>
-          </div>
+          <!-- Top Navigation -->
+          <nav class="top-nav">
+            <div class="container">
+              <div class="nav-content">
+                <div class="nav-brand">
+                  <a href="/">
+                    <img src="/images/logo.png" alt="Polkadot SSO" class="nav-logo">
+                    <span class="nav-text">Polkadot SSO</span>
+                  </a>
+                </div>
+                <div class="nav-menu">
+                  <a href="/api/credentials/types" class="nav-link">API Docs</a>
+                  <a href="/docs/SECURITY.md" class="nav-link">Security</a>
+                  <a href="/docs/TECHNICAL_DOCUMENTATION.md" class="nav-link">Technical</a>
+                  <a href="https://polkadot.network" class="nav-link" target="_blank">Polkadot</a>
+                  <a href="https://kusama.subscan.io/" class="nav-link" target="_blank">Kusama</a>
+                  <a href="https://github.com/CoachCoe/polkadot-sso" class="nav-link" target="_blank">GitHub</a>
+                </div>
+              </div>
+            </div>
+          </nav>
+
+          <!-- Hero Section -->
+          <section class="hero">
+            <div class="container">
+              <div class="hero-content">
+                <h1 class="hero-title">${client.name}</h1>
+                <p class="hero-subtitle">Connect your Polkadot wallet to continue</p>
+                ${wallet ? `<p class="wallet-info">Selected wallet: <strong>${wallet}</strong></p>` : ''}
+
+                <div class="container" style="max-width: 600px; margin-top: 40px; padding-bottom: 40px;">
+                  <div id="status" style="text-align: center; margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 12px; color: #64748b;">Ready to connect...</div>
+                  <button id="connectButton" class="btn btn-primary btn-large" style="width: 100%; margin-top: 20px;">
+                    <span id="buttonText">Connect Wallet</span>
+                    <span id="loadingSpinner" class="loading"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <script src="/login.js"></script>
+
+          <!-- Footer -->
+          <footer class="footer">
+            <div class="container">
+              <div class="footer-bottom">
+                <p>&copy; 2025 Polkadot SSO. Built with ❤️ for the decentralized web.</p>
+              </div>
+            </div>
+          </footer>
         </body>
       </html>
     `);
@@ -189,10 +233,14 @@ export const createAuthRouter = (
       await challengeService.storeChallenge(challenge);
 
       res.send(`
-      <html>
+      <!DOCTYPE html>
+      <html lang="en">
         <head>
-          <title>${escapeHtml(client.name)}</title>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>${escapeHtml(client.name)} - Sign Message</title>
           <link rel="stylesheet" href="/styles/main.css">
+          <link rel="stylesheet" href="/styles/home.css">
           <script nonce="${res.locals.nonce}">
             window.CHALLENGE_DATA = {
               address: "${escapeHtml(String(address ?? ''))}",
@@ -207,19 +255,120 @@ export const createAuthRouter = (
           <script src="https://cdn.jsdelivr.net/npm/@polkadot/extension-dapp@0.58.3/bundle-polkadot-extension-dapp.min.js"></script>
         </head>
         <body>
-          <div class="container">
-            <h2>Sign Message</h2>
-            <div class="message-box">
-              <p><strong>Message:</strong> ${escapeHtml(challenge.message)}</p>
-              <p><strong>Address:</strong> ${escapeHtml(String(address ?? ''))}</p>
+          <!-- Top Navigation -->
+          <nav class="top-nav">
+            <div class="container">
+              <div class="nav-content">
+                <div class="nav-brand">
+                  <a href="/">
+                    <img src="/images/logo.png" alt="Polkadot SSO" class="nav-logo">
+                    <span class="nav-text">Polkadot SSO</span>
+                  </a>
+                </div>
+                <div class="nav-menu">
+                  <a href="/api/credentials/types" class="nav-link">API Docs</a>
+                  <a href="/docs/SECURITY.md" class="nav-link">Security</a>
+                  <a href="/docs/TECHNICAL_DOCUMENTATION.md" class="nav-link">Technical</a>
+                  <a href="https://polkadot.network" class="nav-link" target="_blank">Polkadot</a>
+                  <a href="https://kusama.subscan.io/" class="nav-link" target="_blank">Kusama</a>
+                  <a href="https://github.com/CoachCoe/polkadot-sso" class="nav-link" target="_blank">GitHub</a>
+                </div>
+              </div>
             </div>
-            <div id="status"></div>
-            <button id="signButton">
-              <span id="buttonText">Sign with Wallet</span>
-              <span id="loadingSpinner" class="loading"></span>
-            </button>
-          </div>
-          <script src="/challenge.js"></script>
+          </nav>
+
+          <!-- Hero Section -->
+          <section class="hero">
+            <div class="container">
+              <div class="hero-content">
+                <h1 class="hero-title">Sign Message</h1>
+                <p class="hero-subtitle">Sign the challenge message with your wallet to continue</p>
+
+                <div class="container" style="max-width: 600px; margin-top: 40px; padding-bottom: 40px;">
+                  <div class="message-box" style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <p style="margin-bottom: 10px;"><strong>Message:</strong> ${escapeHtml(challenge.message)}</p>
+                    <p><strong>Address:</strong> ${escapeHtml(String(address ?? ''))}</p>
+                  </div>
+                  <div id="status" style="text-align: center; margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 12px; color: #64748b;"></div>
+                  <button id="signButton" class="btn btn-primary btn-large" style="width: 100%;">
+                    <span id="buttonText">Sign with Wallet</span>
+                    <span id="loadingSpinner" class="loading"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <script>
+            const statusDiv = document.getElementById("status");
+            const signButton = document.getElementById("signButton");
+            const buttonText = document.getElementById("buttonText");
+            const loadingSpinner = document.getElementById("loadingSpinner");
+
+            function setLoading(isLoading) {
+              signButton.disabled = isLoading;
+              loadingSpinner.style.display = isLoading ? "inline-block" : "none";
+              buttonText.textContent = isLoading ? "Signing..." : "Sign with Wallet";
+            }
+
+            function updateStatus(message, type = "info") {
+              statusDiv.className = type;
+              statusDiv.textContent = message;
+              statusDiv.style.background = type === "error" ? "#fee2e2" : type === "success" ? "#dcfce7" : "#f8fafc";
+              statusDiv.style.color = type === "error" ? "#dc2626" : type === "success" ? "#16a34a" : "#64748b";
+            }
+
+            signButton.addEventListener("click", async () => {
+              try {
+                setLoading(true);
+                updateStatus("Connecting to wallet...");
+
+                const extensions = await window.polkadotExtensionDapp.web3Enable("Polkadot SSO Demo");
+                if (extensions.length === 0) {
+                  throw new Error("No extension found");
+                }
+
+                const injector = await window.polkadotExtensionDapp.web3FromAddress(
+                  window.CHALLENGE_DATA.address
+                );
+
+                if (!injector?.signer?.signRaw) {
+                  throw new Error("Wallet does not support message signing");
+                }
+
+                updateStatus("Please sign the message in your wallet...", "info");
+
+                const { signature } = await injector.signer.signRaw({
+                  address: window.CHALLENGE_DATA.address,
+                  data: window.CHALLENGE_DATA.message,
+                  type: "bytes"
+                });
+
+                updateStatus("Message signed! Verifying...", "success");
+
+                window.location.href = "/verify?signature=" + encodeURIComponent(signature) +
+                  "&challenge_id=" + window.CHALLENGE_DATA.challengeId +
+                  "&address=" + encodeURIComponent(window.CHALLENGE_DATA.address) +
+                  "&code_verifier=" + encodeURIComponent(window.CHALLENGE_DATA.codeVerifier) +
+                  "&state=" + encodeURIComponent(window.CHALLENGE_DATA.state);
+
+              } catch (error) {
+                console.error("Signing error:", error);
+                updateStatus(error instanceof Error ? error.message : "Unknown error", "error");
+              } finally {
+                setLoading(false);
+              }
+            });
+          </script>
+
+          <!-- Footer -->
+          <footer class="footer">
+            <div class="container">
+              <div class="footer-bottom">
+                <p>&copy; 2025 Polkadot SSO. Built with ❤️ for the decentralized web.</p>
+              </div>
+            </div>
+          </footer>
         </body>
       </html>
     `);
@@ -436,6 +585,163 @@ export const createAuthRouter = (
     }
   });
 
+  // Wallet selection page
+  router.get('/wallet-selection', (req, res) => {
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Choose Your Wallet - Polkadot SSO</title>
+        <link rel="stylesheet" href="/styles/main.css">
+        <link rel="stylesheet" href="/styles/home.css">
+        <link rel="stylesheet" href="/styles/wallet-selection.css">
+      </head>
+      <body>
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+          <div class="container">
+            <div class="nav-content">
+              <div class="nav-brand">
+                <a href="/">
+                  <img src="/images/logo.png" alt="Polkadot SSO" class="nav-logo">
+                </a>
+              </div>
+              <div class="nav-menu">
+                <a href="/api/credentials/types" class="nav-link">API Docs</a>
+                <a href="/docs/SECURITY.md" class="nav-link">Security</a>
+                <a href="/docs/TECHNICAL_DOCUMENTATION.md" class="nav-link">Technical</a>
+                <a href="https://polkadot.network" class="nav-link" target="_blank">Polkadot</a>
+                <a href="https://kusama.subscan.io/" class="nav-link" target="_blank">Kusama</a>
+                <a href="https://github.com/CoachCoe/polkadot-sso" class="nav-link" target="_blank">GitHub</a>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="wallet-hero">
+          <div class="container">
+            <div class="hero-content">
+              <h1 class="hero-title">Choose Your Wallet</h1>
+              <p class="hero-subtitle">Select the wallet you'd like to use for authentication</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Wallet Options -->
+        <section class="wallet-options">
+          <div class="container">
+            <div class="wallet-grid">
+              <div class="wallet-card" data-wallet="polkadot-js">
+                <div class="wallet-icon">
+                  <img src="/images/logo.png" alt="Polkadot.js" class="wallet-logo">
+                </div>
+                <div class="wallet-info">
+                  <h3>Polkadot.js Extension</h3>
+                  <p>Browser extension for Polkadot ecosystem</p>
+                  <div class="wallet-features">
+                    <span class="feature-tag">Browser</span>
+                    <span class="feature-tag">Extension</span>
+                    <span class="feature-tag">Popular</span>
+                  </div>
+                </div>
+                <div class="wallet-action">
+                  <button class="btn btn-primary btn-full" onclick="selectWallet('polkadot-js')">
+                    Connect
+                  </button>
+                </div>
+              </div>
+
+              <div class="wallet-card" data-wallet="talisman">
+                <div class="wallet-icon">
+                  <img src="/images/Talisman.jpeg" alt="Talisman" class="wallet-logo">
+                </div>
+                <div class="wallet-info">
+                  <h3>Talisman</h3>
+                  <p>User-friendly wallet for Polkadot ecosystem</p>
+                  <div class="wallet-features">
+                    <span class="feature-tag">Browser</span>
+                    <span class="feature-tag">Extension</span>
+                    <span class="feature-tag">User-friendly</span>
+                  </div>
+                </div>
+                <div class="wallet-action">
+                  <button class="btn btn-primary btn-full" onclick="selectWallet('talisman')">
+                    Connect
+                  </button>
+                </div>
+              </div>
+
+              <div class="wallet-card" data-wallet="subwallet">
+                <div class="wallet-icon">
+                  <img src="/images/subWallet.jpeg" alt="SubWallet" class="wallet-logo">
+                </div>
+                <div class="wallet-info">
+                  <h3>SubWallet</h3>
+                  <p>Comprehensive wallet for Substrate chains</p>
+                  <div class="wallet-features">
+                    <span class="feature-tag">Browser</span>
+                    <span class="feature-tag">Extension</span>
+                    <span class="feature-tag">Multi-chain</span>
+                  </div>
+                </div>
+                <div class="wallet-action">
+                  <button class="btn btn-primary btn-full" onclick="selectWallet('subwallet')">
+                    Connect
+                  </button>
+                </div>
+              </div>
+
+              <div class="wallet-card" data-wallet="nova">
+                <div class="wallet-icon">
+                  <img src="/images/Nova.jpeg" alt="Nova Wallet" class="wallet-logo">
+                </div>
+                <div class="wallet-info">
+                  <h3>Nova Wallet</h3>
+                  <p>Mobile-first wallet with browser bridge</p>
+                  <div class="wallet-features">
+                    <span class="feature-tag">Mobile</span>
+                    <span class="feature-tag">Browser Bridge</span>
+                    <span class="feature-tag">Advanced</span>
+                  </div>
+                </div>
+                <div class="wallet-action">
+                  <button class="btn btn-primary btn-full" onclick="selectWallet('nova')">
+                    Connect
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+
+        <!-- Footer -->
+        <footer class="footer">
+          <div class="container">
+            <div class="footer-bottom">
+              <p>&copy; 2025 Polkadot SSO. Built with ❤️ for the decentralized web.</p>
+            </div>
+          </div>
+        </footer>
+
+        <script>
+          function selectWallet(walletType) {
+            // Store the selected wallet type
+            localStorage.setItem('selectedWallet', walletType);
+
+            // Redirect to the login page with the wallet type
+            window.location.href = '/login?client_id=demo-app&wallet=' + walletType;
+          }
+        </script>
+      </body>
+      </html>
+    `);
+  });
+
   router.get('/', (req, res) => {
     res.send(`
       <!DOCTYPE html>
@@ -490,16 +796,16 @@ export const createAuthRouter = (
                       <li>Works with any Polkadot-compatible wallet</li>
                     </ul>
                   </div>
-                  <div class="card-action">
-                    <a href="/login?client_id=demo-app" class="btn btn-primary btn-full">
-                      Start Authentication
-                    </a>
-                  </div>
+                                      <div class="card-action">
+                      <a href="/wallet-selection" class="btn btn-primary btn-full">
+                        Start Authentication
+                      </a>
+                    </div>
                 </div>
 
                 <div class="action-card secondary">
                   <div class="card-header">
-                    <h3>💾 Kusama Credentials</h3>
+                    <h3><img src="/images/Kusama.jpeg" alt="Kusama" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"> Kusama Credentials</h3>
                     <p>Store and retrieve credentials on the Kusama blockchain</p>
                   </div>
                   <div class="card-content">
