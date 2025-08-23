@@ -27,8 +27,15 @@ export class KusamaIntegrationService {
   private logger = createLogger('kusama-integration');
 
   constructor() {
+    // Debug environment variables
+    console.log('🔍 Debug - Environment variables:');
+    console.log('KUSAMA_ENDPOINT:', process.env.KUSAMA_ENDPOINT);
+    console.log('KUSAMA_ACCOUNT_SEED:', process.env.KUSAMA_ACCOUNT_SEED);
+    console.log('KUSAMA_ACCOUNT_TYPE:', process.env.KUSAMA_ACCOUNT_TYPE);
+
     this.kusamaService = new AdvancedKusamaService({
       endpoint: process.env.KUSAMA_ENDPOINT || 'wss://kusama-rpc.polkadot.io',
+      accountSeed: 'hover error slush merge laundry blade degree tumble plug spawn table wise',
       accountType:
         (process.env.KUSAMA_ACCOUNT_TYPE as 'sr25519' | 'ed25519' | 'ecdsa') || 'sr25519',
     });

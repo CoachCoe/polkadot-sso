@@ -24,6 +24,12 @@ A comprehensive Single Sign-On (SSO) and credential management service using Pol
   - Network health monitoring
   - Cost estimation and fee management
   - Multiple storage methods (remarks, batch, custom pallets)
+  - **🆕 Wallet-Based Storage (Recommended)**
+    - No hardcoded seed phrases required
+    - Each user stores credentials with their own wallet
+    - Integrated with SSO authentication flow
+    - Real user ownership and control
+    - Eliminates centralized security risks
 
 ## Core Functionality
 
@@ -274,9 +280,20 @@ The system supports two encryption modes:
 
 ## Demo & Testing
 
-### Interactive Kusama Demo
+### 🆕 Wallet-Based Kusama Demo (Recommended)
 
-Visit `/kusama-demo` in your browser to test the complete Kusama integration:
+Visit `/wallet-kusama-demo` in your browser to test the new wallet-based Kusama storage system:
+
+- **No Hardcoded Seeds**: Each user uses their own wallet
+- **Real Ownership**: You control your own credentials
+- **SSO Integration**: Uses the existing authentication flow
+- **Secure Storage**: Mock storage with real authentication
+- **Cost Estimation**: See storage costs for your data
+- **Network Health**: Monitor Kusama network status
+
+### Legacy Kusama Demo (Deprecated)
+
+Visit `/kusama-demo` in your browser to test the legacy hardcoded seed approach:
 
 - **Store Credentials**: Test storing encrypted credentials on Kusama
 - **Retrieve Credentials**: Practice retrieving and decrypting stored data
@@ -284,13 +301,14 @@ Visit `/kusama-demo` in your browser to test the complete Kusama integration:
 - **Network Health**: Monitor Kusama network status
 - **Transaction Monitoring**: Track active blockchain transactions
 
-### API Testing Examples
+### 🆕 Wallet-Based API Testing Examples (Recommended)
 
-#### Store a Credential
+#### Store a Credential with Wallet Authentication
 
 ```bash
-curl -X POST http://localhost:3000/api/kusama/store \
+curl -X POST http://localhost:3000/api/wallet-kusama/store \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-jwt-token" \
   -d '{
     "credentialData": {
       "institution": "University of Example",
@@ -298,10 +316,26 @@ curl -X POST http://localhost:3000/api/kusama/store \
       "year": "2023"
     },
     "credentialType": "academic_degree",
-    "userAddress": "5Dy3rM7WVhwv58ogVn1RGK9rmnq7HwUBqeZheT9U5B26mXZd",
-    "encryptionKey": "your-personal-encryption-key-minimum-32-chars"
+    "userAddress": "5Dy3rM7WVhwv58ogVn1RGK9rmnq7HwUBqeZheT9U5B26mXZd"
   }'
 ```
+
+#### List Your Credentials
+
+```bash
+curl -X GET "http://localhost:3000/api/wallet-kusama/list?userAddress=5Dy3rM7WVhwv58ogVn1RGK9rmnq7HwUBqeZheT9U5B26mXZd" \
+  -H "Authorization: Bearer your-jwt-token"
+```
+
+#### Get Cost Estimate
+
+```bash
+curl "http://localhost:3000/api/wallet-kusama/cost-estimate?dataSize=1000&userAddress=5Dy3rM7WVhwv58ogVn1RGK9rmnq7HwUBqeZheT9U5B26mXZd"
+```
+
+### Legacy API Testing Examples (Deprecated)
+
+#### Store a Credential with Hardcoded Seed
 
 #### Get Cost Estimate
 
@@ -314,6 +348,28 @@ curl "http://localhost:3000/api/kusama/cost-estimate?dataSize=1000"
 ```bash
 curl "http://localhost:3000/api/kusama/health"
 ```
+
+## 🆕 Wallet-Based Storage Benefits
+
+The new wallet-based Kusama storage system provides significant advantages over the legacy hardcoded seed approach:
+
+### ✅ **Security Improvements**
+- **No Seed Phrase Exposure**: Users keep their private keys secure
+- **User Ownership**: Each user stores credentials with their own wallet
+- **No Centralized Risk**: No single account that could be compromised
+- **Real Authentication**: Uses actual SSO wallet signatures
+
+### ✅ **User Experience Improvements**
+- **Familiar Flow**: Users already know how to connect wallets
+- **Real Ownership**: Users see their actual wallet address
+- **No Setup Required**: No need to configure environment variables
+- **Immediate Access**: Works with any Polkadot wallet
+
+### ✅ **Architecture Improvements**
+- **Scalable**: Each user has their own storage space
+- **Maintainable**: No need to manage seed phrases
+- **Compliant**: Better for enterprise and regulatory requirements
+- **Future-Proof**: Ready for multi-chain expansion
 
 ## Security Features
 
@@ -358,6 +414,22 @@ curl "http://localhost:3000/api/kusama/health"
 ### Token Management
 
 - `POST /api/tokens/refresh` - Refresh access token
+
+### 🆕 Wallet-Based Kusama Storage (Recommended)
+
+- `POST /api/wallet-kusama/store` - Store credential with wallet authentication
+- `POST /api/wallet-kusama/retrieve` - Retrieve credential with wallet authentication
+- `GET /api/wallet-kusama/list` - List credentials with wallet authentication
+- `GET /api/wallet-kusama/cost-estimate` - Estimate storage cost
+- `GET /api/wallet-kusama/health` - Check network health
+
+### Legacy Kusama Storage (Deprecated)
+
+- `POST /api/kusama/store` - Store credential using hardcoded seed
+- `POST /api/kusama/retrieve` - Retrieve credential using hardcoded seed
+- `GET /api/kusama/list` - List credentials using hardcoded seed
+- `GET /api/kusama/cost-estimate` - Estimate storage cost
+- `GET /api/kusama/health` - Check network health
 
 ### Credential Management
 

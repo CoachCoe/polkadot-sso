@@ -17,8 +17,9 @@ import { sanitizeRequestParams } from './middleware/validation';
 import { createAuthRouter } from './routes/auth';
 import { createClientRouter } from './routes/clients';
 import { createCredentialRouter } from './routes/credentials';
-import { createTokenRouter } from './routes/tokens';
 import kusamaRoutes from './routes/kusama';
+import { createTokenRouter } from './routes/tokens';
+import walletKusamaRoutes from './routes/walletKusama';
 import { AuditService } from './services/auditService';
 import { ChallengeService } from './services/challengeService';
 import { CredentialService } from './services/credentialService';
@@ -148,10 +149,15 @@ async function initializeApp() {
   app.use('/api/clients', createClientRouter(db));
   app.use('/api/credentials', createCredentialRouter(credentialService, auditService));
   app.use('/api/kusama', kusamaRoutes);
+  app.use('/api/wallet-kusama', walletKusamaRoutes);
 
-  // Demo page route
+  // Demo page routes
   app.get('/kusama-demo', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/views/kusama-demo.html'));
+  });
+
+  app.get('/wallet-kusama-demo', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/views/wallet-kusama-demo.html'));
   });
 
   app.use(bruteForceMiddleware);
