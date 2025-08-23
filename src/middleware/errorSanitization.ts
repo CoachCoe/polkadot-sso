@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { NextFunction, Request, Response } from 'express';
 import { createLogger } from '../utils/logger';
 const logger = createLogger('error-sanitization');
@@ -36,7 +37,7 @@ export class ErrorSanitizationMiddleware {
         });
       }
       const isAllowedError = this.config.allowedErrorTypes.some(
-        type => error.constructor.name === type || (error as any).name === type
+        type => error.constructor.name === type || (error as Error & { name: string }).name === type
       );
       const sanitizedMessage = this.sanitizeErrorMessage(error.message, isAllowedError);
       const responseError: Record<string, unknown> = {
@@ -78,20 +79,24 @@ export class ErrorSanitizationMiddleware {
     return genericMessages[index];
   }
   private getStatusCode(error: Error): number {
-    if ((error as any).name === 'ValidationError') {
-      return 400;
-    }
-    if ((error as any).name === 'AuthenticationError') {
-      return 401;
-    }
-    if ((error as any).name === 'AuthorizationError') {
-      return 403;
-    }
-    if ((error as any).name === 'NotFoundError') {
-      return 404;
-    }
-    if ((error as any).name === 'RateLimitError') {
-      return 429;
+    // Use type guards to safely check error types
+    if (error instanceof Error && 'name' in error) {
+      const errorName = (error as Error & { name: string }).name;
+      if (errorName === 'ValidationError') {
+        return 400;
+      }
+      if (errorName === 'AuthenticationError') {
+        return 401;
+      }
+      if (errorName === 'AuthorizationError') {
+        return 403;
+      }
+      if (errorName === 'NotFoundError') {
+        return 404;
+      }
+      if (errorName === 'RateLimitError') {
+        return 429;
+      }
     }
     return 500;
   }
@@ -160,12 +165,14 @@ export class ErrorSanitizationMiddleware {
       RateLimitError,
     };
   }
-  static asyncErrorHandler(fn: Function) {
+  static asyncErrorHandler(
+    fn: (req: Request, res: Response, next: NextFunction) => Promise<void> | void
+  ) {
     return (req: Request, res: Response, next: NextFunction) => {
       Promise.resolve(fn(req, res, next)).catch(next);
     };
   }
-  static syncErrorHandler(fn: Function) {
+  static syncErrorHandler(fn: (req: Request, res: Response, next: NextFunction) => void) {
     return (req: Request, res: Response, next: NextFunction) => {
       try {
         fn(req, res, next);
@@ -176,6 +183,7 @@ export class ErrorSanitizationMiddleware {
   }
 }
 export const errorSanitization = new ErrorSanitizationMiddleware();
+/* eslint-disable @typescript-eslint/unbound-method */
 export const { createCustomErrors, asyncErrorHandler, syncErrorHandler } =
   ErrorSanitizationMiddleware;
 export const { sanitizeErrors } = errorSanitization;
@@ -186,3 +194,4 @@ export const {
   NotFoundError,
   RateLimitError,
 } = ErrorSanitizationMiddleware.createCustomErrors();
+/* eslint-enable @typescript-eslint/unbound-method */

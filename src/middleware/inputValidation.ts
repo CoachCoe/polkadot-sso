@@ -54,7 +54,7 @@ export class InputValidationMiddleware {
   }
   validateFields() {
     return (req: Request, res: Response, next: NextFunction) => {
-      const fieldCount = Object.keys(req.body).length;
+      const fieldCount = Object.keys(req.body as Record<string, unknown>).length;
       if (fieldCount > this.config.maxFields) {
         logger.warn('Too many fields in request', {
           ip: req.ip,
@@ -68,7 +68,7 @@ export class InputValidationMiddleware {
           requestId: req.headers['x-request-id'] || 'unknown',
         });
       }
-      for (const [key, value] of Object.entries(req.body)) {
+      for (const [key, value] of Object.entries(req.body as Record<string, unknown>)) {
         if (typeof value === 'string' && value.length > this.config.maxFieldSize) {
           logger.warn('Field size exceeded limit', {
             ip: req.ip,
@@ -192,12 +192,23 @@ export class InputValidationMiddleware {
       mb: 1024 * 1024,
       gb: 1024 * 1024 * 1024,
     };
-    const match = sizeStr.toLowerCase().match(/^(\d+(?:\.\d+)?)\s*(b|kb|mb|gb)$/);
-    if (!match) {
+
+    // Use a safer approach without complex regex
+    const trimmed = sizeStr.toLowerCase().trim();
+    const unitMatch = trimmed.match(/(b|kb|mb|gb)$/);
+    if (!unitMatch) {
       return 1024 * 1024;
     }
-    const [, value, unit] = match;
-    return parseFloat(value) * units[unit];
+
+    const unit = unitMatch[1];
+    const valueStr = trimmed.slice(0, -unit.length).trim();
+    const value = parseFloat(valueStr);
+
+    if (isNaN(value) || value <= 0) {
+      return 1024 * 1024;
+    }
+
+    return value * units[unit];
   }
   private isValidAcceptHeader(accept: string): boolean {
     const validTypes = [
@@ -211,6 +222,7 @@ export class InputValidationMiddleware {
   }
 }
 export const inputValidation = new InputValidationMiddleware();
+/* eslint-disable @typescript-eslint/unbound-method */
 export const {
   validateRequestSize,
   validateFileUploads,
@@ -220,3 +232,4 @@ export const {
   createSizeBasedRateLimit,
   getAllValidationMiddleware,
 } = inputValidation;
+/* eslint-enable @typescript-eslint/unbound-method */

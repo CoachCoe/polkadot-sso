@@ -17,6 +17,13 @@ A comprehensive Single Sign-On (SSO) and credential management service using Pol
   - Credential sharing and permissions
   - Verification and revocation
   - Issuance request workflow
+- 🌐 **Kusama Blockchain Integration**
+  - Secure credential storage on Kusama blockchain
+  - User-controlled encryption with personal keys
+  - Real-time transaction monitoring
+  - Network health monitoring
+  - Cost estimation and fee management
+  - Multiple storage methods (remarks, batch, custom pallets)
 
 ## Core Functionality
 
@@ -61,6 +68,14 @@ A comprehensive Single Sign-On (SSO) and credential management service using Pol
   - Verification and revocation handling
   - Issuance request workflow
 
+- **Kusama Blockchain Service**
+  - Advanced Kusama service for blockchain interaction
+  - Kusama integration service for credential storage
+  - Transaction monitoring and health checking
+  - Multiple storage strategies (remarks, batch, custom pallets)
+  - Real-time transaction status tracking
+  - Network health and peer monitoring
+
 - **Audit Service**
   - Comprehensive security event logging
   - Authentication attempt tracking
@@ -72,6 +87,7 @@ A comprehensive Single Sign-On (SSO) and credential management service using Pol
 - Node.js (v16 or higher)
 - SQLite3
 - Redis (for production)
+- Kusama account with KSM balance (for blockchain storage)
 
 ## Installation
 
@@ -96,6 +112,12 @@ Alternatively, create `.env` file manually:
 - `SESSION_SECRET` - Secret for session encryption (min 32 chars)
 - `JWT_SECRET` - Secret for JWT token signing (min 32 chars)
 - `DATABASE_ENCRYPTION_KEY` - Key for database field encryption (min 32 chars)
+
+**Kusama Blockchain Configuration:**
+
+- `KUSAMA_ENDPOINT` - Kusama RPC endpoint (default: wss://kusama-rpc.polkadot.io)
+- `KUSAMA_ACCOUNT_TYPE` - Account type: sr25519, ed25519, or ecdsa (default: sr25519)
+- `KUSAMA_ACCOUNT_SEED` - 64-character hex seed for your Kusama account
 
 **Optional Configuration:**
 
@@ -171,6 +193,127 @@ Security Core (1) - No dependencies
 - **Future Flexibility**: Modules can be extracted to separate packages
 - **Gradual Migration**: Existing code continues to work while adopting new structure
 - **Professional Standards**: Industry-standard modular design patterns
+
+## Kusama Blockchain Integration
+
+### Overview
+
+The Polkadot SSO service includes comprehensive integration with the Kusama blockchain for secure, decentralized credential storage. This integration provides users with full control over their data while leveraging blockchain immutability and security.
+
+### Key Features
+
+- **🔐 User-Controlled Encryption**: Users can encrypt their credentials with personal keys, ensuring only they can access their data
+- **🌐 Blockchain Storage**: Credentials are stored as encrypted remarks on the Kusama blockchain
+- **📊 Real-Time Monitoring**: Live transaction tracking with automatic retry logic
+- **💰 Cost Management**: Built-in cost estimation and fee calculation
+- **🛡️ Multiple Storage Methods**: Support for remarks, batch transactions, and custom pallets
+- **📈 Network Health**: Continuous monitoring of Kusama network status
+
+### Storage Methods
+
+1. **Remarks Storage** (`remark`)
+   - Individual transactions for each credential chunk
+   - Suitable for small to medium credentials
+   - Maximum transparency and traceability
+
+2. **Batch Storage** (`batch`)
+   - Multiple credentials in single transaction
+   - Cost-effective for multiple credentials
+   - Reduced blockchain bloat
+
+3. **Custom Pallet Storage** (`custom_pallet`)
+   - Optimized for large credential datasets
+   - Most cost-effective for bulk storage
+   - Requires custom pallet implementation
+
+### API Endpoints
+
+- `POST /api/kusama/store` - Store encrypted credentials on Kusama
+- `POST /api/kusama/retrieve` - Retrieve and decrypt credentials
+- `GET /api/kusama/list` - List all user credentials
+- `GET /api/kusama/cost-estimate` - Estimate storage costs
+- `POST /api/kusama/verify` - Verify credential integrity
+- `GET /api/kusama/health` - Check network health status
+- `GET /api/kusama/monitors` - View active transaction monitors
+- `POST /api/kusama/init` - Initialize Kusama service
+
+### Encryption
+
+The system supports two encryption modes:
+
+1. **User-Provided Keys**: AES-256-GCM encryption with user-supplied keys
+   - Keys are derived using scrypt with salt
+   - Users maintain full control over their data
+   - No system access to encrypted content
+
+2. **System Encryption**: Environment-based encryption for system-managed credentials
+   - Uses `DATABASE_ENCRYPTION_KEY` environment variable
+   - Suitable for system-generated credentials
+   - Centralized key management
+
+### Transaction Monitoring
+
+- **Real-Time Tracking**: Monitor transaction status from submission to finalization
+- **Automatic Retries**: Configurable retry logic with exponential backoff
+- **Timeout Handling**: Graceful handling of network delays and failures
+- **Health Checks**: Continuous monitoring of network connectivity and peer status
+
+### Cost Management
+
+- **Fee Estimation**: Pre-calculation of transaction costs before submission
+- **Storage Optimization**: Automatic chunking for large credentials
+- **Batch Discounts**: Reduced costs when using batch storage methods
+- **Balance Monitoring**: Automatic low balance warnings
+
+### Security Features
+
+- **Immutable Storage**: Once stored, credentials cannot be modified or deleted
+- **Cryptographic Verification**: Hash-based integrity checking
+- **Access Control**: Only credential owners can decrypt their data
+- **Audit Trail**: Complete transaction history for compliance
+
+## Demo & Testing
+
+### Interactive Kusama Demo
+
+Visit `/kusama-demo` in your browser to test the complete Kusama integration:
+
+- **Store Credentials**: Test storing encrypted credentials on Kusama
+- **Retrieve Credentials**: Practice retrieving and decrypting stored data
+- **Cost Estimation**: See real-time cost estimates for different data sizes
+- **Network Health**: Monitor Kusama network status
+- **Transaction Monitoring**: Track active blockchain transactions
+
+### API Testing Examples
+
+#### Store a Credential
+
+```bash
+curl -X POST http://localhost:3000/api/kusama/store \
+  -H "Content-Type: application/json" \
+  -d '{
+    "credentialData": {
+      "institution": "University of Example",
+      "degree": "Bachelor of Science",
+      "year": "2023"
+    },
+    "credentialType": "academic_degree",
+    "userAddress": "5Dy3rM7WVhwv58ogVn1RGK9rmnq7HwUBqeZheT9U5B26mXZd",
+    "encryptionKey": "your-personal-encryption-key-minimum-32-chars"
+  }'
+```
+
+#### Get Cost Estimate
+
+```bash
+curl "http://localhost:3000/api/kusama/cost-estimate?dataSize=1000"
+```
+
+#### Check Network Health
+
+```bash
+curl "http://localhost:3000/api/kusama/health"
+```
 
 ## Security Features
 
@@ -574,6 +717,53 @@ npm run format          # Auto-format code
 
 ## Production Deployment
 
+### Environment Setup
+
+1. **Generate Production Keys**:
+   ```bash
+   # Generate encryption key
+   node -e "console.log('DATABASE_ENCRYPTION_KEY=' + require('crypto').randomBytes(32).toString('hex'))"
+
+   # Generate session secret
+   node -e "console.log('SESSION_SECRET=' + require('crypto').randomBytes(32).toString('base64'))"
+
+   # Generate Kusama account seed
+   node -e "console.log('KUSAMA_ACCOUNT_SEED=' + require('crypto').randomBytes(32).toString('hex'))"
+   ```
+
+2. **Set Production Environment Variables**:
+   ```bash
+   NODE_ENV=production
+   ENABLE_REAL_KUSAMA_STORAGE=true
+   KUSAMA_TESTNET_MODE=false
+   MOCK_KUSAMA_RESPONSES=false
+   ```
+
+3. **Fund Your Kusama Account**: Ensure your account has sufficient KSM for transaction fees
+
+4. **Configure RPC Endpoints**: Use reliable Kusama RPC endpoints for production
+
+### Security Checklist
+
+- [ ] All environment secrets are cryptographically secure
+- [ ] Kusama account seed is properly secured
+- [ ] Production RPC endpoints are configured
+- [ ] Rate limiting is appropriate for production load
+- [ ] CORS origins are restricted to production domains
+- [ ] HTTPS is enabled with proper certificates
+- [ ] Database encryption is active
+- [ ] Audit logging is comprehensive
+
+### Monitoring
+
+- **Transaction Monitoring**: Monitor all Kusama transactions for failures
+- **Network Health**: Track Kusama network connectivity
+- **Cost Tracking**: Monitor storage costs and account balances
+- **Performance Metrics**: Track API response times and throughput
+- **Security Events**: Monitor authentication attempts and security violations
+
+### Deployment Steps
+
 1. Set environment variables
 2. Build the project: `npm run build`
 3. Start the server: `npm start`
@@ -599,6 +789,17 @@ npm run format          # Auto-format code
 - **Hybrid storage solution** combining local, IPFS, and Kusama storage
 - **Advanced Kusama integration** for immutable credential verification
 - **Secure credential storage** with encryption and integrity checks
+
+### Kusama Production Integration (Latest)
+
+- **Production-ready Kusama integration** with comprehensive blockchain storage
+- **User-controlled encryption** with AES-256-GCM and personal keys
+- **Real-time transaction monitoring** with automatic retry logic
+- **Network health monitoring** and cost estimation
+- **Multiple storage strategies** (remarks, batch, custom pallets)
+- **Comprehensive API endpoints** for all Kusama operations
+- **Interactive demo interface** at `/kusama-demo`
+- **Environment configuration** for production deployment
 
 ## Contributing
 

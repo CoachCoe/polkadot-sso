@@ -1,6 +1,6 @@
 import { cryptoWaitReady, signatureVerify } from '@polkadot/util-crypto';
 import crypto, { createHash } from 'crypto';
-import { RequestHandler, Router } from 'express';
+import { NextFunction, Request, Response, RequestHandler, Router } from 'express';
 import { Database } from 'sqlite';
 import { z } from 'zod';
 import { createRateLimiters } from '../middleware/rateLimit';
@@ -14,6 +14,16 @@ import { logError, logRequest } from '../utils/logger';
 import { escapeHtml } from '../utils/sanitization';
 import { validateAuthRequest, validateClientCredentials } from '../utils/validation';
 
+// Define the expected auth code structure
+interface AuthCode {
+  code: string;
+  address: string;
+  client_id: string;
+  created_at: number;
+  expires_at: number;
+  used: number;
+}
+
 const loginSchema = z.object({
   query: z.object({
     client_id: z.string().min(1),
@@ -21,9 +31,11 @@ const loginSchema = z.object({
 });
 
 const tokenSchema = z.object({
-  code: z.string().min(32).max(64),
-  client_id: z.string().min(1),
-  client_secret: z.string().min(32),
+  body: z.object({
+    code: z.string().min(32).max(64),
+    client_id: z.string().min(1),
+    client_secret: z.string().min(32),
+  }),
 });
 
 const challengeSchema = z.object({
@@ -70,7 +82,7 @@ export const createAuthRouter = (
       const client = clients.get(client_id as string);
 
       if (!client) {
-        logError(req, new Error(`Invalid client_id: ${client_id}`));
+        logError(req, new Error(`Invalid client_id: ${String(client_id)}`));
         return res.status(400).json({ error: 'Invalid client' });
       }
 
@@ -137,7 +149,7 @@ export const createAuthRouter = (
       const client = clients.get(client_id as string);
 
       if (!client) {
-        logError(req, new Error(`Invalid client_id: ${client_id}`));
+        logError(req, new Error(`Invalid client_id: ${String(client_id)}`));
         return res.status(400).json({ error: 'Invalid client' });
       }
 
@@ -156,7 +168,7 @@ export const createAuthRouter = (
           <link rel="stylesheet" href="/styles/main.css">
           <script nonce="${res.locals.nonce}">
             window.CHALLENGE_DATA = {
-              address: "${escapeHtml(address as string)}",
+              address: "${escapeHtml(String(address ?? ''))}",
               message: "${escapeHtml(challenge.message)}",
               challengeId: "${escapeHtml(challenge.id)}",
               codeVerifier: "${escapeHtml(challenge.code_verifier)}",
@@ -172,7 +184,7 @@ export const createAuthRouter = (
             <h2>Sign Message</h2>
             <div class="message-box">
               <p><strong>Message:</strong> ${escapeHtml(challenge.message)}</p>
-              <p><strong>Address:</strong> ${escapeHtml(address as string)}</p>
+              <p><strong>Address:</strong> ${escapeHtml(String(address ?? ''))}</p>
             </div>
             <div id="status"></div>
             <button id="signButton">
@@ -227,20 +239,18 @@ export const createAuthRouter = (
         return res.status(400).send('Invalid challenge or state mismatch');
       }
 
-      const code_challenge = await generateCodeChallenge(code_verifier as string);
+      const code_challenge = generateCodeChallenge(code_verifier as string);
       if (code_challenge !== challenge.code_challenge) {
         return res.status(400).send('Invalid code verifier');
       }
 
       await cryptoWaitReady();
 
-      // For signRaw with type: 'bytes', we need to handle the signature differently
-      // The signature from signRaw is already in the correct format for verification
       try {
         const { isValid } = signatureVerify(
           challenge.message,
           signature as string,
-          address as string
+          String(address ?? '')
         );
 
         if (!isValid) {
@@ -277,19 +287,42 @@ export const createAuthRouter = (
     try {
       const { code, client_id } = req.body;
 
-      const client = await validateClientCredentials();
+      // Type guard for code and client_id
+      if (!code || typeof code !== 'string') {
+        return res.status(400).send('Invalid code');
+      }
+      if (!client_id || typeof client_id !== 'string') {
+        return res.status(400).send('Invalid client_id');
+      }
+
+      const client = await validateClientCredentials(req);
       if (!client) {
         return res.status(401).send('Invalid client credentials');
       }
 
       const authCode = await secureQueries.authCodes.verify(db, code, client_id);
-      if (!authCode || Date.now() > authCode.expires_at) {
+      if (!authCode || Date.now() > (authCode.expires_at as number)) {
         return res.status(400).send('Invalid or expired authorization code');
+      }
+
+      // Type guard to ensure authCode has the expected structure
+      if (
+        !authCode ||
+        typeof authCode !== 'object' ||
+        !('address' in authCode) ||
+        !('expires_at' in authCode)
+      ) {
+        return res.status(400).send('Invalid authorization code format');
+      }
+
+      const typedAuthCode = authCode as AuthCode;
+      if (Date.now() > typedAuthCode.expires_at) {
+        return res.status(400).send('Authorization code expired');
       }
 
       await secureQueries.authCodes.markUsed(db, code);
 
-      const tokens = tokenService.generateTokens(authCode.address, client_id);
+      const tokens = tokenService.generateTokens(typedAuthCode.address, client_id);
 
       res.json({
         access_token: tokens.accessToken,
@@ -303,7 +336,6 @@ export const createAuthRouter = (
     }
   };
 
-  // Callback route - handle OAuth callback
   router.get('/callback', (req, res) => {
     const { code, state } = req.query;
 
@@ -311,8 +343,8 @@ export const createAuthRouter = (
       return res.status(400).send('Missing required parameters');
     }
 
-    const codeStr = Array.isArray(code) ? code[0] : code;
-    const stateStr = Array.isArray(state) ? state[0] : state;
+    const codeStr = Array.isArray(code) ? String(code[0]) : String(code ?? '');
+    const stateStr = Array.isArray(state) ? String(state[0]) : String(state ?? '');
 
     res.send(`
       <!DOCTYPE html>
@@ -370,7 +402,6 @@ export const createAuthRouter = (
     `);
   });
 
-  // Root route - serve a simple landing page
   router.get('/', (req, res) => {
     res.send(`
       <!DOCTYPE html>

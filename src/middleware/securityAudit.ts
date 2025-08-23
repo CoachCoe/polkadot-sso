@@ -4,7 +4,7 @@ import { AuditService } from '../services/auditService';
 export const createSecurityAudit = (auditService: AuditService) => {
   return {
     rateLimitHandler: (req: Request, res: Response) => {
-      auditService.log({
+      void auditService.log({
         type: 'SECURITY_EVENT',
         client_id: String(req.query.client_id || 'unknown'),
         action: 'RATE_LIMIT_EXCEEDED',
@@ -23,7 +23,7 @@ export const createSecurityAudit = (auditService: AuditService) => {
     },
 
     corsErrorHandler: (req: Request) => {
-      auditService.log({
+      void auditService.log({
         type: 'SECURITY_EVENT',
         client_id: String(req.query.client_id || 'unknown'),
         action: 'CORS_VIOLATION',

@@ -1,7 +1,7 @@
-import sqlite3 from 'sqlite3';
-import { open, Database } from 'sqlite';
 import { mkdir } from 'fs/promises';
 import { dirname } from 'path';
+import { Database, open } from 'sqlite';
+import sqlite3 from 'sqlite3';
 
 const DB_POOL_SIZE = 10;
 
@@ -29,6 +29,17 @@ export async function initializeDatabase(): Promise<Database> {
 
   await db.exec(`
     -- Existing SSO tables
+    CREATE TABLE IF NOT EXISTS clients (
+      client_id TEXT PRIMARY KEY,
+      client_secret TEXT NOT NULL,
+      name TEXT NOT NULL,
+      redirect_urls TEXT NOT NULL, -- JSON array of redirect URLs
+      allowed_origins TEXT NOT NULL, -- JSON array of allowed origins
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL,
+      is_active BOOLEAN DEFAULT 1
+    );
+
     CREATE TABLE IF NOT EXISTS challenges (
       id TEXT PRIMARY KEY,
       message TEXT NOT NULL,
@@ -80,7 +91,7 @@ export async function initializeDatabase(): Promise<Database> {
     );
 
     -- New Credential Management tables
-    
+
     -- User profiles extending beyond just addresses
     CREATE TABLE IF NOT EXISTS user_profiles (
       id TEXT PRIMARY KEY,
@@ -232,7 +243,7 @@ export async function initializeDatabase(): Promise<Database> {
     CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_logs(user_address);
     CREATE INDEX IF NOT EXISTS idx_audit_client ON audit_logs(client_id);
     CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_logs(created_at);
-    
+
     -- New indexes for credential management
     CREATE INDEX IF NOT EXISTS idx_user_profiles_address ON user_profiles(address);
     CREATE INDEX IF NOT EXISTS idx_user_profiles_email ON user_profiles(email);
