@@ -16,7 +16,9 @@ export interface WalletConnection {
   address: string;
   publicKey: Uint8Array;
   sign(data: Uint8Array): Promise<Uint8Array>;
-  signTransaction(extrinsic: SubmittableExtrinsic<'promise'>): Promise<SubmittableExtrinsic<'promise'>>;
+  signTransaction(
+    extrinsic: SubmittableExtrinsic<'promise'>
+  ): Promise<SubmittableExtrinsic<'promise'>>;
   disconnect(): Promise<void>;
 }
 
@@ -225,7 +227,9 @@ class PolkadotJsConnection implements WalletConnection {
     return this.keypair.sign(data);
   }
 
-  async signTransaction(extrinsic: SubmittableExtrinsic<'promise'>): Promise<SubmittableExtrinsic<'promise'>> {
+  async signTransaction(
+    extrinsic: SubmittableExtrinsic<'promise'>
+  ): Promise<SubmittableExtrinsic<'promise'>> {
     // This would need to be implemented based on the specific extrinsic type
     // For now, return the extrinsic as-is
     return extrinsic;

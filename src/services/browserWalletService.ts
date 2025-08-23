@@ -16,7 +16,9 @@ export interface BrowserWalletAccount {
 export interface BrowserWalletConnection {
   account: BrowserWalletAccount;
   sign(data: Uint8Array): Promise<Uint8Array>;
-  signTransaction(extrinsic: SubmittableExtrinsic<'promise'>): Promise<SubmittableExtrinsic<'promise'>>;
+  signTransaction(
+    extrinsic: SubmittableExtrinsic<'promise'>
+  ): Promise<SubmittableExtrinsic<'promise'>>;
   disconnect(): Promise<void>;
 }
 
@@ -266,7 +268,10 @@ export class BrowserWalletService {
   /**
    * Sign a transaction with a connected wallet
    */
-  async signTransaction(address: string, extrinsic: SubmittableExtrinsic<'promise'>): Promise<SubmittableExtrinsic<'promise'> | null> {
+  async signTransaction(
+    address: string,
+    extrinsic: SubmittableExtrinsic<'promise'>
+  ): Promise<SubmittableExtrinsic<'promise'> | null> {
     try {
       const connection = this.connections.get(address);
       if (!connection) {
@@ -358,7 +363,9 @@ class PolkadotJsBrowserConnection implements BrowserWalletConnection {
     throw new Error('Actual signing not yet implemented - requires extension integration');
   }
 
-  async signTransaction(extrinsic: SubmittableExtrinsic<'promise'>): Promise<SubmittableExtrinsic<'promise'>> {
+  async signTransaction(
+    extrinsic: SubmittableExtrinsic<'promise'>
+  ): Promise<SubmittableExtrinsic<'promise'>> {
     // This would need to be implemented using the actual extension API
     logger.info('Signing transaction with Polkadot.js Extension', {
       address: this.account.address,
