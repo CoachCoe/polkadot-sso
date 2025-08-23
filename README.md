@@ -31,11 +31,12 @@ A comprehensive Single Sign-On (SSO) and credential management service using Pol
     - Real user ownership and control
     - Eliminates centralized security risks
   - **🆕 Real Wallet Integration (Latest)**
-    - Browser wallet extension support (Polkadot.js, Talisman, SubWallet)
-    - Real transaction signing and submission
-    - Live blockchain interaction
-    - Transaction status monitoring
-    - Fee estimation and cost management
+  - Browser wallet extension support (Polkadot.js, Talisman, SubWallet)
+  - **📱 Nova Wallet support (Mobile + Browser Bridge)**
+  - Real transaction signing and submission
+  - Live blockchain interaction
+  - Transaction status monitoring
+  - Fee estimation and cost management
 
 ## Core Functionality
 
@@ -90,9 +91,10 @@ A comprehensive Single Sign-On (SSO) and credential management service using Pol
 - **🆕 Wallet Integration Services (Latest)**
   - BrowserWalletService for real wallet extension integration
   - RealTransactionService for actual blockchain transactions
-  - Support for Polkadot.js Extension, Talisman, and SubWallet
+  - Support for Polkadot.js Extension, Talisman, SubWallet, and **📱 Nova Wallet**
   - Real transaction signing, fee estimation, and status monitoring
   - Browser and Node.js compatible demos
+  - Mobile wallet bridge support for Nova Wallet
 
 - **Audit Service**
   - Comprehensive security event logging
@@ -249,6 +251,14 @@ The new wallet integration system provides real browser wallet extension support
    - Cross-platform support
    - User-friendly interface
 
+4. **📱 Nova Wallet**
+   - Mobile-first wallet with excellent UX
+   - Hardware security module (HSM) support
+   - Biometric authentication and secure enclave storage
+   - Browser bridge for desktop integration
+   - Support for Kusama, Polkadot, and parachains
+   - Advanced features: Staking, Governance, NFTs, Cross-chain transfers
+
 ### Architecture Benefits
 
 - **Security**: No seed phrase exposure
@@ -363,6 +373,21 @@ npm run demo:wallet     # Legacy wallet integration demo
 - **Transaction Simulation**: Test transaction creation and submission
 - **Architecture Validation**: Verify service dependencies and health
 
+#### 📱 Nova Wallet Demo Features
+
+- **Mobile Wallet Integration**: Test Nova Wallet mobile app integration
+- **Browser Bridge Support**: Connect mobile wallet to desktop browser
+- **Advanced Security Features**: Hardware security module (HSM) support
+- **Biometric Authentication**: Secure device-based authentication
+- **Cross-Chain Support**: Kusama, Polkadot, and parachain compatibility
+- **Feature Showcase**: Staking, Governance, NFTs, and more
+
+**Run Nova Wallet Demo:**
+```bash
+npm run demo:nova-simple  # Simple demo (no dependencies)
+npm run demo:nova         # Full integration demo (requires browser)
+```
+
 ### 🆕 Wallet-Based Kusama Demo (Recommended)
 
 Visit `/wallet-kusama-demo` in your browser to test the new wallet-based Kusama storage system:
@@ -429,6 +454,32 @@ console.log('Transaction status:', status.status);
 // Wait for confirmation
 const confirmation = await realTransactionService.waitForTransactionConfirmation(txHash);
 ```
+
+#### 📱 Nova Wallet Connection
+
+```typescript
+// Connect to Nova Wallet (mobile + browser bridge)
+const browserWalletService = new BrowserWalletService(api);
+const providers = browserWalletService.getAvailableProviders();
+
+// Check if Nova Wallet is available
+if (providers.includes('nova')) {
+  // Connect to Nova Wallet
+  const result = await browserWalletService.connectToProvider('nova');
+  if (result.success) {
+    const connection = result.connection;
+    console.log('Connected to Nova Wallet:', connection.account.address);
+
+    // Sign a message with Nova Wallet
+    const message = new TextEncoder().encode('Hello from Nova Wallet!');
+    const signature = await connection.sign(message);
+    console.log('Message signed:', Array.from(signature));
+
+    // Sign a transaction with Nova Wallet
+    const signedTx = await connection.signTransaction(transaction);
+    console.log('Transaction signed by Nova Wallet');
+  }
+}
 
 ### 🆕 Wallet-Based API Testing Examples (Recommended)
 
@@ -550,7 +601,7 @@ The new wallet-based Kusama storage system provides significant advantages over 
 - **Real Transaction Service**: Create and submit blockchain transactions
 - **Transaction Monitoring**: Track transaction status and confirmation
 - **Fee Estimation**: Calculate real transaction costs
-- **Wallet Provider Support**: Polkadot.js, Talisman, SubWallet
+- **Wallet Provider Support**: Polkadot.js, Talisman, SubWallet, **📱 Nova Wallet**
 
 ### 🆕 Wallet-Based Kusama Storage (Recommended)
 
@@ -559,6 +610,43 @@ The new wallet-based Kusama storage system provides significant advantages over 
 - `GET /api/wallet-kusama/list` - List credentials with wallet authentication
 - `GET /api/wallet-kusama/cost-estimate` - Estimate storage cost
 - `GET /api/wallet-kusama/health` - Check network health
+
+### 📱 Nova Wallet Integration
+
+Nova Wallet is a mobile-first wallet that provides excellent user experience and advanced security features. The integration supports both mobile app usage and browser bridge functionality.
+
+#### Key Features
+
+- **🔐 Hardware Security**: Hardware security module (HSM) support
+- **👆 Biometric Authentication**: Fingerprint and face recognition
+- **📱 Mobile-First Design**: Optimized for mobile devices
+- **🌐 Browser Bridge**: Connect mobile wallet to desktop browser
+- **🔗 Cross-Chain Support**: Kusama, Polkadot, and parachains
+- **🚀 Advanced Features**: Staking, Governance, NFTs, Cross-chain transfers
+
+#### Mobile Integration
+
+```typescript
+// Check Nova Wallet availability
+const providers = browserWalletService.getAvailableProviders();
+if (providers.includes('nova')) {
+  // Connect to Nova Wallet mobile app
+  const result = await browserWalletService.connectToProvider('nova');
+  if (result.success) {
+    const connection = result.connection;
+    console.log('Connected to Nova Wallet:', connection.account.address);
+  }
+}
+```
+
+#### Browser Bridge Support
+
+Nova Wallet provides a browser bridge that allows mobile wallet users to interact with web applications:
+
+- **QR Code Pairing**: Scan QR code to connect mobile wallet to browser
+- **Secure Communication**: Encrypted communication between mobile and browser
+- **Real-Time Sync**: Instant updates between mobile app and browser
+- **Transaction Signing**: Sign transactions on mobile device, submit from browser
 
 ### Legacy Kusama Storage (Deprecated)
 
@@ -832,6 +920,9 @@ npm run demo:wallet     # Legacy wallet integration demo
 # New wallet integration demos
 npm run demo:browser    # Browser wallet extension integration
 npm run demo:node       # Node.js development testing
+npm run demo:nova       # Nova Wallet integration demo
+npm run demo:nova-simple # Nova Wallet simple demo (no dependencies)
+npm run demo:wallet     # Comprehensive wallet demo runner
 
 # Legacy demos
 npm run demo:wallet     # Wallet-based Kusama storage
@@ -898,6 +989,33 @@ npx ts-node src/demo/credentialDemo.ts
 ```
 
 All output will be printed to your terminal.
+
+### 📱 Nova Wallet Demo
+
+Comprehensive demonstration of Nova Wallet integration capabilities:
+
+```bash
+npm run demo:nova-simple  # Simple demo (no dependencies, always works)
+npm run demo:nova         # Full integration demo (requires browser environment)
+```
+
+#### Nova Wallet Simple Demo Features
+
+- **📱 Mobile Wallet Overview**: Learn about Nova Wallet capabilities
+- **🔐 Security Features**: Hardware security, biometric authentication
+- **🌐 Network Support**: Kusama, Polkadot, parachains
+- **🚀 Advanced Features**: Staking, governance, NFTs, cross-chain transfers
+- **💡 Integration Benefits**: User experience and developer benefits
+
+#### Nova Wallet Full Demo Features
+
+- **🔗 Real Connection**: Connect to actual Nova Wallet mobile app
+- **✍️ Message Signing**: Sign messages using device security
+- **📝 Transaction Signing**: Sign transactions with mobile wallet
+- **📤 Transaction Submission**: Submit signed transactions to blockchain
+- **📊 Status Monitoring**: Track transaction status and confirmation
+
+**Note**: The full demo requires Nova Wallet mobile app and browser bridge setup.
 
 ### Security Testing Demo
 
@@ -1019,12 +1137,13 @@ npm run format          # Auto-format code
 
 ### 🆕 Real Wallet Integration (Latest)
 
-- **Browser Wallet Integration**: Full support for Polkadot.js, Talisman, and SubWallet extensions
+- **Browser Wallet Integration**: Full support for Polkadot.js, Talisman, SubWallet, and **📱 Nova Wallet** extensions
 - **Real Transaction Service**: Actual blockchain transaction creation and submission
 - **Transaction Monitoring**: Real-time status tracking and confirmation
 - **Fee Estimation**: Accurate transaction cost calculation
 - **Multi-Environment Support**: Both browser and Node.js compatible demos
 - **Production-Ready Architecture**: Clean service separation and error handling
+- **📱 Mobile Wallet Support**: Nova Wallet integration with browser bridge functionality
 
 ### Modular Architecture Implementation
 
