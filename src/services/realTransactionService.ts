@@ -49,6 +49,27 @@ export class RealTransactionService {
         throw new Error('Service not initialized');
       }
 
+      // Security validation
+      if (!userAddress || typeof userAddress !== 'string') {
+        throw new Error('Invalid user address');
+      }
+
+      // Validate Kusama address format
+      if (!this.validateKusamaAddress(userAddress)) {
+        throw new Error('Invalid Kusama address format');
+      }
+
+      // Validate credential data
+      const validation = this.validateCredentialData(credentialData);
+      if (!validation.valid) {
+        throw new Error(`Invalid credential data: ${validation.errors.join(', ')}`);
+      }
+
+      // Validate credential type
+      if (!credentialType || typeof credentialType !== 'string' || credentialType.length > 100) {
+        throw new Error('Invalid credential type');
+      }
+
       // Check if wallet is connected
       if (!this.walletService.isWalletConnected(userAddress)) {
         throw new Error(`No wallet connection found for address: ${userAddress}`);
@@ -85,6 +106,61 @@ export class RealTransactionService {
       logger.error('Failed to create credential transaction', { error, userAddress });
       throw error;
     }
+  }
+
+  /**
+   * Validate Kusama address format
+   */
+  private validateKusamaAddress(address: string): boolean {
+    const kusamaAddressRegex = /^5[a-km-zA-HJ-NP-Z1-9]{46}$/;
+    return kusamaAddressRegex.test(address);
+  }
+
+  /**
+   * Validate credential data
+   */
+  private validateCredentialData(data: Record<string, unknown>): {
+    valid: boolean;
+    errors: string[];
+    size: number;
+  } {
+    const errors: string[] = [];
+    const dataString = JSON.stringify(data);
+    const size = Buffer.byteLength(dataString, 'utf8');
+
+    // Check size limits (100KB max)
+    if (size > 100 * 1024) {
+      errors.push(`Credential data too large: ${size} bytes (max: 100KB)`);
+    }
+
+    // Check for suspicious patterns
+    const suspiciousPatterns = [
+      /<script/i,
+      /javascript:/i,
+      /on\w+\s*=/i,
+      /eval\s*\(/i,
+      /document\./i,
+      /window\./i,
+      /localStorage/i,
+      /sessionStorage/i,
+    ];
+
+    for (const pattern of suspiciousPatterns) {
+      if (pattern.test(dataString)) {
+        errors.push(`Suspicious pattern detected: ${pattern.source}`);
+      }
+    }
+
+    // Check for required fields
+    if (!data.type || typeof data.type !== 'string') {
+      errors.push('Missing or invalid credential type');
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      size,
+    };
   }
 
   /**

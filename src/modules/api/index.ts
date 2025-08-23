@@ -1,6 +1,6 @@
 export { createAuthRouter } from '../../routes/auth';
 export { createClientRouter } from '../../routes/clients';
 export { createCredentialRouter } from '../../routes/credentials';
-export { createHybridCredentialRouter } from '../../routes/hybridCredentials';
-export { createTokenRouter } from '../../routes/tokens';
+// Removed hybrid credentials router - no longer needed
 export { addRequestId as requestIdMiddleware } from '../../middleware/requestId';
+export { createTokenRouter } from '../../routes/tokens';

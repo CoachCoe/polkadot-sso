@@ -18,6 +18,7 @@
     "demo:wallet": "ts-node src/demo/walletIntegrationDemo.ts",
     "demo:browser": "ts-node src/demo/browserWalletDemo.ts",
     "demo:node": "ts-node src/demo/nodeWalletDemo.ts",
+    "demo:wallet-security": "ts-node src/demo/walletSecurityDemo.ts",
     "test:api": "node scripts/test-api.js",
     "setup:kusama": "node scripts/setup-kusama.js",
     "lint": "eslint src/**/*.ts",

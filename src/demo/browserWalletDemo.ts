@@ -231,7 +231,6 @@ export class BrowserWalletDemo {
       // Demonstrate transaction signing (this would fail in current implementation)
       logger.info('💡 Attempting to sign transaction...');
       logger.info('   Note: Actual signing requires full extension API integration');
-
     } catch (error) {
       logger.error('Failed to demonstrate real transaction creation', { error });
     }
@@ -250,7 +249,7 @@ export class BrowserWalletDemo {
       }
 
       // Create a mock transaction hash for demonstration
-      const mockTxHash = '0x' + '0'.repeat(64);
+      const mockTxHash = `0x${'0'.repeat(64)}`;
 
       logger.info('Monitoring transaction:', mockTxHash);
 
@@ -264,7 +263,6 @@ export class BrowserWalletDemo {
       logger.info('   2. Show real-time updates to the user');
       logger.info('   3. Handle transaction finalization');
       logger.info('   4. Provide confirmation receipts');
-
     } catch (error) {
       logger.error('Failed to demonstrate transaction monitoring', { error });
     }
@@ -319,7 +317,7 @@ export class BrowserWalletDemo {
  */
 if (require.main === module) {
   const demo = new BrowserWalletDemo();
-  demo.run().catch((error) => {
+  demo.run().catch(error => {
     logger.error('Demo failed', { error });
     process.exit(1);
   });

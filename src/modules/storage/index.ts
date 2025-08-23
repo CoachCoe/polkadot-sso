@@ -1,4 +1,3 @@
-export { IPFSService } from '../../services/ipfsService';
-export { KusamaService } from '../../services/kusamaService';
-export { SecureKusamaService } from '../../services/secureKusamaService';
-export { AdvancedKusamaService } from '../../services/advancedKusamaService';
+// Removed unused storage services - using wallet-based services instead
+
+export { KusamaIntegrationService, kusamaIntegrationService } from '../../services/kusamaIntegrationService';

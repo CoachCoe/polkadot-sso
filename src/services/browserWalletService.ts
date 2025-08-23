@@ -73,8 +73,30 @@ export class BrowserWalletService {
   /**
    * Connect to a specific wallet provider
    */
-  async connectToProvider(providerName: string): Promise<{ success: boolean; connection?: BrowserWalletConnection; error?: string }> {
+  async connectToProvider(
+    providerName: string
+  ): Promise<{ success: boolean; connection?: BrowserWalletConnection; error?: string }> {
     try {
+      // Security validation
+      if (!providerName || typeof providerName !== 'string') {
+        return {
+          success: false,
+          error: 'Invalid provider name',
+        };
+      }
+
+      // Check for suspicious provider names
+      const suspiciousPatterns = [/script/i, /javascript/i, /eval/i, /<|>/i];
+      for (const pattern of suspiciousPatterns) {
+        if (pattern.test(providerName)) {
+          logger.warn('Suspicious provider name detected', { providerName });
+          return {
+            success: false,
+            error: 'Invalid provider name',
+          };
+        }
+      }
+
       const provider = this.providers.get(providerName);
       if (!provider) {
         return {
@@ -90,8 +112,38 @@ export class BrowserWalletService {
         };
       }
 
+      // Check connection limits
+      if (this.connections.size >= 10) {
+        logger.warn('Maximum wallet connections reached', {
+          currentConnections: this.connections.size,
+        });
+        return {
+          success: false,
+          error: 'Maximum wallet connections reached',
+        };
+      }
+
       logger.info('Connecting to browser wallet provider', { provider: providerName });
       const connection = await provider.connect();
+
+      // Validate connection
+      if (!connection?.account?.address) {
+        return {
+          success: false,
+          error: 'Invalid connection returned from provider',
+        };
+      }
+
+      // Validate account address
+      if (!this.validateAccountAddress(connection.account.address)) {
+        logger.warn('Invalid account address from provider', {
+          address: connection.account.address,
+        });
+        return {
+          success: false,
+          error: 'Invalid account address',
+        };
+      }
 
       // Store the connection
       this.connections.set(connection.account.address, connection);
@@ -116,6 +168,15 @@ export class BrowserWalletService {
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
+  }
+
+  /**
+   * Validate account address format
+   */
+  private validateAccountAddress(address: string): boolean {
+    // Kusama addresses start with 5 and are 47 characters long
+    const kusamaAddressRegex = /^5[a-km-zA-HJ-NP-Z1-9]{46}$/;
+    return kusamaAddressRegex.test(address);
   }
 
   /**
@@ -227,8 +288,7 @@ class PolkadotJsBrowserProvider implements BrowserWalletProvider {
   isAvailable = false;
 
   constructor() {
-    this.isAvailable = typeof window !== 'undefined' &&
-                      !!(window as any).injectedWeb3?.polkadot;
+    this.isAvailable = typeof window !== 'undefined' && !!(window as any).injectedWeb3?.polkadot;
   }
 
   async connect(): Promise<BrowserWalletConnection> {
@@ -290,7 +350,7 @@ class PolkadotJsBrowserConnection implements BrowserWalletConnection {
     // For now, return a mock signature
     logger.info('Signing data with Polkadot.js Extension', {
       address: this.account.address,
-      dataLength: data.length
+      dataLength: data.length,
     });
 
     // TODO: Implement actual signing using extension API
@@ -300,11 +360,13 @@ class PolkadotJsBrowserConnection implements BrowserWalletConnection {
   async signTransaction(extrinsic: any): Promise<any> {
     // This would need to be implemented using the actual extension API
     logger.info('Signing transaction with Polkadot.js Extension', {
-      address: this.account.address
+      address: this.account.address,
     });
 
     // TODO: Implement actual transaction signing using extension API
-    throw new Error('Actual transaction signing not yet implemented - requires extension integration');
+    throw new Error(
+      'Actual transaction signing not yet implemented - requires extension integration'
+    );
   }
 
   async disconnect(): Promise<void> {
@@ -321,8 +383,7 @@ class TalismanBrowserProvider implements BrowserWalletProvider {
   isAvailable = false;
 
   constructor() {
-    this.isAvailable = typeof window !== 'undefined' &&
-                      !!(window as any).talisman;
+    this.isAvailable = typeof window !== 'undefined' && !!(window as any).talisman;
   }
 
   async connect(): Promise<BrowserWalletConnection> {
@@ -352,8 +413,7 @@ class SubWalletBrowserProvider implements BrowserWalletProvider {
   isAvailable = false;
 
   constructor() {
-    this.isAvailable = typeof window !== 'undefined' &&
-                      !!(window as any).SubWallet;
+    this.isAvailable = typeof window !== 'undefined' && !!(window as any).SubWallet;
   }
 
   async connect(): Promise<BrowserWalletConnection> {

@@ -96,7 +96,9 @@ export class WalletIntegrationDemo {
       logger.info('💡 Simulating wallet connection...');
 
       // Simulate checking if wallet is connected
-      const isConnected = this.kusamaService.isWalletConnected('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY');
+      const isConnected = this.kusamaService.isWalletConnected(
+        '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
+      );
       logger.info('Wallet connection status:', { isConnected });
 
       logger.info('✅ Wallet connection demo completed');
@@ -145,7 +147,9 @@ export class WalletIntegrationDemo {
     logger.info('🔍 Retrieving credentials from Kusama...');
 
     try {
-      const credentials = await this.kusamaService.listCredentialsWithWallet('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY');
+      const credentials = await this.kusamaService.listCredentialsWithWallet(
+        '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
+      );
 
       logger.info('✅ Credentials retrieved successfully:', {
         count: credentials.length,
@@ -220,7 +224,9 @@ export class WalletIntegrationDemo {
     logger.info('🔍 Querying blockchain for user credentials...');
 
     try {
-      const credentials = await this.kusamaService.queryUserCredentials('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY');
+      const credentials = await this.kusamaService.queryUserCredentials(
+        '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
+      );
 
       logger.info('✅ Blockchain query completed:', {
         count: credentials.length,
@@ -286,7 +292,7 @@ export class WalletIntegrationDemo {
  */
 if (require.main === module) {
   const demo = new WalletIntegrationDemo();
-  demo.run().catch((error) => {
+  demo.run().catch(error => {
     logger.error('Demo failed', { error });
     process.exit(1);
   });
