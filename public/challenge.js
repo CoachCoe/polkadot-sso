@@ -28,7 +28,9 @@ var require_challenge = __commonJS({
           if (extensions.length === 0) {
             throw new Error("No extension found");
           }
-          const injector = await window.polkadotExtensionDapp.web3FromAddress(window.CHALLENGE_DATA.address);
+          const injector = await window.polkadotExtensionDapp.web3FromAddress(
+            window.CHALLENGE_DATA.address
+          );
           if (!injector?.signer?.signRaw) {
             throw new Error("Wallet does not support message signing");
           }
