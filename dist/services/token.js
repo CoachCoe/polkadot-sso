@@ -12,6 +12,10 @@ class TokenService {
         this.db = db;
     }
     generateTokens(address, client_id) {
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) {
+            throw new Error('JWT_SECRET environment variable is required');
+        }
         const accessJwtid = crypto_1.default.randomBytes(32).toString('hex');
         const refreshJwtid = crypto_1.default.randomBytes(32).toString('hex');
         const fingerprint = crypto_1.default.randomBytes(16).toString('hex');
@@ -21,7 +25,7 @@ class TokenService {
             type: 'access',
             jti: accessJwtid,
             fingerprint,
-        }, process.env.JWT_SECRET, {
+        }, jwtSecret, {
             algorithm: auth_1.JWT_CONFIG.algorithm,
             expiresIn: auth_1.JWT_CONFIG.accessTokenExpiry,
             audience: client_id,
@@ -33,7 +37,7 @@ class TokenService {
             type: 'refresh',
             jti: refreshJwtid,
             fingerprint,
-        }, process.env.JWT_SECRET, {
+        }, jwtSecret, {
             algorithm: auth_1.JWT_CONFIG.algorithm,
             expiresIn: auth_1.JWT_CONFIG.refreshTokenExpiry,
             audience: client_id,
@@ -49,7 +53,11 @@ class TokenService {
     }
     async verifyToken(token, type) {
         try {
-            const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET, {
+            const jwtSecret = process.env.JWT_SECRET;
+            if (!jwtSecret) {
+                throw new Error('JWT_SECRET environment variable is required');
+            }
+            const decoded = jsonwebtoken_1.default.verify(token, jwtSecret, {
                 algorithms: [auth_1.JWT_CONFIG.algorithm],
                 issuer: auth_1.JWT_CONFIG.issuer,
             });

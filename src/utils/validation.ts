@@ -36,14 +36,6 @@ export async function validateClientCredentials(req: Request): Promise<boolean> 
     return false;
   }
 
-  // For demo purposes, we'll validate against the hardcoded demo client
-  // In production, this would query the database
-  if (
-    client_id === 'demo-app' &&
-    client_secret === 'demo-client-secret-32-chars-minimum-required'
-  ) {
-    return true;
-  }
-
+  // TODO: Implement proper client validation against database
   return false;
 }

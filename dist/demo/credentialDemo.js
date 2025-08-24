@@ -3,12 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.runCredentialDemo = runCredentialDemo;
 const dotenv_1 = require("dotenv");
 const db_1 = require("../config/db");
-// Import from modular structure
-const credentials_1 = require("../modules/credentials");
+const credentialService_1 = require("../services/credentialService");
 (0, dotenv_1.config)();
-// Utility function to add delays for better pacing
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-// Color codes for terminal output
 const colors = {
     reset: '\x1b[0m',
     bright: '\x1b[1m',
@@ -42,8 +39,7 @@ async function runCredentialDemo() {
     console.log('   • Issuance request workflow');
     await delay(2000);
     const db = await (0, db_1.initializeDatabase)();
-    const credentialService = new credentials_1.CredentialService(db);
-    // Clean up any existing demo data to avoid conflicts
+    const credentialService = new credentialService_1.CredentialService(db);
     log.section('🧹 Cleaning up existing demo data...');
     try {
         await db.run('DELETE FROM credential_shares WHERE shared_with_address IN (?, ?, ?)', [
@@ -92,7 +88,6 @@ async function runCredentialDemo() {
         log.section('👥 Creating User Profiles');
         console.log('Setting up three user profiles for the demo:');
         await delay(500);
-        // Create user profiles with error handling
         const profiles = [
             {
                 address: issuerAddress,
@@ -318,8 +313,8 @@ async function runCredentialDemo() {
         });
         log.success('Credential verification completed');
         log.data(`Verification ID: ${verification.id.substring(0, 8)}...`);
-        log.data(`Status: ${String(verification.status)}`);
-        log.data(`Verified at: ${new Date(verification.verified_at).toLocaleString()}`);
+        log.data(`Status: ${verification.status}`);
+        log.data(`Verified at: ${new Date(verification.verified_at ?? Date.now()).toLocaleString()}`);
         await delay(1000);
         log.section('📝 Demonstrating Issuance Request Workflow');
         console.log('Alice requests a new credential through the issuance workflow:');
@@ -342,10 +337,10 @@ async function runCredentialDemo() {
         });
         log.success('Issuance request created');
         log.data(`Request ID: ${issuanceRequest.id.substring(0, 8)}...`);
-        log.data(`Status: ${String(issuanceRequest.status)}`);
+        log.data(`Status: ${issuanceRequest.status}`);
         await delay(800);
         const pendingRequests = await credentialService.getPendingIssuanceRequests(issuerAddress);
-        log.info(`Issuer has ${String(pendingRequests.length)} pending request(s)`);
+        log.info(`Issuer has ${pendingRequests.length} pending request(s)`);
         await delay(500);
         log.step('Approving issuance request');
         log.data('Approved by: Polkadot University');
@@ -374,7 +369,7 @@ async function runCredentialDemo() {
         console.log('   • Encrypted data protection');
     }
     catch (error) {
-        log.error(`Demo failed: ${String(error)}`);
+        log.error(`Demo failed: ${error instanceof Error ? error.message : String(error)}`);
     }
     finally {
         await db.close();

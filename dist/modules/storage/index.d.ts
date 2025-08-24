@@ -1,5 +1,2 @@
-export { IPFSService } from '../../services/ipfsService';
-export { KusamaService } from '../../services/kusamaService';
-export { SecureKusamaService } from '../../services/secureKusamaService';
-export { AdvancedKusamaService } from '../../services/advancedKusamaService';
+export { KusamaIntegrationService, kusamaIntegrationService, } from '../../services/kusamaIntegrationService';
 //# sourceMappingURL=index.d.ts.map

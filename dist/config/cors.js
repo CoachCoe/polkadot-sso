@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.corsConfig = void 0;
 exports.corsConfig = {
     origin: (origin, callback) => {
-        const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') ?? ['http://localhost:3001'];
+        const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3001'];
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         }

@@ -1,6 +1,6 @@
 import crypto from 'crypto';
-import { Challenge } from '../types/auth';
 import { Database } from 'sqlite';
+import { Challenge } from '../types/auth';
 
 export class ChallengeService {
   constructor(private db: Database) {}
@@ -22,7 +22,7 @@ export class ChallengeService {
 
     return {
       id: crypto.randomUUID(),
-      message: `Login to SSO Demo at ${new Date().toISOString()}`,
+      message: `Login to Polkadot SSO at ${new Date().toISOString()}`,
       code_verifier,
       code_challenge,
       state,
@@ -36,7 +36,7 @@ export class ChallengeService {
   async storeChallenge(challenge: Challenge): Promise<void> {
     await this.db.run(
       `INSERT INTO challenges (
-        id, message, client_id, created_at, expires_at, 
+        id, message, client_id, created_at, expires_at,
         code_verifier, code_challenge, state, used
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [

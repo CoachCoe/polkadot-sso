@@ -1,21 +1,16 @@
 "use strict";
-// Modular Architecture Demo
-// Demonstrates how to use the new modular structure
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.demonstrateModularArchitecture = demonstrateModularArchitecture;
 const config_1 = require("../modules/config");
 async function demonstrateModularArchitecture() {
     console.log('🚀 Polkadot SSO Modular Architecture Demo\n');
-    // 1. Show module configuration
     console.log('📋 Module Configuration:');
     for (const [name, config] of Object.entries(config_1.MODULE_CONFIG)) {
         console.log(`  ${name}: ${config.name} (Order: ${config.initOrder}, Dependencies: [${config.dependencies.join(', ')}])`);
     }
-    // 2. Show initialization order
     console.log('\n🔄 Module Initialization Order:');
     const initOrder = (0, config_1.getModuleInitOrder)();
     console.log(`  ${initOrder.join(' → ')}`);
-    // 3. Validate dependencies
     console.log('\n✅ Dependency Validation:');
     const dependencyErrors = (0, config_1.validateModuleDependencies)();
     if (dependencyErrors.length === 0) {
@@ -39,7 +34,6 @@ async function demonstrateModularArchitecture() {
     console.log('   import { ChallengeService } from "../modules/sso";');
     console.log('   import { CredentialService } from "../modules/credentials";');
 }
-// Run the demo
 if (require.main === module) {
     demonstrateModularArchitecture().catch(console.error);
 }

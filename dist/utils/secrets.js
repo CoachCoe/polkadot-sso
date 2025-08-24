@@ -74,7 +74,7 @@ class SecretManager {
         }
         return value;
     }
-    generateSecrets() {
+    generateAllSecrets() {
         const generated = {};
         for (const config of exports.REQUIRED_SECRETS) {
             generated[config.name] = (0, encryption_1.generateSecureKey)(config.minLength);
@@ -109,6 +109,6 @@ const validateAllSecrets = () => SecretManager.getInstance().validateSecrets();
 exports.validateAllSecrets = validateAllSecrets;
 const getSecret = (name) => SecretManager.getInstance().getSecret(name);
 exports.getSecret = getSecret;
-const generateAllSecrets = () => SecretManager.getInstance().generateSecrets();
+const generateAllSecrets = () => SecretManager.getInstance().generateAllSecrets();
 exports.generateAllSecrets = generateAllSecrets;
 //# sourceMappingURL=secrets.js.map

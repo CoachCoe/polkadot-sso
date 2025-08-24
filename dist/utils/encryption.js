@@ -35,15 +35,13 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decryptData = exports.encryptData = exports.validateSecret = exports.generateSecureKey = exports.decryptField = exports.encryptField = void 0;
 const crypto = __importStar(require("crypto"));
-const secrets_1 = require("./secrets");
 // Use a more secure encryption algorithm
 const ALGORITHM = 'aes-256-gcm';
 const KEY_LENGTH = 32; // 256 bits
 const IV_LENGTH = 12; // 96 bits for GCM
 // Validate and derive encryption key
 function getEncryptionKey() {
-    const secretManager = secrets_1.SecretManager.getInstance();
-    const envKey = secretManager.getSecret('DATABASE_ENCRYPTION_KEY');
+    const envKey = process.env.DATABASE_ENCRYPTION_KEY;
     if (!envKey) {
         throw new Error('DATABASE_ENCRYPTION_KEY environment variable is required');
     }

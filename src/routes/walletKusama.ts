@@ -7,15 +7,12 @@ import { createLogger } from '../utils/logger';
 const router = Router();
 const logger = createLogger('wallet-kusama-routes');
 
-// Initialize the wallet-based Kusama service
 const walletKusamaService = new WalletBasedKusamaService();
 
-// Initialize the service when the routes are loaded
 walletKusamaService.initialize().catch(error => {
   logger.error('Failed to initialize wallet-based Kusama service', { error });
 });
 
-// Middleware to verify JWT token and extract user address
 const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
@@ -25,19 +22,15 @@ const authenticateUser = async (req: Request, res: Response, next: NextFunction)
 
     const token = authHeader.substring(7);
 
-    // For now, we'll use a simple approach - in production, you'd want to use the TokenService
-    // This is a placeholder for the actual JWT verification
     if (!token || token.length < 32) {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    // Extract user address from the request body or query
     const userAddress = req.body.userAddress || req.query.userAddress;
     if (!userAddress) {
       return res.status(400).json({ error: 'User address required' });
     }
 
-    // Add user info to request for downstream handlers
     (req as any).userAddress = userAddress;
     next();
   } catch (error) {
@@ -46,7 +39,6 @@ const authenticateUser = async (req: Request, res: Response, next: NextFunction)
   }
 };
 
-// Schema for storing credentials
 const storeCredentialSchema = z.object({
   body: z.object({
     credentialData: z.record(z.unknown()),
@@ -57,7 +49,6 @@ const storeCredentialSchema = z.object({
   }),
 });
 
-// Schema for retrieving credentials
 const retrieveCredentialSchema = z.object({
   body: z.object({
     credentialId: z.string().min(1),
@@ -66,7 +57,6 @@ const retrieveCredentialSchema = z.object({
   }),
 });
 
-// Schema for listing credentials
 const listCredentialsSchema = z.object({
   query: z.object({
     userAddress: z.string().min(1),
@@ -74,7 +64,6 @@ const listCredentialsSchema = z.object({
   }),
 });
 
-// Schema for cost estimation
 const costEstimateSchema = z.object({
   query: z.object({
     dataSize: z.string().transform(val => parseInt(val, 10)),
@@ -82,7 +71,6 @@ const costEstimateSchema = z.object({
   }),
 });
 
-// Store credential using wallet authentication
 router.post(
   '/store',
   validateBody(storeCredentialSchema),
@@ -123,7 +111,6 @@ router.post(
   }
 );
 
-// Retrieve credential using wallet authentication
 router.post(
   '/retrieve',
   validateBody(retrieveCredentialSchema),
@@ -172,7 +159,6 @@ router.post(
   }
 );
 
-// List credentials using wallet authentication
 router.get(
   '/list',
   validateBody(listCredentialsSchema),
@@ -214,7 +200,6 @@ router.get(
   }
 );
 
-// Estimate storage cost
 router.get(
   '/cost-estimate',
   validateBody(costEstimateSchema),
@@ -250,7 +235,6 @@ router.get(
   }
 );
 
-// Health check
 router.get('/health', async (req: Request, res: Response) => {
   try {
     const health = await walletKusamaService.getNetworkHealth();

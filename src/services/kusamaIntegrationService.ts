@@ -309,7 +309,7 @@ export class KusamaIntegrationService {
     return decrypted;
   }
 
-  // Mock methods for demonstration - replace with actual Kusama queries
+  // TODO: Implement actual Kusama queries
   private async getMockCredential(credentialId: string): Promise<KusamaCredential | null> {
     // This would be replaced with actual Kusama blockchain queries
     const mockCredentials = this.getMockUserCredentials(

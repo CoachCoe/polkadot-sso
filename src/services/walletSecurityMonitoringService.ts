@@ -34,11 +34,6 @@ export interface SecurityStats {
   };
 }
 
-/**
- * Wallet Security Monitoring Service
- *
- * Monitors wallet operations for security threats and suspicious activity
- */
 export class WalletSecurityMonitoringService {
   private auditService: AuditService;
   private events: SecurityEvent[] = [];
@@ -46,7 +41,6 @@ export class WalletSecurityMonitoringService {
   private blockedAddresses: Set<string> = new Set();
   private suspiciousPatterns: Map<string, number> = new Map();
 
-  // Configuration
   private readonly MAX_EVENTS = 10000;
   private readonly MAX_ALERTS = 1000;
   private readonly SUSPICIOUS_THRESHOLD = 5;
@@ -57,9 +51,6 @@ export class WalletSecurityMonitoringService {
     this.startCleanupInterval();
   }
 
-  /**
-   * Log a security event
-   */
   logEvent(event: Omit<SecurityEvent, 'timestamp'>): void {
     const fullEvent: SecurityEvent = {
       ...event,
@@ -68,15 +59,12 @@ export class WalletSecurityMonitoringService {
 
     this.events.push(fullEvent);
 
-    // Maintain event list size
     if (this.events.length > this.MAX_EVENTS) {
       this.events = this.events.slice(-this.MAX_EVENTS);
     }
 
-    // Analyze event for threats
     this.analyzeEvent(fullEvent);
 
-    // Log to audit service
     void this.auditService.log({
       type: 'SECURITY_EVENT',
       client_id: 'wallet-security-monitoring',
@@ -98,60 +86,43 @@ export class WalletSecurityMonitoringService {
     });
   }
 
-  /**
-   * Analyze event for security threats
-   */
   private analyzeEvent(event: SecurityEvent): void {
     const { userAddress, ipAddress, type, severity } = event;
 
-    // Check for suspicious patterns
     this.checkSuspiciousPatterns(event);
 
-    // Check for rate limiting violations
     this.checkRateLimiting(event);
 
-    // Check for critical events
     if (severity === 'CRITICAL') {
       this.createAlert(event, 'BLOCK', 'Critical security event detected');
       this.blockAddress(userAddress);
     }
 
-    // Check for high severity events
     if (severity === 'HIGH') {
       this.createAlert(event, 'WARN', 'High severity security event detected');
     }
 
-    // Check for repeated suspicious activity
     if (this.isRepeatedSuspiciousActivity(userAddress)) {
       this.createAlert(event, 'BLOCK', 'Repeated suspicious activity detected');
       this.blockAddress(userAddress);
     }
   }
 
-  /**
-   * Check for suspicious patterns
-   */
   private checkSuspiciousPatterns(event: SecurityEvent): void {
     const { userAddress, ipAddress, details } = event;
     const key = `${userAddress}:${ipAddress}`;
     const count = this.suspiciousPatterns.get(key) || 0;
 
-    // Increment suspicious activity count
     this.suspiciousPatterns.set(key, count + 1);
 
-    // Check if threshold exceeded
     if (count + 1 >= this.SUSPICIOUS_THRESHOLD) {
       this.createAlert(event, 'WARN', 'Suspicious activity pattern detected');
     }
   }
 
-  /**
-   * Check for rate limiting violations
-   */
   private checkRateLimiting(event: SecurityEvent): void {
     const { userAddress, type } = event;
 
-    // Count events in last hour for this user
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
     const recentEvents = this.events.filter(
       e => e.userAddress === userAddress && e.timestamp > oneHourAgo
@@ -163,9 +134,6 @@ export class WalletSecurityMonitoringService {
     }
   }
 
-  /**
-   * Check for repeated suspicious activity
-   */
   private isRepeatedSuspiciousActivity(userAddress: string): boolean {
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
     const recentSuspiciousEvents = this.events.filter(
@@ -175,9 +143,6 @@ export class WalletSecurityMonitoringService {
     return recentSuspiciousEvents.length >= 3;
   }
 
-  /**
-   * Create a security alert
-   */
   private createAlert(
     event: SecurityEvent,
     action: SecurityAlert['action'],
@@ -193,7 +158,6 @@ export class WalletSecurityMonitoringService {
 
     this.alerts.push(alert);
 
-    // Maintain alerts list size
     if (this.alerts.length > this.MAX_ALERTS) {
       this.alerts = this.alerts.slice(-this.MAX_ALERTS);
     }
@@ -206,9 +170,6 @@ export class WalletSecurityMonitoringService {
     });
   }
 
-  /**
-   * Block an address
-   */
   private blockAddress(userAddress: string): void {
     this.blockedAddresses.add(userAddress);
 
@@ -217,23 +178,16 @@ export class WalletSecurityMonitoringService {
       blockedAddressesCount: this.blockedAddresses.size,
     });
 
-    // Schedule unblock after block duration
     setTimeout(() => {
       this.blockedAddresses.delete(userAddress);
       logger.info('Address unblocked', { userAddress });
     }, this.BLOCK_DURATION);
   }
 
-  /**
-   * Check if address is blocked
-   */
   isAddressBlocked(userAddress: string): boolean {
     return this.blockedAddresses.has(userAddress);
   }
 
-  /**
-   * Get security statistics
-   */
   getSecurityStats(): SecurityStats {
     const now = Date.now();
     const oneDayAgo = now - 24 * 60 * 60 * 1000;
@@ -254,23 +208,14 @@ export class WalletSecurityMonitoringService {
     };
   }
 
-  /**
-   * Get recent security events
-   */
   getRecentEvents(limit: number = 50): SecurityEvent[] {
     return this.events.slice(-limit).reverse();
   }
 
-  /**
-   * Get active alerts
-   */
   getActiveAlerts(): SecurityAlert[] {
     return this.alerts.filter(alert => !alert.resolved);
   }
 
-  /**
-   * Resolve an alert
-   */
   resolveAlert(alertId: string): boolean {
     const alert = this.alerts.find(a => a.id === alertId);
     if (alert && !alert.resolved) {
@@ -282,19 +227,13 @@ export class WalletSecurityMonitoringService {
     return false;
   }
 
-  /**
-   * Clear old events and alerts
-   */
   private cleanup(): void {
     const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
-    // Remove old events
     this.events = this.events.filter(e => e.timestamp > oneWeekAgo);
 
-    // Remove old alerts
     this.alerts = this.alerts.filter(a => a.event.timestamp > oneWeekAgo);
 
-    // Clear old suspicious patterns
     for (const [key] of this.suspiciousPatterns) {
       const [userAddress, ipAddress] = key.split(':');
       const recentEvents = this.events.filter(
@@ -312,9 +251,6 @@ export class WalletSecurityMonitoringService {
     });
   }
 
-  /**
-   * Start cleanup interval
-   */
   private startCleanupInterval(): void {
     // Clean up every hour
     setInterval(
@@ -325,9 +261,6 @@ export class WalletSecurityMonitoringService {
     );
   }
 
-  /**
-   * Export security report
-   */
   exportSecurityReport(): {
     stats: SecurityStats;
     recentEvents: SecurityEvent[];

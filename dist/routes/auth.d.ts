@@ -1,5 +1,7 @@
 import { Database } from 'sqlite';
-import { AuditService, ChallengeService, TokenService } from '../modules';
+import { AuditService } from '../services/auditService';
+import { ChallengeService } from '../services/challengeService';
+import { TokenService } from '../services/token';
 import { Challenge, Client } from '../types/auth';
 export declare const createAuthRouter: (tokenService: TokenService, challengeService: ChallengeService & {
     generateChallenge(client_id: string): Promise<Challenge>;

@@ -3,8 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
 const dotenv_1 = require("dotenv");
+const express_1 = __importDefault(require("express"));
 (0, dotenv_1.config)();
 const app = (0, express_1.default)();
 app.get('/', (_req, res) => {
@@ -78,20 +78,20 @@ app.get('/callback', (req, res) => {
       </head>
       <body>
         <h1>Successfully Logged In!</h1>
-        
+
         <h3>Access Token:</h3>
-        <div class="token-box">${String(access_token)}</div>
-        
+        <div class="token-box">${String(access_token ?? '')}</div>
+
         <h3>Refresh Token:</h3>
-        <div class="token-box">${String(refresh_token)}</div>
+        <div class="token-box">${String(refresh_token ?? '')}</div>
 
         <div id="tokenStatus" class="status"></div>
 
         <script>
           // Store tokens in localStorage
-          localStorage.setItem('access_token', '${String(access_token)}');
-          localStorage.setItem('refresh_token', '${String(refresh_token)}');
-          
+          localStorage.setItem('access_token', '${String(access_token ?? '')}');
+          localStorage.setItem('refresh_token', '${String(refresh_token ?? '')}');
+
           // Set up refresh timer
           async function refreshTokens() {
             try {
@@ -103,12 +103,12 @@ app.get('/callback', (req, res) => {
                 },
                 body: JSON.stringify({ refresh_token: refreshToken })
               });
-              
+
               if (response.ok) {
                 const { access_token, refresh_token } = await response.json();
                 localStorage.setItem('access_token', access_token);
                 localStorage.setItem('refresh_token', refresh_token);
-                
+
                 const status = document.getElementById('tokenStatus');
                 status.className = 'status success';
                 status.textContent = 'Tokens refreshed successfully at ' + new Date().toLocaleTimeString();
@@ -125,7 +125,7 @@ app.get('/callback', (req, res) => {
 
           // Refresh tokens every 14 minutes
           setInterval(refreshTokens, 14 * 60 * 1000);
-          
+
           // Initial status
           const status = document.getElementById('tokenStatus');
           status.className = 'status success';
