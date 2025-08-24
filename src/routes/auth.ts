@@ -1090,7 +1090,9 @@ export const createAuthRouter = (
 
             <div id="transaction-status" style="display: none; text-align: center; margin: 20px 0;">
               <div id="status-message" style="padding: 16px; border-radius: 8px; margin-bottom: 16px;"></div>
-              <div id="transaction-hash" style="font-family: monospace; background: #f1f5f9; padding: 12px; border-radius: 8px; word-break: break-all;"></div>
+              <div id="transaction-hash" style="font-family: monospace; background: #f1f5f9; padding: 12px; border-radius: 8px; word-break: break-all; min-height: 20px; border: 1px solid #e2e8f0;">
+              <em style="color: #64748b;">Transaction details will appear here after successful storage...</em>
+            </div>
             </div>
           </div>
           <div class="card-action">
@@ -1224,16 +1226,51 @@ export const createAuthRouter = (
               document.getElementById('status-message').style.background = '#dbeafe';
                             document.getElementById('status-message').style.color = '#2563eb';
 
-                                                        // For now, let's create a working demo that simulates the blockchain interaction
-              // This will show the full flow without the CDN compatibility issues
-              console.log('Creating simulated Kusama connection...');
+                                                                      // Connect to Kusama network
+              console.log('Connecting to Kusama network...');
 
-              document.getElementById('status-message').innerHTML = '🔗 Connected to Kusama (Demo Mode)';
-              document.getElementById('status-message').style.background = '#dcfce7';
-              document.getElementById('status-message').style.color = '#16a34a';
+              // Check what's actually available in the global scope
+              console.log('Available globals:', {
+                polkadotApi: !!window.polkadotApi,
+                polkadotUtil: !!window.polkadotUtil,
+                polkadotUtilCrypto: !!window.polkadotUtilCrypto,
+                polkadotExtensionDapp: !!window.polkadotExtensionDapp
+              });
 
-              // Simulate a delay for realism
-              await new Promise(resolve => setTimeout(resolve, 2000));
+              // Try to find the API constructor
+              let ApiPromise, WsProvider;
+
+              if (window.polkadotApi?.ApiPromise) {
+                ApiPromise = window.polkadotApi.ApiPromise;
+                WsProvider = window.polkadotApi.WsProvider;
+                console.log('Found API in polkadotApi');
+              } else if (window.polkadotApi?.default?.ApiPromise) {
+                ApiPromise = window.polkadotApi.default.ApiPromise;
+                WsProvider = window.polkadotApi.default.WsProvider;
+                console.log('Found API in polkadotApi.default');
+              } else {
+                // Try to find it in the global scope
+                ApiPromise = window.ApiPromise;
+                WsProvider = window.WsProvider;
+                console.log('Looking for API in global scope');
+              }
+
+              if (!ApiPromise || !WsProvider) {
+                throw new Error('Polkadot API not loaded. Available: ' + Object.keys(window).filter(k => k.includes('polkadot')).join(', '));
+              }
+
+              console.log('Creating API connection...');
+              const provider = new WsProvider('wss://kusama-rpc.polkadot.io');
+
+              console.log('Provider created:', provider);
+              console.log('About to create API with provider:', provider);
+
+              const api = await ApiPromise.create({ provider });
+
+              console.log('API created successfully:', api);
+              console.log('Waiting for API to be ready...');
+              await api.isReady;
+              console.log('API is ready and connected!');
 
               document.getElementById('status-message').innerHTML = '🔍 Preparing transaction...';
 
@@ -1279,7 +1316,11 @@ export const createAuthRouter = (
               document.getElementById('status-message').innerHTML = '📡 Submitting transaction to Kusama...';
 
               // Sign and submit the transaction
+              console.log('About to sign and send transaction...');
               const txHash = await tx.signAndSend(account.address, { signer: injector.signer });
+              console.log('Transaction submitted, hash object:', txHash);
+              console.log('Hash type:', typeof txHash);
+              console.log('Hash methods:', Object.getOwnPropertyNames(txHash));
 
               // Wait for transaction to be included in a block
               document.getElementById('status-message').innerHTML = '⏳ Waiting for transaction confirmation...';
@@ -1293,8 +1334,12 @@ export const createAuthRouter = (
               document.getElementById('status-message').style.background = '#dcfce7';
               document.getElementById('status-message').style.color = '#16a34a';
 
+              // Get the transaction hash properly
+              const transactionHash = txHash.toHex ? txHash.toHex() : txHash.toString();
+              console.log('Transaction hash:', transactionHash);
+
               document.getElementById('transaction-hash').innerHTML =
-                '<strong>Transaction Hash:</strong> ' + txHash.toHex() + '<br>' +
+                '<strong>Transaction Hash:</strong> ' + transactionHash + '<br>' +
                 '<strong>Block Number:</strong> ' + blockHeader.number.toNumber() + '<br>' +
                 '<strong>Credential Type:</strong> ' + credentialType + '<br>' +
                 '<strong>Description:</strong> ' + (credentialDescription || 'None') + '<br>' +
@@ -1584,11 +1629,8 @@ export const createAuthRouter = (
         <title>${title} - Polkadot SSO</title>
         <link rel="stylesheet" href="/styles/main.css">
         <link rel="stylesheet" href="/styles/home.css">
-        <!-- Load Polkadot.js libraries with known working versions -->
-        <script src="https://cdn.jsdelivr.net/npm/@polkadot/util@10.4.2/bundle-polkadot-util.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@polkadot/util-crypto@10.4.2/bundle-polkadot-util-crypto.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@polkadot/extension-dapp@0.44.1/bundle-polkadot-extension-dapp.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@polkadot/api@8.14.1/bundle-polkadot-api.min.js"></script>
+        <!-- Load our local Polkadot.js bundle -->
+        <script src="/js/polkadot-bundle.min.js"></script>
         <script>
           // Debug script loading
           console.log('Scripts loaded. Available globals:');
@@ -1598,6 +1640,13 @@ export const createAuthRouter = (
           console.log('window.polkadotUtil:', window.polkadotUtil);
           console.log('window.polkadotUtilCrypto:', window.polkadotUtilCrypto);
           console.log('window.polkadotExtensionDapp:', window.polkadotExtensionDapp);
+
+          // Also check for direct global variables
+          console.log('Direct globals:');
+          console.log('window.ApiPromise:', window.ApiPromise);
+          console.log('window.WsProvider:', window.WsProvider);
+          console.log('window.randomAsHex:', window.randomAsHex);
+          console.log('window.naclEncrypt:', window.naclEncrypt);
         </script>
       </head>
       <body>
