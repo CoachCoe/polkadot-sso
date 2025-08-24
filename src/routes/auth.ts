@@ -1463,12 +1463,12 @@ export const createAuthRouter = (
 
               // Wait for libraries to load
               let attempts = 0;
-              while ((!window.polkadotUtil?.randomAsHex || !window.polkadotUtilCrypto?.naclEncrypt || !window.polkadotApi?.ApiPromise || !window.polkadotExtensionDapp?.web3Enable) && attempts < 100) {
+              while ((!window.polkadotUtilCrypto?.randomAsHex || !window.polkadotUtilCrypto?.naclEncrypt || !window.polkadotApi?.ApiPromise || !window.polkadotExtensionDapp?.web3Enable) && attempts < 100) {
                 await new Promise(resolve => setTimeout(resolve, 200));
                 attempts++;
               }
 
-              if (!window.polkadotUtil?.randomAsHex || !window.polkadotUtilCrypto?.naclEncrypt || !window.polkadotApi?.ApiPromise || !window.polkadotExtensionDapp?.web3Enable) {
+              if (!window.polkadotUtilCrypto?.randomAsHex || !window.polkadotUtilCrypto?.naclEncrypt || !window.polkadotApi?.ApiPromise || !window.polkadotExtensionDapp?.web3Enable) {
                 throw new Error('Polkadot.js libraries failed to load. Please refresh the page and try again.');
               }
 
@@ -1485,12 +1485,25 @@ export const createAuthRouter = (
 
               document.getElementById('retrieve-message').innerHTML = '🔍 Searching Kusama blockchain...';
 
-              // Get transaction details from the blockchain
-              const txDetails = await api.rpc.chain.getBlock(transactionHash);
+              // For demo purposes, we'll use the last stored credentials
+              // In production, you'd parse the actual transaction data from the blockchain
+              const lastTxHash = localStorage.getItem('lastTransactionHash');
 
-              if (!txDetails) {
-                throw new Error('Transaction not found on Kusama blockchain');
+              if (transactionHash !== lastTxHash) {
+                // This is a demo limitation - in production you'd parse the actual transaction
+                throw new Error('This transaction hash is not from the current session. For demo purposes, please use the transaction hash shown when you stored credentials.');
               }
+
+              // Note: In a real implementation, you would:
+              // 1. Query the transaction pool or scan blocks for the transaction hash
+              // 2. Extract the transaction data from the block
+              // 3. Decrypt the actual stored data
+              // For now, we'll simulate this with localStorage data
+              //
+              // The previous approach tried to use api.rpc.chain.getBlock(transactionHash)
+              // but this was incorrect - getBlock expects a block hash, not a transaction hash
+              // To properly query by transaction hash, we'd need to scan blocks or use
+              // a different API method that can search for transactions
 
               document.getElementById('retrieve-message').innerHTML = '🔐 Decrypting credentials...';
               document.getElementById('retrieve-message').style.background = '#fef3c7';
@@ -1501,15 +1514,6 @@ export const createAuthRouter = (
 
               if (!encryptionKey) {
                 throw new Error('Encryption key not found. Please ensure you stored credentials from this session.');
-              }
-
-              // For demo purposes, we'll use the last stored credentials
-              // In production, you'd parse the actual transaction data from the blockchain
-              const lastTxHash = localStorage.getItem('lastTransactionHash');
-
-              if (transactionHash !== lastTxHash) {
-                // This is a demo limitation - in production you'd parse the actual transaction
-                throw new Error('This transaction hash is not from the current session. For demo purposes, please use the transaction hash shown when you stored credentials.');
               }
 
               // Simulate retrieving the actual stored data (in production, this would be from the blockchain)
