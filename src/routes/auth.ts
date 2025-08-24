@@ -554,12 +554,12 @@ export const createAuthRouter = (
               <p class="hero-subtitle">You have successfully authenticated with Polkadot SSO</p>
 
               <div style="margin-top: 40px;">
-                <div class="action-card primary" style="max-width: 1000px; margin: 0 auto; min-height: 600px;">
+                <div class="action-card primary" style="max-width: 1000px; margin: 0 auto; min-height: 800px;">
                   <div class="card-header">
                     <h3>✅ Welcome to Polkadot SSO</h3>
                     <p>Your wallet signature has been verified and you're now authenticated.</p>
                   </div>
-                  <div class="card-content" style="padding: 30px;">
+                  <div class="card-content" style="padding: 40px;">
                     <div class="info-card" style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
                       <h3 style="margin-top: 0; color: #1a202c; font-size: 1.5rem;">🔑 Authorization Details</h3>
                       <div style="margin-bottom: 25px;">
@@ -1553,6 +1553,116 @@ export const createAuthRouter = (
               <div style="margin-top: 40px;">
 
                 ${content}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+          <div class="container">
+            <div class="footer-bottom">
+              <p>&copy; 2025 Polkadot SSO. Built with ❤️ for the decentralized web.</p>
+            </div>
+          </div>
+        </footer>
+      </body>
+      </html>
+    `);
+  });
+
+  // API Documentation Page
+  router.get('/api/credentials/types', (req, res) => {
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>API Documentation - Polkadot SSO</title>
+        <link rel="stylesheet" href="/styles/main.css">
+        <link rel="stylesheet" href="/styles/home.css">
+      </head>
+      <body>
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+          <div class="container">
+            <div class="nav-content">
+              <div class="nav-brand">
+                <a href="/">
+                  <img src="/images/logo.png" alt="Polkadot SSO" class="nav-logo">
+                  <span class="nav-text">Polkadot SSO</span>
+                </a>
+              </div>
+              <div class="nav-menu">
+                <a href="/api/credentials/types" class="nav-link">API Docs</a>
+                <a href="/docs/SECURITY.md" class="nav-link">Security</a>
+                <a href="/docs/TECHNICAL_DOCUMENTATION.md" class="nav-link">Technical</a>
+                <a href="https://polkadot.network" class="nav-link" target="_blank">Polkadot</a>
+                <a href="https://kusama.subscan.io/" class="nav-link" target="_blank">Kusama</a>
+                <a href="https://github.com/CoachCoe/polkadot-sso" class="nav-link" target="_blank">GitHub</a>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero">
+          <div class="container">
+            <div class="hero-content">
+              <h1 class="hero-title">📚 API Documentation</h1>
+              <p class="hero-subtitle">Complete API reference for Polkadot SSO integration</p>
+
+              <div style="margin-top: 40px;">
+                <div class="action-card primary" style="max-width: 1200px; margin: 0 auto;">
+                  <div class="card-header">
+                    <h3>🔐 Authentication Endpoints</h3>
+                    <p>OAuth 2.0 compliant authentication flow</p>
+                  </div>
+                  <div class="card-content" style="padding: 30px;">
+
+                    <div class="info-card" style="background: #f8fafc; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
+                      <h4 style="margin-top: 0; color: #1a202c; font-size: 1.3rem;">🚀 OAuth Flow</h4>
+                      <div style="font-family: monospace; background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 15px 0; font-size: 0.9rem;">
+                        <code>GET /login?client_id={client_id}&wallet={wallet_type}</code><br>
+                        <code>POST /challenge (sign message)</code><br>
+                        <code>GET /callback (OAuth callback)</code><br>
+                        <code>POST /token (exchange code for tokens)</code>
+                      </div>
+                    </div>
+
+                    <div class="info-card" style="background: #f8fafc; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
+                      <h4 style="margin-top: 0; color: #1a202c; font-size: 1.3rem;">🔑 Credential Management</h4>
+                      <div style="font-family: monospace; background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 15px 0; font-size: 0.9rem;">
+                        <code>POST /api/credentials/types</code> - Create credential type<br>
+                        <code>GET /api/credentials/types</code> - List credential types<br>
+                        <code>GET /api/credentials/types/:id</code> - Get specific type<br>
+                        <code>POST /api/credentials</code> - Store credentials<br>
+                        <code>GET /api/credentials/:id</code> - Retrieve credentials
+                      </div>
+                    </div>
+
+                    <div class="info-card" style="background: #f8fafc; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
+                      <h4 style="margin-top: 0; color: #1a202c; font-size: 1.3rem;">⚡ Quick Start</h4>
+                      <p style="color: #4a5568; margin-bottom: 15px;">Test the API with our demo client:</p>
+                      <div style="font-family: monospace; background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 15px 0; font-size: 0.9rem;">
+                        <code>Client ID: demo-app</code><br>
+                        <code>Redirect URI: http://localhost:3000/callback</code><br>
+                        <code>Supported Wallets: polkadot-js, nova-wallet, subwallet</code>
+                      </div>
+                    </div>
+
+                    <div class="info-card" style="background: #f8fafc; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
+                      <h4 style="margin-top: 0; color: #1a202c; font-size: 1.3rem;">🔗 Blockchain Integration</h4>
+                      <p style="color: #4a5568; margin-bottom: 15px;">Store and retrieve credentials on Kusama:</p>
+                      <div style="font-family: monospace; background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 15px 0; font-size: 0.9rem;">
+                        <code>GET /kusama-demo?action=store</code> - Store credentials<br>
+                        <code>GET /kusama-demo?action=retrieve</code> - Retrieve credentials
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
               </div>
             </div>
           </div>
