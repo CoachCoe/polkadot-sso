@@ -1224,45 +1224,28 @@ export const createAuthRouter = (
               document.getElementById('status-message').style.background = '#dbeafe';
                             document.getElementById('status-message').style.color = '#2563eb';
 
-              // Connect to Kusama network
+                                          // Connect to Kusama network
+              console.log('Connecting to Kusama network...');
+
+              // Get API objects from global scope
               const ApiPromise = window.polkadotApi?.ApiPromise;
               const WsProvider = window.polkadotApi?.WsProvider;
 
-              console.log('API objects:', { ApiPromise: !!ApiPromise, WsProvider: !!WsProvider });
-              console.log('Full polkadotApi object:', window.polkadotApi);
-
               if (!ApiPromise || !WsProvider) {
-                throw new Error('Polkadot API not available. Please refresh the page and try again.');
+                throw new Error('Polkadot API not loaded. Please refresh the page and try again.');
               }
 
-              console.log('Creating API connection...');
+                            console.log('Creating API connection...');
               const provider = new WsProvider('wss://kusama-rpc.polkadot.io');
-              console.log('Provider created:', provider);
-
+              
+              // Add a small delay to ensure all dependencies are loaded
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              
               const api = await ApiPromise.create({ provider });
-              console.log('API created:', api);
-              console.log('API type:', typeof api);
-              console.log('API constructor:', api.constructor.name);
-
-              // Wait for API to be ready
+              
               console.log('Waiting for API to be ready...');
               await api.isReady;
-              console.log('API is ready:', api.isReady);
-
-              // Wait for API to be connected
-              console.log('Waiting for API to be connected...');
-              await api.isConnected;
-              console.log('API is connected:', api.isConnected);
-
-              console.log('API structure after ready:', {
-                isConnected: api?.isConnected,
-                hasTx: !!api?.tx,
-                txType: typeof api?.tx,
-                txKeys: Object.keys(api?.tx || {}),
-                hasSystem: !!api?.tx?.system,
-                systemMethods: Object.keys(api?.tx?.system || {}),
-                hasGenericExtrinsic: !!api?.tx?.GenericExtrinsic
-              });
+              console.log('API is ready and connected!');
 
               document.getElementById('status-message').innerHTML = '🔍 Preparing transaction...';
 
@@ -1613,11 +1596,21 @@ export const createAuthRouter = (
         <title>${title} - Polkadot SSO</title>
         <link rel="stylesheet" href="/styles/main.css">
         <link rel="stylesheet" href="/styles/home.css">
-        <!-- Load Polkadot.js libraries -->
-        <script src="https://cdn.jsdelivr.net/npm/@polkadot/util@13.3.1/bundle-polkadot-util.min.js"></script>
+        <!-- Load Polkadot.js libraries with compatible versions -->
+        <script src="https://cdn.jsdelivr.net/npm/@polkadot/util@12.6.2/bundle-polkadot-util.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@polkadot/util-crypto@12.6.2/bundle-polkadot-util-crypto.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@polkadot/extension-dapp@0.58.3/bundle-polkadot-extension-dapp.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@polkadot/api@10.11.2/bundle-polkadot-api.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@polkadot/extension-dapp@0.46.6/bundle-polkadot-extension-dapp.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@polkadot/api@9.17.1/bundle-polkadot-api.min.js"></script>
+        <script>
+          // Debug script loading
+          console.log('Scripts loaded. Available globals:');
+          console.log('window.polkadotApi:', window.polkadotApi);
+          console.log('window.polkadotTypes:', window.polkadotTypes);
+          console.log('window.polkadotRpcCore:', window.polkadotRpcCore);
+          console.log('window.polkadotUtil:', window.polkadotUtil);
+          console.log('window.polkadotUtilCrypto:', window.polkadotUtilCrypto);
+          console.log('window.polkadotExtensionDapp:', window.polkadotExtensionDapp);
+        </script>
       </head>
       <body>
         <!-- Top Navigation -->
