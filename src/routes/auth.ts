@@ -139,9 +139,7 @@ export const createAuthRouter = (
             };
           </script>
           <!-- Load Polkadot.js extension libraries -->
-          <script src="https://cdn.jsdelivr.net/npm/@polkadot/util@13.3.1/bundle-polkadot-util.min.js"></script>
-          <script src="https://cdn.jsdelivr.net/npm/@polkadot/util-crypto@12.6.2/bundle-polkadot-util-crypto.min.js"></script>
-          <script src="https://cdn.jsdelivr.net/npm/@polkadot/extension-dapp@0.58.3/bundle-polkadot-extension-dapp.min.js"></script>
+          <script src="/js/polkadot-bundle.min.js"></script>
         </head>
         <body>
           <!-- Top Navigation -->
@@ -250,9 +248,7 @@ export const createAuthRouter = (
               state: "${escapeHtml(challenge.state)}"
             };
           </script>
-          <script src="https://cdn.jsdelivr.net/npm/@polkadot/util@13.3.1/bundle-polkadot-util.min.js"></script>
-          <script src="https://cdn.jsdelivr.net/npm/@polkadot/util-crypto@12.6.2/bundle-polkadot-util-crypto.min.js"></script>
-          <script src="https://cdn.jsdelivr.net/npm/@polkadot/extension-dapp@0.58.3/bundle-polkadot-extension-dapp.min.js"></script>
+          <script src="/js/polkadot-bundle.min.js"></script>
         </head>
         <body>
           <!-- Top Navigation -->
