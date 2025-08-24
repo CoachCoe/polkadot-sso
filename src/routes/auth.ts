@@ -1241,16 +1241,28 @@ export const createAuthRouter = (
 
               const api = await ApiPromise.create({ provider });
               console.log('API created:', api);
-              console.log('API structure:', {
-                isConnected: api?.isConnected,
-                hasGenericExtrinsic: !!api?.tx?.GenericExtrinsic,
-                txMethods: Object.keys(api?.tx || {}).slice(0, 5)
-              });
+              console.log('API type:', typeof api);
+              console.log('API constructor:', api.constructor.name);
 
               // Wait for API to be ready
               console.log('Waiting for API to be ready...');
               await api.isReady;
               console.log('API is ready:', api.isReady);
+
+              // Wait for API to be connected
+              console.log('Waiting for API to be connected...');
+              await api.isConnected;
+              console.log('API is connected:', api.isConnected);
+
+              console.log('API structure after ready:', {
+                isConnected: api?.isConnected,
+                hasTx: !!api?.tx,
+                txType: typeof api?.tx,
+                txKeys: Object.keys(api?.tx || {}),
+                hasSystem: !!api?.tx?.system,
+                systemMethods: Object.keys(api?.tx?.system || {}),
+                hasGenericExtrinsic: !!api?.tx?.GenericExtrinsic
+              });
 
               document.getElementById('status-message').innerHTML = '🔍 Preparing transaction...';
 
