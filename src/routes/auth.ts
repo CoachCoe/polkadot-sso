@@ -664,6 +664,7 @@ export const createAuthRouter = (
               <div class="nav-brand">
                 <a href="/">
                   <img src="/images/logo.png" alt="Polkadot SSO" class="nav-logo">
+                  <span class="nav-text">Polkadot SSO</span>
                 </a>
               </div>
               <div class="nav-menu">
@@ -905,6 +906,7 @@ export const createAuthRouter = (
                               <div class="nav-brand">
                   <a href="/">
                     <img src="/images/logo.png" alt="Polkadot SSO" class="nav-logo">
+                    <span class="nav-text">Polkadot SSO</span>
                   </a>
                 </div>
                               <div class="nav-menu">
@@ -1092,7 +1094,7 @@ export const createAuthRouter = (
             </div>
           </div>
           <div class="card-action">
-            <button id="storeBtn" class="btn btn-primary btn-full" onclick="storeCredentialsOnKusama()" disabled>
+            <button id="storeBtn" class="btn btn-primary btn-full" onclick="console.log('Button clicked'); storeCredentialsOnKusama();" disabled>
               🔐 Store Credentials on Kusama
             </button>
           </div>
@@ -1129,9 +1131,13 @@ export const createAuthRouter = (
           }
 
                     async function storeCredentialsOnKusama() {
+            console.log('storeCredentialsOnKusama function called');
+
             const credentialType = document.getElementById('credentialType').value;
             const credentialData = document.getElementById('credentialData').value;
             const credentialDescription = document.getElementById('credentialDescription').value;
+
+            console.log('Form values:', { credentialType, credentialData, credentialDescription });
 
             if (!credentialData.trim()) {
               alert('Please enter credential data');
@@ -1154,10 +1160,17 @@ export const createAuthRouter = (
               }
 
               // Wait for libraries to load
+              console.log('Checking for Polkadot.js libraries...');
+              console.log('window.polkadotUtil:', window.polkadotUtil);
+              console.log('window.polkadotUtilCrypto:', window.polkadotUtilCrypto);
+              console.log('window.polkadotApi:', window.polkadotApi);
+              console.log('window.polkadotExtensionDapp:', window.polkadotExtensionDapp);
+
               let attempts = 0;
               while ((!window.polkadotUtil?.randomAsHex || !window.polkadotUtilCrypto?.naclEncrypt || !window.polkadotApi?.ApiPromise || !window.polkadotExtensionDapp?.web3Enable) && attempts < 100) {
                 await new Promise(resolve => setTimeout(resolve, 200));
                 attempts++;
+                console.log('Library loading attempt:', attempts);
               }
 
               if (!window.polkadotUtil?.randomAsHex || !window.polkadotUtilCrypto?.naclEncrypt || !window.polkadotApi?.ApiPromise || !window.polkadotExtensionDapp?.web3Enable) {
