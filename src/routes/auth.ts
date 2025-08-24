@@ -1145,7 +1145,7 @@ export const createAuthRouter = (
               document.getElementById('status-message').style.background = '#fef3c7';
               document.getElementById('status-message').style.color = '#d97706';
 
-              // Get wallet information
+                            // Get wallet information
               const connectedWallet = localStorage.getItem('selectedWallet');
               const walletAddress = localStorage.getItem('walletAddress');
 
@@ -1153,20 +1153,25 @@ export const createAuthRouter = (
                 throw new Error('Wallet not connected');
               }
 
-                            // Wait for libraries to load
+              // Wait for libraries to load
               let attempts = 0;
-              while ((!window.polkadotUtil || !window.polkadotUtilCrypto || !window.polkadotApi || !window.polkadotExtensionDapp) && attempts < 100) {
+              while ((!window.polkadotUtil?.randomAsHex || !window.polkadotUtilCrypto?.naclEncrypt || !window.polkadotApi?.ApiPromise || !window.polkadotExtensionDapp?.web3Enable) && attempts < 100) {
                 await new Promise(resolve => setTimeout(resolve, 200));
                 attempts++;
               }
 
-              if (!window.polkadotUtil || !window.polkadotUtilCrypto || !window.polkadotApi || !window.polkadotExtensionDapp) {
+              if (!window.polkadotUtil?.randomAsHex || !window.polkadotUtilCrypto?.naclEncrypt || !window.polkadotApi?.ApiPromise || !window.polkadotExtensionDapp?.web3Enable) {
                 throw new Error('Polkadot.js libraries failed to load. Please refresh the page and try again.');
               }
 
               // Real credential encryption using Polkadot.js crypto
-              const { encodeAddress, randomAsHex } = window.polkadotUtil;
-              const { mnemonicToMiniSecret, naclEncrypt } = window.polkadotUtilCrypto;
+              // The CDN bundles expose different global variables
+              const randomAsHex = window.polkadotUtil?.randomAsHex || window.polkadotUtilCrypto?.randomAsHex;
+              const naclEncrypt = window.polkadotUtilCrypto?.naclEncrypt;
+
+              if (!randomAsHex || !naclEncrypt) {
+                throw new Error('Required crypto functions not available. Please refresh the page and try again.');
+              }
 
               // Generate a random encryption key (in production, this would be derived from user's private key)
               const encryptionKey = randomAsHex(32);
@@ -1180,7 +1185,13 @@ export const createAuthRouter = (
               document.getElementById('status-message').style.color = '#2563eb';
 
               // Connect to Kusama network
-              const { ApiPromise, WsProvider } = window.polkadotApi;
+              const ApiPromise = window.polkadotApi?.ApiPromise;
+              const WsProvider = window.polkadotApi?.WsProvider;
+
+              if (!ApiPromise || !WsProvider) {
+                throw new Error('Polkadot API not available. Please refresh the page and try again.');
+              }
+
               const provider = new WsProvider('wss://kusama-rpc.polkadot.io');
               const api = await ApiPromise.create({ provider });
 
@@ -1196,7 +1207,13 @@ export const createAuthRouter = (
               document.getElementById('status-message').innerHTML = '📝 Signing transaction with your wallet...';
 
               // Get the connected wallet extension
-              const { web3Enable, web3Accounts, web3FromAddress } = window.polkadotExtensionDapp;
+              const web3Enable = window.polkadotExtensionDapp?.web3Enable;
+              const web3Accounts = window.polkadotExtensionDapp?.web3Accounts;
+              const web3FromAddress = window.polkadotExtensionDapp?.web3FromAddress;
+
+              if (!web3Enable || !web3Accounts || !web3FromAddress) {
+                throw new Error('Polkadot extension functions not available. Please refresh the page and try again.');
+              }
 
               // Enable the extension
               await web3Enable('Polkadot SSO Credential Storage');
@@ -1358,17 +1375,23 @@ export const createAuthRouter = (
 
               // Wait for libraries to load
               let attempts = 0;
-              while ((!window.polkadotUtil || !window.polkadotUtilCrypto || !window.polkadotApi || !window.polkadotExtensionDapp) && attempts < 100) {
+              while ((!window.polkadotUtil?.randomAsHex || !window.polkadotUtilCrypto?.naclEncrypt || !window.polkadotApi?.ApiPromise || !window.polkadotExtensionDapp?.web3Enable) && attempts < 100) {
                 await new Promise(resolve => setTimeout(resolve, 200));
                 attempts++;
               }
 
-              if (!window.polkadotUtil || !window.polkadotUtilCrypto || !window.polkadotApi || !window.polkadotExtensionDapp) {
+              if (!window.polkadotUtil?.randomAsHex || !window.polkadotUtilCrypto?.naclEncrypt || !window.polkadotApi?.ApiPromise || !window.polkadotExtensionDapp?.web3Enable) {
                 throw new Error('Polkadot.js libraries failed to load. Please refresh the page and try again.');
               }
 
               // Connect to Kusama network
-              const { ApiPromise, WsProvider } = window.polkadotApi;
+              const ApiPromise = window.polkadotApi?.ApiPromise;
+              const WsProvider = window.polkadotApi?.WsProvider;
+
+              if (!ApiPromise || !WsProvider) {
+                throw new Error('Polkadot API not available. Please refresh the page and try again.');
+              }
+
               const provider = new WsProvider('wss://kusama-rpc.polkadot.io');
               const api = await ApiPromise.create({ provider });
 
@@ -1405,7 +1428,7 @@ export const createAuthRouter = (
               const storedData = localStorage.getItem('lastStoredCredentials') || 'Demo credential data';
 
               // Decrypt the data (in production, this would use the actual encrypted data from blockchain)
-              const { naclDecrypt } = window.polkadotUtilCrypto;
+              const naclDecrypt = window.polkadotUtilCrypto?.naclDecrypt;
 
               // For demo purposes, we'll show the stored data directly
               // In production, you'd decrypt the actual encrypted data from the blockchain
