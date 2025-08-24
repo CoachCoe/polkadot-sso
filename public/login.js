@@ -173,6 +173,10 @@ function proceedWithAddress(address) {
   }
 
   console.log('Proceeding with address:', address);
+
+  // Store wallet address in localStorage for home page detection
+  localStorage.setItem('walletAddress', address);
+
   updateStatus('Redirecting to challenge page...', 'success');
 
   // Redirect to challenge page

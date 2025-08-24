@@ -10,9 +10,9 @@ const logger = createLogger('WalletDemoRunner');
  */
 export class WalletDemoRunner {
   private demos: Array<{ name: string; run: () => Promise<void> }> = [
-    { name: 'Nova Wallet Simple', run: this.runNovaWalletSimpleDemo },
-    { name: 'Wallet Concepts', run: this.runWalletConceptsDemo },
-    { name: 'Security Features', run: this.runSecurityFeaturesDemo },
+    { name: 'Nova Wallet Simple', run: () => this.runNovaWalletSimpleDemo() },
+    { name: 'Wallet Concepts', run: () => this.runWalletConceptsDemo() },
+    { name: 'Security Features', run: () => this.runSecurityFeaturesDemo() },
   ];
 
   /**
@@ -38,9 +38,7 @@ export class WalletDemoRunner {
    * Run a specific demo by name
    */
   async runSpecificDemo(demoName: string): Promise<void> {
-    const demo = this.demos.find(d =>
-      d.name.toLowerCase().includes(demoName.toLowerCase())
-    );
+    const demo = this.demos.find(d => d.name.toLowerCase().includes(demoName.toLowerCase()));
 
     if (!demo) {
       logger.error(`Demo not found: ${demoName}`);

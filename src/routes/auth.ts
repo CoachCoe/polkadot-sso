@@ -172,7 +172,7 @@ export const createAuthRouter = (
               <div class="hero-content">
                 <h1 class="hero-title">${client.name}</h1>
                 <p class="hero-subtitle">Connect your Polkadot wallet to continue</p>
-                ${wallet ? `<p class="wallet-info">Selected wallet: <strong>${wallet}</strong></p>` : ''}
+                ${wallet ? `<p class="wallet-info">Selected wallet: <strong>${String(wallet)}</strong></p>` : ''}
 
                 <div class="container" style="max-width: 600px; margin-top: 40px; padding-bottom: 40px;">
                   <div id="status" style="text-align: center; margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 12px; color: #64748b;">Ready to connect...</div>
@@ -729,6 +729,33 @@ export const createAuthRouter = (
         </footer>
 
         <script>
+          // Check if user has a connected wallet
+          function checkWalletConnection() {
+            const connectedWallet = localStorage.getItem('selectedWallet');
+            const walletAddress = localStorage.getItem('walletAddress');
+
+            if (connectedWallet && walletAddress) {
+              // Wallet is connected
+              document.getElementById('wallet-status').innerHTML =
+                '✅ Connected to ' + connectedWallet + ' (' + walletAddress.slice(0, 8) + '...)';
+              document.getElementById('wallet-status').style.background = '#dcfce7';
+              document.getElementById('wallet-status').style.color = '#16a34a';
+
+              // Enable credential buttons
+              document.getElementById('storeCredentialsBtn').disabled = false;
+              document.getElementById('retrieveCredentialsBtn').disabled = false;
+            } else {
+              // No wallet connected
+              document.getElementById('wallet-status').innerHTML = '🔒 Connect your wallet to access credentials';
+              document.getElementById('wallet-status').style.background = '#f8fafc';
+              document.getElementById('wallet-status').style.color = '#64748b';
+
+              // Disable credential buttons
+              document.getElementById('storeCredentialsBtn').disabled = true;
+              document.getElementById('retrieveCredentialsBtn').disabled = true;
+            }
+          }
+
           function selectWallet(walletType) {
             // Store the selected wallet type
             localStorage.setItem('selectedWallet', walletType);
@@ -736,6 +763,36 @@ export const createAuthRouter = (
             // Redirect to the login page with the wallet type
             window.location.href = '/login?client_id=demo-app&wallet=' + walletType;
           }
+
+          function storeCredentials() {
+            const connectedWallet = localStorage.getItem('selectedWallet');
+            if (connectedWallet) {
+              window.location.href = '/kusama-demo?action=store';
+            } else {
+              alert('Please connect your wallet first');
+            }
+          }
+
+          function retrieveCredentials() {
+            const connectedWallet = localStorage.getItem('selectedWallet');
+            if (connectedWallet) {
+              window.location.href = '/kusama-demo?action=retrieve';
+            } else {
+              alert('Please connect your wallet first');
+            }
+          }
+
+          // Check wallet connection status when page loads
+          document.addEventListener('DOMContentLoaded', function() {
+            checkWalletConnection();
+
+            // Listen for storage changes (when wallet connects from another page)
+            window.addEventListener('storage', function(e) {
+              if (e.key === 'walletAddress' || e.key === 'selectedWallet') {
+                checkWalletConnection();
+              }
+            });
+          });
         </script>
       </body>
       </html>
@@ -817,9 +874,17 @@ export const createAuthRouter = (
                     </ul>
                   </div>
                   <div class="card-action">
-                    <a href="/kusama-demo" class="btn btn-secondary btn-full">
-                      Manage Credentials
-                    </a>
+                    <div id="wallet-status" style="text-align: center; margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; color: #64748b; font-size: 0.9rem;">
+                      🔒 Connect your wallet to access credentials
+                    </div>
+                    <div style="display: flex; gap: 12px; flex-direction: column;">
+                      <button id="storeCredentialsBtn" class="btn btn-primary btn-full" disabled onclick="storeCredentials()">
+                        💾 Store Credentials
+                      </button>
+                      <button id="retrieveCredentialsBtn" class="btn btn-secondary btn-full" disabled onclick="retrieveCredentials()">
+                        📥 Retrieve Credentials
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -897,77 +962,170 @@ export const createAuthRouter = (
 
   // Kusama Demo Page
   router.get('/kusama-demo', (req, res) => {
+    const action = req.query.action || 'overview';
+    let title, subtitle, content;
+
+    if (action === 'store') {
+      title = '💾 Store Credentials';
+      subtitle = 'Encrypt and store your credentials on Kusama';
+      content = `
+        <div class="action-card primary" style="max-width: 800px; margin: 0 auto;">
+          <div class="card-header">
+            <h3>🔐 Store Credentials</h3>
+            <p>Encrypt and store your credentials on Kusama</p>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li>End-to-end encryption</li>
+              <li>Immutable blockchain storage</li>
+              <li>Pay once, access forever</li>
+              <li>Zero-knowledge proofs</li>
+            </ul>
+          </div>
+          <div class="card-action">
+            <button class="btn btn-primary btn-full" onclick="alert('Credential storage demo coming soon!')">
+              Store Credentials
+            </button>
+          </div>
+        </div>
+      `;
+    } else if (action === 'retrieve') {
+      title = '📥 Retrieve Credentials';
+      subtitle = 'Securely retrieve your stored credentials';
+      content = `
+        <div class="action-card secondary" style="max-width: 800px; margin: 0 auto;">
+          <div class="card-header">
+            <h3>📥 Retrieve Credentials</h3>
+            <p>Securely retrieve your stored credentials</p>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li>Instant retrieval</li>
+              <li>Secure decryption</li>
+              <li>Audit trail</li>
+              <li>Cross-platform access</li>
+            </ul>
+          </div>
+          <div class="card-action">
+            <button class="btn btn-secondary btn-full" onclick="alert('Credential retrieval demo coming soon!')">
+              Retrieve Credentials
+            </button>
+          </div>
+        </div>
+      `;
+    } else {
+      title = '💾 Kusama Credentials Demo';
+      subtitle = 'Store and retrieve encrypted credentials on the Kusama blockchain';
+      content = `
+        <div class="action-cards">
+          <div class="action-card primary">
+            <div class="card-header">
+              <h3>🔐 Store Credentials</h3>
+              <p>Encrypt and store your credentials on Kusama</p>
+            </div>
+            <div class="card-content">
+              <ul>
+                <li>End-to-end encryption</li>
+                <li>Immutable blockchain storage</li>
+                <li>Pay once, access forever</li>
+                <li>Zero-knowledge proofs</li>
+              </ul>
+            </div>
+            <div class="card-action">
+              <a href="/kusama-demo?action=store" class="btn btn-primary btn-full">
+                Store Credentials
+              </a>
+            </div>
+          </div>
+
+          <div class="action-card secondary">
+            <div class="card-header">
+              <h3>📥 Retrieve Credentials</h3>
+              <p>Securely retrieve your stored credentials</p>
+            </div>
+            <div class="card-content">
+              <ul>
+                <li>Instant retrieval</li>
+                <li>Secure decryption</li>
+                <li>Audit trail</li>
+                <li>Cross-platform access</li>
+              </ul>
+            </div>
+            <div class="card-action">
+              <a href="/kusama-demo?action=retrieve" class="btn btn-secondary btn-full">
+                Retrieve Credentials
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     res.send(`
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Kusama Credentials Demo - Polkadot SSO</title>
+        <title>${title} - Polkadot SSO</title>
         <link rel="stylesheet" href="/styles/main.css">
         <link rel="stylesheet" href="/styles/home.css">
       </head>
       <body>
-        <div class="container" style="padding: 40px 20px;">
-          <div style="text-align: center; margin-bottom: 40px;">
-            <a href="/" class="btn btn-secondary" style="margin-bottom: 20px; display: inline-block;">← Back to Home</a>
-            <h1 style="font-size: 2.5rem; margin-bottom: 20px; color: #1a202c;">💾 Kusama Credentials Demo</h1>
-            <p style="font-size: 1.2rem; color: #64748b; max-width: 600px; margin: 0 auto;">
-              Store and retrieve encrypted credentials on the Kusama blockchain
-            </p>
-          </div>
-
-          <div class="action-cards">
-            <div class="action-card primary">
-              <div class="card-header">
-                <h3>🔐 Store Credentials</h3>
-                <p>Encrypt and store your credentials on Kusama</p>
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+          <div class="container">
+            <div class="nav-content">
+              <div class="nav-brand">
+                <a href="/">
+                  <img src="/images/logo.png" alt="Polkadot SSO" class="nav-logo">
+                  <span class="nav-text">Polkadot SSO</span>
+                </a>
               </div>
-              <div class="card-content">
-                <ul>
-                  <li>End-to-end encryption</li>
-                  <li>Immutable blockchain storage</li>
-                  <li>Pay once, access forever</li>
-                  <li>Zero-knowledge proofs</li>
-                </ul>
-              </div>
-              <div class="card-action">
-                <button class="btn btn-primary btn-full" onclick="alert('Credential storage demo coming soon!')">
-                  Store Credentials
-                </button>
-              </div>
-            </div>
-
-            <div class="action-card secondary">
-              <div class="card-header">
-                <h3>📥 Retrieve Credentials</h3>
-                <p>Securely retrieve your stored credentials</p>
-              </div>
-              <div class="card-content">
-                <ul>
-                  <li>Instant retrieval</li>
-                  <li>Secure decryption</li>
-                  <li>Audit trail</li>
-                  <li>Cross-platform access</li>
-                </ul>
-              </div>
-              <div class="card-action">
-                <button class="btn btn-secondary btn-full" onclick="alert('Credential retrieval demo coming soon!')">
-                  Retrieve Credentials
-                </button>
+              <div class="nav-menu">
+                <a href="/api/credentials/types" class="nav-link">API Docs</a>
+                <a href="/docs/SECURITY.md" class="nav-link">Security</a>
+                <a href="/docs/TECHNICAL_DOCUMENTATION.md" class="nav-link">Technical</a>
+                <a href="https://polkadot.network" class="nav-link" target="_blank">Polkadot</a>
+                <a href="https://kusama.subscan.io/" class="nav-link" target="_blank">Kusama</a>
+                <a href="https://github.com/CoachCoe/polkadot-sso" class="nav-link" target="_blank">GitHub</a>
               </div>
             </div>
           </div>
+        </nav>
 
-          <div style="text-align: center; margin-top: 40px; padding: 20px; background: #f8fafc; border-radius: 12px;">
-            <h3 style="margin-bottom: 16px; color: #1a202c;">🚧 Demo in Development</h3>
-            <p style="color: #64748b; margin-bottom: 20px;">
-              The full Kusama credentials demo is currently being developed.
-              This will include actual blockchain integration for storing and retrieving encrypted credentials.
-            </p>
-            <a href="/" class="btn btn-primary">Return to Home</a>
+        <!-- Hero Section -->
+        <section class="hero">
+          <div class="container">
+            <div class="hero-content">
+              <h1 class="hero-title">${title}</h1>
+              <p class="hero-subtitle">${subtitle}</p>
+
+              <div style="margin-top: 40px;">
+                ${
+                  action !== 'overview'
+                    ? `
+                    <div style="text-align: center; margin-bottom: 20px;">
+                      <a href="/kusama-demo" class="btn btn-secondary" style="margin-right: 10px;">← Back to Overview</a>
+                      <a href="/" class="btn btn-secondary">← Back to Home</a>
+                    </div>
+                  `
+                    : ''
+                }
+                ${content}
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+          <div class="container">
+            <div class="footer-bottom">
+              <p>&copy; 2025 Polkadot SSO. Built with ❤️ for the decentralized web.</p>
+            </div>
+          </div>
+        </footer>
       </body>
       </html>
     `);

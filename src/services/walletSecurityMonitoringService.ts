@@ -77,7 +77,7 @@ export class WalletSecurityMonitoringService {
     this.analyzeEvent(fullEvent);
 
     // Log to audit service
-    this.auditService.log({
+    void this.auditService.log({
       type: 'SECURITY_EVENT',
       client_id: 'wallet-security-monitoring',
       action: event.type,

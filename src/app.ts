@@ -2,7 +2,7 @@ import { config } from 'dotenv';
 config();
 
 import cors from 'cors';
-import express, { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import session from 'express-session';
 import helmet from 'helmet';
@@ -12,14 +12,12 @@ import { initializeDatabase } from './config/db';
 import { sessionConfig } from './config/session';
 import { createBruteForceProtection } from './middleware/bruteForce';
 import { addRequestId } from './middleware/requestId';
-import { nonceMiddleware, ResponseWithLocals, securityMiddleware } from './middleware/security';
+import { nonceMiddleware, ResponseWithLocals } from './middleware/security';
 import { sanitizeRequestParams } from './middleware/validation';
 import { createAuthRouter } from './routes/auth';
 import { createClientRouter } from './routes/clients';
 import { createCredentialRouter } from './routes/credentials';
-import kusamaRoutes from './routes/kusama';
 import { createTokenRouter } from './routes/tokens';
-import walletKusamaRoutes from './routes/walletKusama';
 import { AuditService } from './services/auditService';
 import { ChallengeService } from './services/challengeService';
 import { CredentialService } from './services/credentialService';
@@ -46,28 +44,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 app.use(
   helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: [
-          "'self'",
-          'https://cdn.jsdelivr.net',
-          'https://polkadot.js.org',
-          "'unsafe-eval'", // Required for WebAssembly compilation in Polkadot.js
-        ],
-        connectSrc: ["'self'", 'wss://rpc.polkadot.io'],
-        frameAncestors: ["'none'"],
-        objectSrc: ["'none'"],
-        upgradeInsecureRequests: [],
-        workerSrc: ["'self'", 'blob:'], // Allow WebAssembly workers
-        childSrc: ["'self'", 'blob:'], // Allow WebAssembly in iframes if needed
-      },
-    },
-    referrerPolicy: { policy: 'same-origin' },
-    permittedCrossDomainPolicies: { permittedPolicies: 'none' },
-    crossOriginEmbedderPolicy: true,
-    crossOriginOpenerPolicy: { policy: 'same-origin' },
-    crossOriginResourcePolicy: { policy: 'same-site' },
+    contentSecurityPolicy: false, // Temporarily disable CSP to allow WebAssembly to work
   })
 );
 
@@ -97,8 +74,10 @@ app.use(
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
+// Temporarily disabled security middleware to allow WebAssembly to work
+// app.use(securityMiddleware);
+// But keep nonce middleware for proper nonce generation
 app.use((req, res, next) => nonceMiddleware(req, res as ResponseWithLocals, next));
-app.use(securityMiddleware);
 
 async function initializeApp() {
   const db = await initializeDatabase();
@@ -147,22 +126,23 @@ async function initializeApp() {
   app.use('/api/tokens', createTokenRouter(tokenService, db, auditService));
   app.use('/api/clients', createClientRouter(db));
   app.use('/api/credentials', createCredentialRouter(credentialService, auditService));
-  app.use('/api/kusama', kusamaRoutes);
-  app.use('/api/wallet-kusama', walletKusamaRoutes);
+  // Temporarily disabled due to Polkadot.js dependency issues
+  // app.use('/api/kusama', kusamaRoutes);
+  // app.use('/api/wallet-kusama', walletKusamaRoutes);
 
-  // Demo page routes
-  app.get('/kusama-demo', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/views/kusama-demo.html'));
-  });
+  // Demo page routes (temporarily disabled)
+  // app.get('/kusama-demo', (req, res) => {
+  //   res.sendFile(path.join(__dirname, '../public/views/kusama-demo.html'));
+  // });
 
-  app.get('/wallet-kusama-demo', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/views/wallet-kusama-demo.html'));
-  });
+  // app.get('/wallet-kusama-demo', (req, res) => {
+  //   res.sendFile(path.join(__dirname, '../public/views/wallet-kusama-demo.html'));
+  // });
 
   app.use(bruteForceMiddleware);
   app.use(sanitizeRequestParams());
 
-  app.use(((err: Error, req: Request, res: Response, next: NextFunction) => {
+  app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     const requestId = (req as RequestWithId).id;
     logger.error({
       requestId,
@@ -185,7 +165,7 @@ async function initializeApp() {
       requestId,
       details: process.env.NODE_ENV === 'development' ? err.message : undefined,
     });
-  }) as ErrorRequestHandler);
+  });
 
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
