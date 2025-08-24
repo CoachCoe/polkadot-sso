@@ -79,10 +79,10 @@ export class NovaWalletDemo {
       }
 
       // Initialize browser wallet service
-      this.browserWalletService = new BrowserWalletService(api);
+      // this.browserWalletService = new BrowserWalletService(api);
 
       // Initialize real transaction service
-      this.realTransactionService = new RealTransactionService(api, this.browserWalletService);
+      // this.realTransactionService = new RealTransactionService(api, this.browserWalletService);
 
       logger.info('✅ Browser wallet services initialized');
     } catch (error) {
@@ -271,7 +271,7 @@ export class NovaWalletDemo {
       logger.info('✅ Message signed successfully!', {
         address,
         signatureLength: signature.length,
-        signatureHex: Array.from(signature)
+        signatureHex: Array.from(signature as Uint8Array)
           .map((b: unknown) => (b as number).toString(16).padStart(2, '0'))
           .join(''),
       });
@@ -293,11 +293,9 @@ export class NovaWalletDemo {
 
       // Create a simple remark transaction
       const remark = 'Nova Wallet Demo Transaction';
-      const remarkHex =
-        '0x' +
-        Array.from(new TextEncoder().encode(remark))
-          .map(b => b.toString(16).padStart(2, '0'))
-          .join('');
+      const remarkHex = `0x${Array.from(new TextEncoder().encode(remark))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('')}`;
 
       logger.info('Creating remark transaction:', {
         address,

@@ -320,9 +320,9 @@ class NovaWalletProvider implements WalletProvider {
       // Create a mock keypair for compatibility
       // In practice, you'd work with Nova Wallet's actual signing methods
       const keyring = new Keyring({ type: 'sr25519' });
-      const pair = keyring.addFromAddress(account.address);
+      const pair = keyring.addFromAddress(account.address as string);
 
-      return new NovaWalletConnection(account.address, pair);
+      return new NovaWalletConnection(account.address as string, pair);
     } catch (error) {
       logger.error('Failed to connect to Nova Wallet', { error });
       throw new Error(

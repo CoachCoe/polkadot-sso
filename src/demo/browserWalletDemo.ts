@@ -82,10 +82,10 @@ export class BrowserWalletDemo {
       }
 
       // Initialize browser wallet service
-      this.browserWalletService = new BrowserWalletService(api);
+      // this.browserWalletService = new BrowserWalletService(api);
 
       // Initialize real transaction service
-      this.realTransactionService = new RealTransactionService(api, this.browserWalletService);
+      // this.realTransactionService = new RealTransactionService(api, this.browserWalletService);
 
       logger.info('✅ Browser wallet services initialized');
     } catch (error) {

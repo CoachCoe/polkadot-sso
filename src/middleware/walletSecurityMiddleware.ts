@@ -130,7 +130,7 @@ export class WalletSecurityMiddleware {
         });
       }
 
-      const key = `${ip}:${userAddress}`;
+      const key = `${ip}:${String(userAddress as string)}`;
       const now = Date.now();
       const userData = walletConnections.get(key) || {
         connections: 0,
@@ -224,11 +224,11 @@ export class WalletSecurityMiddleware {
       if (
         !provider ||
         !WalletSecurityMiddleware.validateWalletProvider(
-          provider,
+          provider as string,
           this.config.allowedWalletProviders
         )
       ) {
-        this.auditService.log({
+        void this.auditService.log({
           type: 'SECURITY_EVENT',
           client_id: 'wallet-security',
           action: 'INVALID_WALLET_PROVIDER',
@@ -251,8 +251,11 @@ export class WalletSecurityMiddleware {
       }
 
       // Validate user address
-      if (!userAddress || !WalletSecurityMiddleware.validateKusamaAddress(String(userAddress))) {
-        this.auditService.log({
+      if (
+        !userAddress ||
+        !WalletSecurityMiddleware.validateKusamaAddress(String(userAddress as string))
+      ) {
+        void this.auditService.log({
           type: 'SECURITY_EVENT',
           client_id: 'wallet-security',
           action: 'INVALID_KUSAMA_ADDRESS',
@@ -284,7 +287,10 @@ export class WalletSecurityMiddleware {
       const { userAddress, credentialData, credentialType } = req.body;
 
       // Validate user address
-      if (!userAddress || !WalletSecurityMiddleware.validateKusamaAddress(String(userAddress))) {
+      if (
+        !userAddress ||
+        !WalletSecurityMiddleware.validateKusamaAddress(String(userAddress as string))
+      ) {
         return res.status(400).json({
           error: 'Invalid Kusama address format',
           code: 'INVALID_KUSAMA_ADDRESS',
@@ -299,9 +305,11 @@ export class WalletSecurityMiddleware {
         });
       }
 
-      const validation = WalletSecurityMiddleware.validateTransactionData(credentialData);
+      const validation = WalletSecurityMiddleware.validateTransactionData(
+        credentialData as Record<string, unknown>
+      );
       if (!validation.valid) {
-        this.auditService.log({
+        void this.auditService.log({
           type: 'SECURITY_EVENT',
           client_id: 'wallet-security',
           action: 'INVALID_TRANSACTION_DATA',
@@ -356,7 +364,7 @@ export class WalletSecurityMiddleware {
 
       // Validate signature format (should start with 0x and be hex)
       if (!userSignature.startsWith('0x') || !/^0x[0-9a-fA-F]+$/.test(userSignature)) {
-        this.auditService.log({
+        void this.auditService.log({
           type: 'SECURITY_EVENT',
           client_id: 'wallet-security',
           action: 'INVALID_SIGNATURE_FORMAT',
@@ -426,7 +434,7 @@ export class WalletSecurityMiddleware {
    * Log wallet security events
    */
   logWalletEvent(action: string, details: Record<string, unknown>) {
-    this.auditService.log({
+    void this.auditService.log({
       type: 'SECURITY_EVENT',
       client_id: 'wallet-security',
       action,
