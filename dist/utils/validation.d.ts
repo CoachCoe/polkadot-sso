@@ -5,5 +5,5 @@ export interface ValidationResult {
 }
 export declare function validateAuthRequest(req: Request): ValidationResult;
 export declare function validateSignature(signature: string): ValidationResult;
-export declare function validateClientCredentials(): Promise<boolean>;
+export declare function validateClientCredentials(req: Request): Promise<boolean>;
 //# sourceMappingURL=validation.d.ts.map

@@ -2,26 +2,44 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createTokenRouter = void 0;
 const express_1 = require("express");
-// Import from modular structure
-const modules_1 = require("../modules");
+const rateLimit_1 = require("../middleware/rateLimit");
+const validation_1 = require("../middleware/validation");
 const createTokenRouter = (tokenService, db, auditService) => {
     const router = (0, express_1.Router)();
-    const rateLimiters = (0, modules_1.createRateLimiters)(auditService);
-    router.post('/refresh', rateLimiters.refresh, (0, modules_1.sanitizeRequest)(), async (req, res, next) => {
+    const rateLimiters = (0, rateLimit_1.createRateLimiters)(auditService);
+    router.post('/refresh', rateLimiters.refresh, (0, validation_1.sanitizeRequest)(), async (req, res, next) => {
         try {
             const { refresh_token } = req.body;
-            if (!refresh_token) {
-                res.status(400).json({ error: 'Refresh token required' });
+            // Type guard for refresh_token
+            if (!refresh_token || typeof refresh_token !== 'string') {
+                res.status(400).json({ error: 'Invalid refresh token' });
                 return;
             }
             const verification = await tokenService.verifyToken(refresh_token, 'refresh');
             if (!verification.valid || !verification.decoded) {
-                res.status(401).json({ error: verification.error });
+                res.status(401).json({ error: verification.error || 'Verification failed' });
                 return;
             }
             const { decoded } = verification;
-            const { accessToken, refreshToken, fingerprint, accessJwtid, refreshJwtid } = tokenService.generateTokens(decoded.address, decoded.client_id);
-            void db.run(`UPDATE sessions SET
+            if (!decoded) {
+                res.status(401).json({ error: 'Invalid token data' });
+                return;
+            }
+            // Type guard to ensure decoded has the expected structure
+            if (!decoded ||
+                typeof decoded !== 'object' ||
+                !('address' in decoded) ||
+                !('client_id' in decoded)) {
+                res.status(401).json({ error: 'Invalid token data' });
+                return;
+            }
+            if (!decoded.address || !decoded.client_id) {
+                res.status(401).json({ error: 'Invalid token data' });
+                return;
+            }
+            const tokens = tokenService.generateTokens(decoded.address, decoded.client_id);
+            const { accessToken, refreshToken, fingerprint, accessJwtid, refreshJwtid } = tokens;
+            await db.run(`UPDATE sessions SET
             access_token = ?,
             refresh_token = ?,
             access_token_id = ?,

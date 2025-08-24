@@ -3,8 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.dbPromise = exports.initializeDatabase = void 0;
+exports.dbPromise = void 0;
 exports.createDbPool = createDbPool;
+exports.initializeDatabase = initializeDatabase;
 const promises_1 = require("fs/promises");
 const path_1 = require("path");
 const sqlite_1 = require("sqlite");
@@ -21,7 +22,7 @@ async function createDbPool() {
     }
     return pool;
 }
-const initializeDatabase = async () => {
+async function initializeDatabase() {
     const dbPath = './data/sso.db';
     await (0, promises_1.mkdir)((0, path_1.dirname)(dbPath), { recursive: true });
     const db = await (0, sqlite_1.open)({
@@ -30,6 +31,17 @@ const initializeDatabase = async () => {
     });
     await db.exec(`
     -- Existing SSO tables
+    CREATE TABLE IF NOT EXISTS clients (
+      client_id TEXT PRIMARY KEY,
+      client_secret TEXT NOT NULL,
+      name TEXT NOT NULL,
+      redirect_urls TEXT NOT NULL, -- JSON array of redirect URLs
+      allowed_origins TEXT NOT NULL, -- JSON array of allowed origins
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL,
+      is_active BOOLEAN DEFAULT 1
+    );
+
     CREATE TABLE IF NOT EXISTS challenges (
       id TEXT PRIMARY KEY,
       message TEXT NOT NULL,
@@ -135,11 +147,6 @@ const initializeDatabase = async () => {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
       metadata TEXT, -- JSON string for additional metadata
-      -- Hybrid storage fields
-      ipfs_hash TEXT, -- IPFS hash (CID) of encrypted credential data
-      kusama_block_hash TEXT, -- Kusama block hash where credential reference is stored
-      kusama_extrinsic_hash TEXT, -- Kusama extrinsic hash of the credential reference transaction
-      storage_type TEXT DEFAULT 'local', -- 'local', 'ipfs', 'hybrid'
       FOREIGN KEY (user_address) REFERENCES user_profiles(address),
       FOREIGN KEY (credential_type_id) REFERENCES credential_types(id)
     );
@@ -260,7 +267,6 @@ const initializeDatabase = async () => {
     CREATE INDEX IF NOT EXISTS idx_credential_revocations_revoked_by ON credential_revocations(revoked_by_address);
   `);
     return db;
-};
-exports.initializeDatabase = initializeDatabase;
-exports.dbPromise = (0, exports.initializeDatabase)();
+}
+exports.dbPromise = initializeDatabase();
 //# sourceMappingURL=db.js.map

@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createCredentialRouter = void 0;
 const express_1 = require("express");
 const zod_1 = require("zod");
-// Import from modular structure
-const modules_1 = require("../modules");
+const rateLimit_1 = require("../middleware/rateLimit");
+const validation_1 = require("../middleware/validation");
 const logger_1 = require("../utils/logger");
 const validateCredentialBody = (schema) => {
     return (req, res, next) => {
@@ -75,8 +75,8 @@ const createCredentialTypeSchema = zod_1.z.object({
 });
 const createCredentialRouter = (credentialService, auditService) => {
     const router = (0, express_1.Router)();
-    const rateLimiters = (0, modules_1.createRateLimiters)(auditService);
-    router.post('/profiles', rateLimiters.api, (0, modules_1.sanitizeRequest)(), validateCredentialBody(createUserProfileSchema), async (req, res, next) => {
+    const rateLimiters = (0, rateLimit_1.createRateLimiters)(auditService);
+    router.post('/profiles', rateLimiters.api, (0, validation_1.sanitizeRequest)(), validateCredentialBody(createUserProfileSchema), async (req, res, next) => {
         try {
             const userAddress = req.user?.address;
             if (!userAddress) {
@@ -104,7 +104,7 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.get('/profiles/me', rateLimiters.api, (0, modules_1.sanitizeRequest)(), async (req, res, next) => {
+    router.get('/profiles/me', rateLimiters.api, (0, validation_1.sanitizeRequest)(), async (req, res, next) => {
         try {
             const userAddress = req.user?.address;
             if (!userAddress) {
@@ -121,7 +121,7 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.put('/profiles/me', rateLimiters.api, (0, modules_1.sanitizeRequest)(), (0, modules_1.validateBody)(createUserProfileSchema), async (req, res, next) => {
+    router.put('/profiles/me', rateLimiters.api, (0, validation_1.sanitizeRequest)(), (0, validation_1.validateBody)(createUserProfileSchema), async (req, res, next) => {
         try {
             const userAddress = req.user?.address;
             if (!userAddress) {
@@ -145,23 +145,17 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.post('/types', rateLimiters.api, (0, modules_1.sanitizeRequest)(), (0, modules_1.validateBody)(createCredentialTypeSchema), async (req, res, next) => {
+    router.post('/types', rateLimiters.api, (0, validation_1.sanitizeRequest)(), (0, validation_1.validateBody)(createCredentialTypeSchema), async (req, res, next) => {
         try {
             const userAddress = req.user?.address;
             if (!userAddress) {
                 return res.status(401).json({ error: 'Authentication required' });
             }
-            // Type the request body properly to avoid unsafe assignments
-            const body = req.body;
             const credentialType = await credentialService.createCredentialType(userAddress, {
-                name: body.name,
-                description: body.description,
-                schema_version: body.schema_version,
-                schema_definition: body.schema_definition,
-                is_active: body.is_active,
-                required_fields: JSON.stringify(body.required_fields),
-                optional_fields: JSON.stringify(body.optional_fields),
-                validation_rules: JSON.stringify(body.validation_rules),
+                ...req.body,
+                required_fields: JSON.stringify(req.body.required_fields),
+                optional_fields: JSON.stringify(req.body.optional_fields),
+                validation_rules: JSON.stringify(req.body.validation_rules),
             });
             await auditService.log({
                 type: 'CREDENTIAL_TYPE',
@@ -180,7 +174,7 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.get('/types', rateLimiters.api, (0, modules_1.sanitizeRequest)(), async (req, res, next) => {
+    router.get('/types', rateLimiters.api, (0, validation_1.sanitizeRequest)(), async (req, res, next) => {
         try {
             const types = await credentialService.getActiveCredentialTypes();
             res.json(types);
@@ -190,7 +184,7 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.get('/types/:id', rateLimiters.api, (0, modules_1.sanitizeRequest)(), async (req, res, next) => {
+    router.get('/types/:id', rateLimiters.api, (0, validation_1.sanitizeRequest)(), async (req, res, next) => {
         try {
             const type = await credentialService.getCredentialType(req.params.id);
             if (!type) {
@@ -203,15 +197,14 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.post('/credentials', rateLimiters.api, (0, modules_1.sanitizeRequest)(), (0, modules_1.validateBody)(createCredentialSchema), async (req, res, next) => {
+    router.post('/credentials', rateLimiters.api, (0, validation_1.sanitizeRequest)(), (0, validation_1.validateBody)(createCredentialSchema), async (req, res, next) => {
         try {
             const issuerAddress = req.user?.address;
             if (!issuerAddress) {
                 return res.status(401).json({ error: 'Authentication required' });
             }
-            const { user_address, ...requestBody } = req.body;
-            const request = requestBody;
-            const credential = await credentialService.createCredential(issuerAddress, String(user_address), request);
+            const { user_address, ...request } = req.body;
+            const credential = await credentialService.createCredential(issuerAddress, user_address, request);
             await auditService.log({
                 type: 'CREDENTIAL',
                 user_address: issuerAddress,
@@ -233,7 +226,7 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.get('/credentials', rateLimiters.api, (0, modules_1.sanitizeRequest)(), async (req, res, next) => {
+    router.get('/credentials', rateLimiters.api, (0, validation_1.sanitizeRequest)(), async (req, res, next) => {
         try {
             const userAddress = req.user?.address;
             if (!userAddress) {
@@ -247,7 +240,7 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.get('/credentials/:id', rateLimiters.api, (0, modules_1.sanitizeRequest)(), async (req, res, next) => {
+    router.get('/credentials/:id', rateLimiters.api, (0, validation_1.sanitizeRequest)(), async (req, res, next) => {
         try {
             const userAddress = req.user?.address;
             if (!userAddress) {
@@ -271,7 +264,7 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.get('/credentials/:id/data', rateLimiters.api, (0, modules_1.sanitizeRequest)(), async (req, res, next) => {
+    router.get('/credentials/:id/data', rateLimiters.api, (0, validation_1.sanitizeRequest)(), async (req, res, next) => {
         try {
             const userAddress = req.user?.address;
             if (!userAddress) {
@@ -299,7 +292,7 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.post('/credentials/:id/share', rateLimiters.api, (0, modules_1.sanitizeRequest)(), (0, modules_1.validateBody)(shareCredentialSchema), async (req, res, next) => {
+    router.post('/credentials/:id/share', rateLimiters.api, (0, validation_1.sanitizeRequest)(), (0, validation_1.validateBody)(shareCredentialSchema), async (req, res, next) => {
         try {
             const ownerAddress = req.user?.address;
             if (!ownerAddress) {
@@ -309,10 +302,7 @@ const createCredentialRouter = (credentialService, auditService) => {
             if (!credential || credential.user_address !== ownerAddress) {
                 return res.status(403).json({ error: 'Access denied' });
             }
-            const share = await credentialService.shareCredential(ownerAddress, {
-                credential_id: req.params.id,
-                ...req.body,
-            });
+            const share = await credentialService.shareCredential(ownerAddress, req.body);
             await auditService.log({
                 type: 'CREDENTIAL_SHARE',
                 user_address: ownerAddress,
@@ -334,7 +324,7 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.get('/credentials/shared', rateLimiters.api, (0, modules_1.sanitizeRequest)(), async (req, res, next) => {
+    router.get('/credentials/shared', rateLimiters.api, (0, validation_1.sanitizeRequest)(), async (req, res, next) => {
         try {
             const userAddress = req.user?.address;
             if (!userAddress) {
@@ -348,16 +338,13 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.post('/credentials/:id/verify', rateLimiters.api, (0, modules_1.sanitizeRequest)(), (0, modules_1.validateBody)(verifyCredentialSchema), async (req, res, next) => {
+    router.post('/credentials/:id/verify', rateLimiters.api, (0, validation_1.sanitizeRequest)(), (0, validation_1.validateBody)(verifyCredentialSchema), async (req, res, next) => {
         try {
             const verifierAddress = req.user?.address;
             if (!verifierAddress) {
                 return res.status(401).json({ error: 'Authentication required' });
             }
-            const verification = await credentialService.verifyCredential(verifierAddress, {
-                credential_id: req.params.id,
-                ...req.body,
-            });
+            const verification = await credentialService.verifyCredential(verifierAddress, req.body);
             await auditService.log({
                 type: 'CREDENTIAL_VERIFICATION',
                 user_address: verifierAddress,
@@ -379,7 +366,7 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.post('/issuance-requests', rateLimiters.api, (0, modules_1.sanitizeRequest)(), (0, modules_1.validateBody)(createIssuanceRequestSchema), async (req, res, next) => {
+    router.post('/issuance-requests', rateLimiters.api, (0, validation_1.sanitizeRequest)(), (0, validation_1.validateBody)(createIssuanceRequestSchema), async (req, res, next) => {
         try {
             const requesterAddress = req.user?.address;
             if (!requesterAddress) {
@@ -407,7 +394,7 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.get('/issuance-requests/pending', rateLimiters.api, (0, modules_1.sanitizeRequest)(), async (req, res, next) => {
+    router.get('/issuance-requests/pending', rateLimiters.api, (0, validation_1.sanitizeRequest)(), async (req, res, next) => {
         try {
             const issuerAddress = req.user?.address;
             if (!issuerAddress) {
@@ -421,7 +408,7 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.post('/issuance-requests/:id/approve', rateLimiters.api, (0, modules_1.sanitizeRequest)(), async (req, res, next) => {
+    router.post('/issuance-requests/:id/approve', rateLimiters.api, (0, validation_1.sanitizeRequest)(), async (req, res, next) => {
         try {
             const issuerAddress = req.user?.address;
             if (!issuerAddress) {
@@ -445,7 +432,7 @@ const createCredentialRouter = (credentialService, auditService) => {
             next(error);
         }
     });
-    router.post('/issuance-requests/:id/reject', rateLimiters.api, (0, modules_1.sanitizeRequest)(), async (req, res, next) => {
+    router.post('/issuance-requests/:id/reject', rateLimiters.api, (0, validation_1.sanitizeRequest)(), async (req, res, next) => {
         try {
             const issuerAddress = req.user?.address;
             if (!issuerAddress) {

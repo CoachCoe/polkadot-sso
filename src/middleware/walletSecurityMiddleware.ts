@@ -15,16 +15,15 @@ export interface WalletSecurityConfig {
 }
 
 const DEFAULT_CONFIG: WalletSecurityConfig = {
-  maxTransactionSize: 1024 * 1024, // 1MB
-  maxCredentialSize: 100 * 1024, // 100KB
-  rateLimitWindow: 15 * 60 * 1000, // 15 minutes
+  maxTransactionSize: 1024 * 1024,
+  maxCredentialSize: 100 * 1024,
+  rateLimitWindow: 15 * 60 * 1000,
   maxRequestsPerWindow: 50,
   allowedWalletProviders: ['polkadot-js', 'talisman', 'subwallet'],
   requireSignatureValidation: true,
   maxConcurrentConnections: 5,
 };
 
-// Track wallet connections and rate limiting
 const walletConnections = new Map<
   string,
   {
@@ -36,11 +35,6 @@ const walletConnections = new Map<
   }
 >();
 
-/**
- * Wallet Security Middleware
- *
- * Provides comprehensive security for wallet integration operations
- */
 export class WalletSecurityMiddleware {
   private config: WalletSecurityConfig;
   private auditService: AuditService;
@@ -50,25 +44,16 @@ export class WalletSecurityMiddleware {
     this.auditService = auditService;
   }
 
-  /**
-   * Validate Kusama address format
-   */
   static validateKusamaAddress(address: string): boolean {
     // Kusama addresses start with 5 and are 47 characters long
     const kusamaAddressRegex = /^5[a-km-zA-HJ-NP-Z1-9]{46}$/;
     return kusamaAddressRegex.test(address);
   }
 
-  /**
-   * Validate wallet provider
-   */
   static validateWalletProvider(provider: string, allowedProviders: string[]): boolean {
     return allowedProviders.includes(provider);
   }
 
-  /**
-   * Validate transaction data
-   */
   static validateTransactionData(data: Record<string, unknown>): {
     valid: boolean;
     errors: string[];
@@ -78,14 +63,12 @@ export class WalletSecurityMiddleware {
     const dataString = JSON.stringify(data);
     const size = Buffer.byteLength(dataString, 'utf8');
 
-    // Check size limits
     if (size > DEFAULT_CONFIG.maxCredentialSize) {
       errors.push(
         `Transaction data too large: ${size} bytes (max: ${DEFAULT_CONFIG.maxCredentialSize})`
       );
     }
 
-    // Check for suspicious patterns
     const suspiciousPatterns = [
       /<script/i,
       /javascript:/i,
@@ -103,7 +86,6 @@ export class WalletSecurityMiddleware {
       }
     }
 
-    // Check for required fields
     if (!data.type || typeof data.type !== 'string') {
       errors.push('Missing or invalid credential type');
     }
@@ -115,9 +97,6 @@ export class WalletSecurityMiddleware {
     };
   }
 
-  /**
-   * Rate limiting for wallet operations
-   */
   createWalletRateLimiter() {
     return (req: Request, res: Response, next: NextFunction) => {
       const userAddress = req.body.userAddress || req.query.userAddress;
@@ -140,7 +119,6 @@ export class WalletSecurityMiddleware {
         blockExpiry: 0,
       };
 
-      // Check if user is blocked
       if (userData.blocked && now < userData.blockExpiry) {
         void this.auditService.log({
           type: 'SECURITY_EVENT',
@@ -165,13 +143,11 @@ export class WalletSecurityMiddleware {
         });
       }
 
-      // Reset block if expired
       if (userData.blocked && now >= userData.blockExpiry) {
         userData.blocked = false;
         userData.requestCount = 0;
       }
 
-      // Check rate limit window
       if (now - userData.lastRequest > this.config.rateLimitWindow) {
         userData.requestCount = 0;
       }
@@ -179,7 +155,6 @@ export class WalletSecurityMiddleware {
       userData.requestCount++;
       userData.lastRequest = now;
 
-      // Block if rate limit exceeded
       if (userData.requestCount > this.config.maxRequestsPerWindow) {
         userData.blocked = true;
         userData.blockExpiry = now + this.config.rateLimitWindow;
@@ -213,14 +188,10 @@ export class WalletSecurityMiddleware {
     };
   }
 
-  /**
-   * Validate wallet connection requests
-   */
   validateWalletConnection() {
     return (req: Request, res: Response, next: NextFunction) => {
       const { provider, userAddress } = req.body;
 
-      // Validate provider
       if (
         !provider ||
         !WalletSecurityMiddleware.validateWalletProvider(
@@ -250,7 +221,6 @@ export class WalletSecurityMiddleware {
         });
       }
 
-      // Validate user address
       if (
         !userAddress ||
         !WalletSecurityMiddleware.validateKusamaAddress(String(userAddress as string))
@@ -279,14 +249,10 @@ export class WalletSecurityMiddleware {
     };
   }
 
-  /**
-   * Validate transaction requests
-   */
   validateTransactionRequest() {
     return (req: Request, res: Response, next: NextFunction) => {
       const { userAddress, credentialData, credentialType } = req.body;
 
-      // Validate user address
       if (
         !userAddress ||
         !WalletSecurityMiddleware.validateKusamaAddress(String(userAddress as string))
@@ -297,7 +263,6 @@ export class WalletSecurityMiddleware {
         });
       }
 
-      // Validate credential data
       if (!credentialData || typeof credentialData !== 'object') {
         return res.status(400).json({
           error: 'Invalid credential data',
@@ -332,7 +297,6 @@ export class WalletSecurityMiddleware {
         });
       }
 
-      // Validate credential type
       if (!credentialType || typeof credentialType !== 'string' || credentialType.length > 100) {
         return res.status(400).json({
           error: 'Invalid credential type',
@@ -344,9 +308,6 @@ export class WalletSecurityMiddleware {
     };
   }
 
-  /**
-   * Validate signature if required
-   */
   validateSignature() {
     return (req: Request, res: Response, next: NextFunction) => {
       if (!this.config.requireSignatureValidation) {
@@ -362,7 +323,6 @@ export class WalletSecurityMiddleware {
         });
       }
 
-      // Validate signature format (should start with 0x and be hex)
       if (!userSignature.startsWith('0x') || !/^0x[0-9a-fA-F]+$/.test(userSignature)) {
         void this.auditService.log({
           type: 'SECURITY_EVENT',
@@ -384,7 +344,6 @@ export class WalletSecurityMiddleware {
         });
       }
 
-      // Validate message if provided
       if (userMessage && typeof userMessage !== 'string') {
         return res.status(400).json({
           error: 'Invalid message format',
@@ -396,9 +355,6 @@ export class WalletSecurityMiddleware {
     };
   }
 
-  /**
-   * Sanitize wallet-related request data
-   */
   sanitizeWalletData() {
     return (req: Request, res: Response, next: NextFunction) => {
       // Sanitize user address
@@ -406,22 +362,18 @@ export class WalletSecurityMiddleware {
         req.body.userAddress = String(req.body.userAddress).trim();
       }
 
-      // Sanitize credential type
       if (req.body.credentialType) {
         req.body.credentialType = String(req.body.credentialType).trim();
       }
 
-      // Sanitize provider
       if (req.body.provider) {
         req.body.provider = String(req.body.provider).trim().toLowerCase();
       }
 
-      // Sanitize signature
       if (req.body.userSignature) {
         req.body.userSignature = String(req.body.userSignature).trim();
       }
 
-      // Sanitize message
       if (req.body.userMessage) {
         req.body.userMessage = String(req.body.userMessage).trim();
       }
@@ -430,9 +382,6 @@ export class WalletSecurityMiddleware {
     };
   }
 
-  /**
-   * Log wallet security events
-   */
   logWalletEvent(action: string, details: Record<string, unknown>) {
     void this.auditService.log({
       type: 'SECURITY_EVENT',
@@ -445,9 +394,6 @@ export class WalletSecurityMiddleware {
     });
   }
 
-  /**
-   * Get security statistics
-   */
   getSecurityStats() {
     const stats = {
       totalConnections: 0,

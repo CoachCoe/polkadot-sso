@@ -1,6 +1,4 @@
 "use strict";
-// Module Configuration
-// Defines module dependencies and initialization order
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateModuleDependencies = exports.getModuleInitOrder = exports.MODULE_CONFIG = void 0;
 exports.MODULE_CONFIG = {

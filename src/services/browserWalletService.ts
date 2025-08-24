@@ -29,12 +29,6 @@ export interface BrowserWalletProvider {
   getAccounts(): Promise<BrowserWalletAccount[]>;
 }
 
-/**
- * Browser Wallet Service
- *
- * Provides real wallet integration for browser environments.
- * This service can actually connect to installed wallet extensions.
- */
 export class BrowserWalletService {
   private api: ApiPromise | null = null;
   private connections: Map<string, BrowserWalletConnection> = new Map();
@@ -45,20 +39,14 @@ export class BrowserWalletService {
     this.initializeProviders();
   }
 
-  /**
-   * Initialize available wallet providers for browser environment
-   */
   private initializeProviders(): void {
     // Polkadot.js Extension
     this.providers.set('polkadot-js', new PolkadotJsBrowserProvider());
 
-    // Talisman Wallet
     this.providers.set('talisman', new TalismanBrowserProvider());
 
-    // SubWallet
     this.providers.set('subwallet', new SubWalletBrowserProvider());
 
-    // Nova Wallet
     this.providers.set('nova', new NovaWalletBrowserProvider());
 
     logger.info('Initialized browser wallet providers', {
@@ -66,9 +54,6 @@ export class BrowserWalletService {
     });
   }
 
-  /**
-   * Get list of available wallet providers
-   */
   getAvailableProviders(): string[] {
     return Array.from(this.providers.keys()).filter(name => {
       const provider = this.providers.get(name);
@@ -76,14 +61,10 @@ export class BrowserWalletService {
     });
   }
 
-  /**
-   * Connect to a specific wallet provider
-   */
   async connectToProvider(
     providerName: string
   ): Promise<{ success: boolean; connection?: BrowserWalletConnection; error?: string }> {
     try {
-      // Security validation
       if (!providerName || typeof providerName !== 'string') {
         return {
           success: false,
@@ -91,7 +72,6 @@ export class BrowserWalletService {
         };
       }
 
-      // Check for suspicious provider names
       const suspiciousPatterns = [/script/i, /javascript/i, /eval/i, /<|>/i];
       for (const pattern of suspiciousPatterns) {
         if (pattern.test(providerName)) {
@@ -118,7 +98,6 @@ export class BrowserWalletService {
         };
       }
 
-      // Check connection limits
       if (this.connections.size >= 10) {
         logger.warn('Maximum wallet connections reached', {
           currentConnections: this.connections.size,
@@ -132,7 +111,6 @@ export class BrowserWalletService {
       logger.info('Connecting to browser wallet provider', { provider: providerName });
       const connection = await provider.connect();
 
-      // Validate connection
       if (!connection?.account?.address) {
         return {
           success: false,
@@ -140,7 +118,6 @@ export class BrowserWalletService {
         };
       }
 
-      // Validate account address
       if (!this.validateAccountAddress(connection.account.address)) {
         logger.warn('Invalid account address from provider', {
           address: connection.account.address,
@@ -151,7 +128,6 @@ export class BrowserWalletService {
         };
       }
 
-      // Store the connection
       this.connections.set(connection.account.address, connection);
 
       logger.info('Successfully connected to browser wallet', {
@@ -176,18 +152,12 @@ export class BrowserWalletService {
     }
   }
 
-  /**
-   * Validate account address format
-   */
   private validateAccountAddress(address: string): boolean {
     // Kusama addresses start with 5 and are 47 characters long
     const kusamaAddressRegex = /^5[a-km-zA-HJ-NP-Z1-9]{46}$/;
     return kusamaAddressRegex.test(address);
   }
 
-  /**
-   * Get accounts from a specific wallet provider
-   */
   async getProviderAccounts(providerName: string): Promise<BrowserWalletAccount[]> {
     try {
       const provider = this.providers.get(providerName);
@@ -206,23 +176,14 @@ export class BrowserWalletService {
     }
   }
 
-  /**
-   * Get an existing connection by address
-   */
   getConnection(address: string): BrowserWalletConnection | undefined {
     return this.connections.get(address);
   }
 
-  /**
-   * Check if a wallet is connected
-   */
   isWalletConnected(address: string): boolean {
     return this.connections.has(address);
   }
 
-  /**
-   * Disconnect from a specific wallet
-   */
   async disconnectWallet(address: string): Promise<boolean> {
     try {
       const connection = this.connections.get(address);
@@ -244,16 +205,10 @@ export class BrowserWalletService {
     }
   }
 
-  /**
-   * Get all active connections
-   */
   getActiveConnections(): Map<string, BrowserWalletConnection> {
     return new Map(this.connections);
   }
 
-  /**
-   * Sign data with a connected wallet
-   */
   async signData(address: string, data: Uint8Array): Promise<Uint8Array | null> {
     try {
       const connection = this.connections.get(address);
@@ -268,9 +223,6 @@ export class BrowserWalletService {
     }
   }
 
-  /**
-   * Sign a transaction with a connected wallet
-   */
   async signTransaction(
     address: string,
     extrinsic: SubmittableExtrinsic<'promise'>
@@ -289,9 +241,6 @@ export class BrowserWalletService {
   }
 }
 
-/**
- * Polkadot.js Extension Browser Provider
- */
 class PolkadotJsBrowserProvider implements BrowserWalletProvider {
   name = 'Polkadot.js Extension';
   isAvailable = false;
@@ -313,11 +262,8 @@ class PolkadotJsBrowserProvider implements BrowserWalletProvider {
       throw new Error('No accounts found in Polkadot.js Extension');
     }
 
-    // For now, use the first account
-    // In a real app, you'd show a selection UI
     const account = accounts[0];
 
-    // Convert to our interface
     const browserAccount: BrowserWalletAccount = {
       address: account.address,
       name: account.meta?.name,
@@ -348,47 +294,34 @@ class PolkadotJsBrowserProvider implements BrowserWalletProvider {
   }
 }
 
-/**
- * Polkadot.js Extension Browser Connection
- */
 class PolkadotJsBrowserConnection implements BrowserWalletConnection {
   constructor(public account: BrowserWalletAccount) {}
 
   async sign(data: Uint8Array): Promise<Uint8Array> {
-    // This would need to be implemented using the actual extension API
-    // For now, return a mock signature
     logger.info('Signing data with Polkadot.js Extension', {
       address: this.account.address,
       dataLength: data.length,
     });
 
-    // TODO: Implement actual signing using extension API
     throw new Error('Actual signing not yet implemented - requires extension integration');
   }
 
   async signTransaction(
     extrinsic: SubmittableExtrinsic<'promise'>
   ): Promise<SubmittableExtrinsic<'promise'>> {
-    // This would need to be implemented using the actual extension API
     logger.info('Signing transaction with Polkadot.js Extension', {
       address: this.account.address,
     });
-
-    // TODO: Implement actual transaction signing using extension API
     throw new Error(
       'Actual transaction signing not yet implemented - requires extension integration'
     );
   }
 
   async disconnect(): Promise<void> {
-    // Polkadot.js Extension doesn't require explicit disconnection
     logger.info('Disconnected from Polkadot.js Extension', { address: this.account.address });
   }
 }
 
-/**
- * Talisman Wallet Browser Provider
- */
 class TalismanBrowserProvider implements BrowserWalletProvider {
   name = 'Talisman Wallet';
   isAvailable = false;
@@ -402,7 +335,6 @@ class TalismanBrowserProvider implements BrowserWalletProvider {
       throw new Error('Talisman Wallet not available');
     }
 
-    // TODO: Implement actual Talisman connection
     throw new Error('Talisman Wallet integration not yet implemented');
   }
 
@@ -411,14 +343,10 @@ class TalismanBrowserProvider implements BrowserWalletProvider {
       return [];
     }
 
-    // TODO: Implement actual account retrieval
     return [];
   }
 }
 
-/**
- * SubWallet Browser Provider
- */
 class SubWalletBrowserProvider implements BrowserWalletProvider {
   name = 'SubWallet';
   isAvailable = false;
@@ -432,7 +360,6 @@ class SubWalletBrowserProvider implements BrowserWalletProvider {
       throw new Error('SubWallet not available');
     }
 
-    // TODO: Implement actual SubWallet connection
     throw new Error('SubWallet integration not yet implemented');
   }
 
@@ -441,14 +368,10 @@ class SubWalletBrowserProvider implements BrowserWalletProvider {
       return [];
     }
 
-    // TODO: Implement actual account retrieval
     return [];
   }
 }
 
-/**
- * Nova Wallet Browser Provider
- */
 class NovaWalletBrowserProvider implements BrowserWalletProvider {
   name = 'Nova Wallet';
   isAvailable = false;
@@ -463,17 +386,13 @@ class NovaWalletBrowserProvider implements BrowserWalletProvider {
     }
 
     try {
-      // Nova Wallet uses a different API structure
       const novaWallet = (window as any).nova;
 
-      // Request accounts from Nova Wallet
       const accounts = await novaWallet.getAccounts();
       if (!accounts || accounts.length === 0) {
         throw new Error('No accounts found in Nova Wallet');
       }
 
-      // For now, use the first account
-      // In a real app, you'd show a selection UI
       const account = accounts[0];
 
       // Convert to our interface

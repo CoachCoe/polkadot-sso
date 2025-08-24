@@ -17,7 +17,7 @@ export declare class SecretManager {
         errors: string[];
     };
     getSecret(name: string): string;
-    generateSecrets(): Record<string, string>;
+    generateAllSecrets(): Record<string, string>;
     rotateSecret(name: string): string;
     getAllSecretNames(): string[];
     getSecretConfig(name: string): SecretConfig | undefined;

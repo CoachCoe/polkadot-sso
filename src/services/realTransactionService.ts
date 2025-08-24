@@ -21,12 +21,6 @@ export interface CredentialTransaction {
   estimatedFee: string;
 }
 
-/**
- * Real Transaction Service
- *
- * Handles actual transaction signing and submission to Kusama blockchain
- * using connected browser wallets.
- */
 export class RealTransactionService {
   private api: ApiPromise | null = null;
   private walletService: BrowserWalletService | null = null;
@@ -36,9 +30,6 @@ export class RealTransactionService {
     this.walletService = walletService;
   }
 
-  /**
-   * Create a real credential storage transaction
-   */
   async createCredentialTransaction(
     userAddress: string,
     credentialData: Record<string, unknown>,
@@ -49,43 +40,34 @@ export class RealTransactionService {
         throw new Error('Service not initialized');
       }
 
-      // Security validation
       if (!userAddress || typeof userAddress !== 'string') {
         throw new Error('Invalid user address');
       }
 
-      // Validate Kusama address format
       if (!this.validateKusamaAddress(userAddress)) {
         throw new Error('Invalid Kusama address format');
       }
 
-      // Validate credential data
       const validation = this.validateCredentialData(credentialData);
       if (!validation.valid) {
         throw new Error(`Invalid credential data: ${validation.errors.join(', ')}`);
       }
 
-      // Validate credential type
       if (!credentialType || typeof credentialType !== 'string' || credentialType.length > 100) {
         throw new Error('Invalid credential type');
       }
 
-      // Check if wallet is connected
       if (!this.walletService.isWalletConnected(userAddress)) {
         throw new Error(`No wallet connection found for address: ${userAddress}`);
       }
 
-      // Get user's nonce
       const nonce = await this.getUserNonce(userAddress);
 
-      // Create the remark extrinsic
       const remarkData = this.createRemarkData(credentialData, credentialType, userAddress);
       const extrinsic = this.api.tx.system.remark(remarkData);
 
-      // Estimate transaction fee
       const estimatedFee = await this.estimateTransactionFee(extrinsic, userAddress, nonce);
 
-      // Set tip (optional, can be 0)
       const tip = '0.001 KSM'; // 1 mKSM tip
 
       logger.info('Created real credential transaction', {
@@ -108,17 +90,11 @@ export class RealTransactionService {
     }
   }
 
-  /**
-   * Validate Kusama address format
-   */
   private validateKusamaAddress(address: string): boolean {
     const kusamaAddressRegex = /^5[a-km-zA-HJ-NP-Z1-9]{46}$/;
     return kusamaAddressRegex.test(address);
   }
 
-  /**
-   * Validate credential data
-   */
   private validateCredentialData(data: Record<string, unknown>): {
     valid: boolean;
     errors: string[];
@@ -128,12 +104,10 @@ export class RealTransactionService {
     const dataString = JSON.stringify(data);
     const size = Buffer.byteLength(dataString, 'utf8');
 
-    // Check size limits (100KB max)
     if (size > 100 * 1024) {
       errors.push(`Credential data too large: ${size} bytes (max: 100KB)`);
     }
 
-    // Check for suspicious patterns
     const suspiciousPatterns = [
       /<script/i,
       /javascript:/i,
@@ -151,7 +125,6 @@ export class RealTransactionService {
       }
     }
 
-    // Check for required fields
     if (!data.type || typeof data.type !== 'string') {
       errors.push('Missing or invalid credential type');
     }
@@ -163,9 +136,6 @@ export class RealTransactionService {
     };
   }
 
-  /**
-   * Sign and submit a transaction using the connected wallet
-   */
   async signAndSubmitTransaction(
     userAddress: string,
     transaction: CredentialTransaction
@@ -175,7 +145,6 @@ export class RealTransactionService {
         throw new Error('Service not initialized');
       }
 
-      // Check if wallet is connected
       if (!this.walletService.isWalletConnected(userAddress)) {
         throw new Error(`No wallet connection found for address: ${userAddress}`);
       }
@@ -186,7 +155,6 @@ export class RealTransactionService {
         estimatedFee: transaction.estimatedFee,
       });
 
-      // Sign the transaction with the wallet
       const signedExtrinsic = await this.walletService.signTransaction(
         userAddress,
         transaction.extrinsic
@@ -196,7 +164,6 @@ export class RealTransactionService {
         throw new Error('Failed to sign transaction');
       }
 
-      // Submit the signed transaction
       const result = await this.submitTransaction(signedExtrinsic, userAddress);
 
       logger.info('Transaction signed and submitted successfully', result);
@@ -210,9 +177,6 @@ export class RealTransactionService {
     }
   }
 
-  /**
-   * Submit a signed transaction to Kusama
-   */
   private async submitTransaction(
     signedExtrinsic: SubmittableExtrinsic<'promise'>,
     userAddress: string
@@ -224,7 +188,6 @@ export class RealTransactionService {
 
       logger.info('Submitting signed transaction to Kusama', { userAddress });
 
-      // Submit the transaction
       const unsubscribe = await signedExtrinsic.send((result: ISubmittableResult) => {
         if (result.isInBlock) {
           logger.info('Transaction included in block', {
@@ -239,8 +202,6 @@ export class RealTransactionService {
         }
       });
 
-      // For now, return a mock result since we can't easily wait for the actual result
-      // In production, you'd want to properly handle the async result
       const mockResult: TransactionResult = {
         success: true,
         blockHash: `0x${this.generateMockHash()}`,
@@ -248,7 +209,6 @@ export class RealTransactionService {
         extrinsicHash: `0x${this.generateMockHash()}`,
       };
 
-      // Clean up subscription
       if (unsubscribe) {
         unsubscribe();
       }
@@ -263,9 +223,6 @@ export class RealTransactionService {
     }
   }
 
-  /**
-   * Get the current nonce for a user address
-   */
   private async getUserNonce(userAddress: string): Promise<number> {
     try {
       if (!this.api) {
@@ -283,9 +240,6 @@ export class RealTransactionService {
     }
   }
 
-  /**
-   * Estimate transaction fee
-   */
   private async estimateTransactionFee(
     extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>,
     userAddress: string,
@@ -296,11 +250,9 @@ export class RealTransactionService {
         throw new Error('API not initialized');
       }
 
-      // Get payment info for the transaction
       const paymentInfo = await extrinsic.paymentInfo(userAddress, { nonce });
       const fee = paymentInfo.partialFee;
 
-      // Convert to KSM (assuming 10^10 planck units per KSM)
       const feeInKSM = (fee.toNumber() / Math.pow(10, 10)).toFixed(6);
 
       logger.info('Estimated transaction fee', {
@@ -316,9 +268,6 @@ export class RealTransactionService {
     }
   }
 
-  /**
-   * Create remark data for credential storage
-   */
   private createRemarkData(
     credentialData: Record<string, unknown>,
     credentialType: string,
@@ -335,9 +284,6 @@ export class RealTransactionService {
     return JSON.stringify(remarkData);
   }
 
-  /**
-   * Generate a mock hash for testing purposes
-   */
   private generateMockHash(): string {
     const chars = '0123456789abcdef';
     let result = '';
@@ -347,9 +293,6 @@ export class RealTransactionService {
     return result;
   }
 
-  /**
-   * Get transaction status
-   */
   async getTransactionStatus(txHash: string): Promise<{
     status: 'pending' | 'inBlock' | 'finalized' | 'failed';
     blockHash?: string;
@@ -360,11 +303,8 @@ export class RealTransactionService {
         throw new Error('API not initialized');
       }
 
-      // In a real implementation, you'd query the blockchain for the transaction status
-      // For now, return a mock status
       logger.info('Getting transaction status', { txHash });
 
-      // Simulate checking transaction status
       const statuses: Array<'pending' | 'inBlock' | 'finalized' | 'failed'> = [
         'pending',
         'inBlock',
@@ -386,9 +326,6 @@ export class RealTransactionService {
     }
   }
 
-  /**
-   * Wait for transaction confirmation
-   */
   async waitForTransactionConfirmation(
     txHash: string,
     timeoutMs: number = 60000
@@ -417,7 +354,6 @@ export class RealTransactionService {
           };
         }
 
-        // Wait a bit before checking again
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
 

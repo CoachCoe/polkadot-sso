@@ -1,4 +1,4 @@
-import { AuditService } from '../modules/security';
+import { AuditService } from '../services/auditService';
 export declare const createRateLimiter: (windowMs: number, max: number, endpoint: string, auditService: AuditService) => import("express-rate-limit").RateLimitRequestHandler;
 export declare const createRateLimiters: (auditService: AuditService) => {
     login: import("express-rate-limit").RateLimitRequestHandler;

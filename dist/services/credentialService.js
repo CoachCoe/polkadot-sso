@@ -35,8 +35,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CredentialService = void 0;
 const crypto = __importStar(require("crypto"));
-// Import from modular structure
-const security_1 = require("../modules/security");
+const encryption_1 = require("../utils/encryption");
 class CredentialService {
     constructor(db) {
         this.db = db;
@@ -172,13 +171,12 @@ class CredentialService {
         return this.db.get('SELECT * FROM credential_types WHERE id = ? AND is_active = 1', [id]);
     }
     async getActiveCredentialTypes() {
-        const result = await this.db.all('SELECT * FROM credential_types WHERE is_active = 1 ORDER BY name');
-        return result || [];
+        return this.db.all('SELECT * FROM credential_types WHERE is_active = 1 ORDER BY name');
     }
     async createCredential(issuerAddress, userAddress, request) {
         const id = crypto.randomUUID();
         const now = Date.now();
-        const encryptedData = (0, security_1.encryptData)(JSON.stringify(request.credential_data));
+        const encryptedData = (0, encryption_1.encryptData)(JSON.stringify(request.credential_data));
         const dataHash = crypto
             .createHash('sha256')
             .update(JSON.stringify(request.credential_data))
@@ -231,7 +229,7 @@ class CredentialService {
         if (!credential)
             return null;
         try {
-            const decryptedData = (0, security_1.decryptData)(credential.credential_data);
+            const decryptedData = (0, encryption_1.decryptData)(credential.credential_data);
             return JSON.parse(decryptedData);
         }
         catch (error) {
@@ -325,7 +323,11 @@ class CredentialService {
     async revokeCredential(credentialId, revokedByAddress, reason) {
         const id = crypto.randomUUID();
         const now = Date.now();
-        await this.db.run('UPDATE credentials SET status = ?, updated_at = ? WHERE id = ?', 'revoked', now, credentialId);
+        await this.db.run('UPDATE credentials SET status = ?, updated_at = ? WHERE id = ?', [
+            'revoked',
+            now,
+            credentialId,
+        ]);
         const revocation = {
             id,
             credential_id: credentialId,

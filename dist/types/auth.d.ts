@@ -29,6 +29,7 @@ export interface Session {
 }
 export interface Client {
     client_id: string;
+    client_secret?: string;
     name: string;
     redirect_url: string;
     allowed_origins: string[];

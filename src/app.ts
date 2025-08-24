@@ -87,38 +87,16 @@ async function initializeApp() {
   const auditService = new AuditService(db);
   const credentialService = new CredentialService(db);
 
-  // Create demo client with secret for testing
-  const demoClientSecret = 'demo-client-secret-32-chars-minimum-required';
+  const clients = new Map<string, Client>();
 
-  // Insert demo client into database if it doesn't exist
-  await db.run(
-    `
-    INSERT OR IGNORE INTO clients (
-      client_id, client_secret, name, redirect_urls, allowed_origins, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)
-  `,
-    [
-      'demo-app',
-      demoClientSecret,
-      'Polkadot SSO Demo',
-      JSON.stringify(['http://localhost:3000/callback']),
-      JSON.stringify(['http://localhost:3000']),
-      Date.now(),
-      Date.now(),
-    ]
-  );
-
-  const clients = new Map<string, Client>([
-    [
-      'demo-app',
-      {
-        client_id: 'demo-app',
-        name: 'Polkadot SSO Demo',
-        redirect_url: 'http://localhost:3000/callback',
-        allowed_origins: ['http://localhost:3000'],
-      },
-    ],
-  ]);
+  // Create a default client for testing
+  clients.set('default-client', {
+    client_id: 'default-client',
+    name: 'Polkadot SSO Demo',
+    client_secret: 'default-client-secret-32-chars-minimum-required',
+    redirect_url: 'http://localhost:3000/callback',
+    allowed_origins: ['http://localhost:3000'],
+  });
 
   const bruteForceMiddleware = createBruteForceProtection(auditService);
 
@@ -129,15 +107,6 @@ async function initializeApp() {
   // Temporarily disabled due to Polkadot.js dependency issues
   // app.use('/api/kusama', kusamaRoutes);
   // app.use('/api/wallet-kusama', walletKusamaRoutes);
-
-  // Demo page routes (temporarily disabled)
-  // app.get('/kusama-demo', (req, res) => {
-  //   res.sendFile(path.join(__dirname, '../public/views/kusama-demo.html'));
-  // });
-
-  // app.get('/wallet-kusama-demo', (req, res) => {
-  //   res.sendFile(path.join(__dirname, '../public/views/wallet-kusama-demo.html'));
-  // });
 
   app.use(bruteForceMiddleware);
   app.use(sanitizeRequestParams());

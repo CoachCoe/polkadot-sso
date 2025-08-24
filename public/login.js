@@ -15,7 +15,6 @@ function updateStatus(message, type = 'info') {
   console.log('Status:', message, type);
 }
 
-// Enhanced wallet connection with wallet type support
 connectButton.addEventListener('click', async () => {
   try {
     console.log('=== WALLET CONNECTION STARTED ===');
@@ -51,7 +50,6 @@ connectButton.addEventListener('click', async () => {
     console.log('Extension names:', extensions.map(ext => ext.name));
     console.log('Extension details:', extensions.map(ext => ({ name: ext.name, version: ext.version })));
 
-    // Check if we need to wait for user authorization
     if (extensions.length === 0) {
       updateStatus('Waiting for wallet authorization...');
       // Wait a bit for user to authorize
@@ -64,7 +62,6 @@ connectButton.addEventListener('click', async () => {
       }
     }
 
-    // Try to get accounts before and after authorization to see if permissions change
     console.log('Checking accounts before authorization...');
     try {
       const preAuthAccounts = await window.polkadotExtensionDapp.web3Accounts();
@@ -73,7 +70,6 @@ connectButton.addEventListener('click', async () => {
       console.log('Could not get accounts before authorization:', error.message);
     }
 
-    // Additional debugging for extensions
     console.log('Final extensions array:', extensions);
     extensions.forEach((ext, index) => {
       console.log(`Extension ${index}:`, {
@@ -89,7 +85,6 @@ connectButton.addEventListener('click', async () => {
       throw new Error('No wallet extensions found. Please install a Polkadot wallet extension.');
     }
 
-    // If a specific wallet type was selected, try to find it
     let targetExtension = extensions[0];
     if (walletType !== 'auto') {
       const targetExt = extensions.find(ext => {
@@ -115,7 +110,6 @@ connectButton.addEventListener('click', async () => {
     console.log('Target extension:', targetExtension);
     console.log('Target extension name:', targetExtension.name);
 
-    // Check if web3Accounts function is available
     console.log('Checking web3Accounts function availability...');
     if (!window.polkadotExtensionDapp.web3Accounts) {
       console.error('web3Accounts function not available');
@@ -123,7 +117,6 @@ connectButton.addEventListener('click', async () => {
     }
     console.log('web3Accounts function is available');
 
-    // Try to get accounts directly from the extension first
     console.log('Trying to get accounts directly from extension...');
     try {
       const directAccounts = await targetExtension.accounts.get();
@@ -137,7 +130,6 @@ connectButton.addEventListener('click', async () => {
       console.warn('Error getting direct extension accounts:', error);
     }
 
-    // Get accounts using the proper web3Accounts function
     console.log('About to call web3Accounts...');
     let accounts;
     try {
@@ -158,14 +150,12 @@ connectButton.addEventListener('click', async () => {
       console.warn('No accounts found from web3Accounts');
     }
 
-    // Check if this is a browser extension issue
     console.log('Checking browser extension status...');
     console.log('window.injectedWeb3:', window.injectedWeb3);
     if (window.injectedWeb3 && window.injectedWeb3['polkadot-js']) {
       console.log('Polkadot.js extension found in injectedWeb3');
       console.log('Extension object:', window.injectedWeb3['polkadot-js']);
 
-      // Try to get accounts directly from the injected extension
       try {
         console.log('Trying to get accounts from injected extension...');
         const injectedAccounts = await window.injectedWeb3['polkadot-js'].enable('Polkadot SSO Demo');
@@ -226,14 +216,11 @@ connectButton.addEventListener('click', async () => {
       console.warn('Error getting accounts with permission request:', error);
     }
 
-    // Try to get accounts with a different approach - sometimes the extension needs to be asked differently
     console.log('Trying alternative account retrieval method...');
     try {
-      // Try to get accounts without any parameters first
       const accountsNoParams = await window.polkadotExtensionDapp.web3Accounts();
       console.log('Accounts without parameters:', accountsNoParams);
 
-      // Then try with explicit request for all accounts
       const accountsAll = await window.polkadotExtensionDapp.web3Accounts({
         ss58Format: 0,
         genesisHash: undefined,
@@ -241,7 +228,6 @@ connectButton.addEventListener('click', async () => {
       });
       console.log('Accounts with explicit parameters:', accountsAll);
 
-      // Use whichever method returned more accounts
       if (accountsAll && accountsAll.length > accounts.length) {
         console.log(`Using accounts with explicit parameters: ${accountsAll.length} vs ${accounts.length}`);
         accounts = accountsAll;
@@ -253,26 +239,20 @@ connectButton.addEventListener('click', async () => {
       console.warn('Error with alternative account retrieval:', error);
     }
 
-    // Try to get accounts with explicit request for ALL accounts
     console.log('Trying to explicitly request ALL accounts...');
     try {
-      // Try different approaches to get all accounts
       const allAccountsAttempts = [
-        // Method 1: No parameters
         window.polkadotExtensionDapp.web3Accounts(),
-        // Method 2: With explicit parameters
         window.polkadotExtensionDapp.web3Accounts({ ss58Format: 0 }),
-        // Method 3: With genesis hash (try to get accounts for specific network)
         window.polkadotExtensionDapp.web3Accounts({
           ss58Format: 0,
-          genesisHash: '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe9' // Polkadot genesis
+          genesisHash: '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe9'
         }),
-        // Method 4: With different account types
         window.polkadotExtensionDapp.web3Accounts({
           ss58Format: 0,
           accountType: 'sr25519'
         }),
-        // Method 5: With different account types
+
         window.polkadotExtensionDapp.web3Accounts({
           ss58Format: 0,
           accountType: 'ed25519'
@@ -287,7 +267,7 @@ connectButton.addEventListener('click', async () => {
           if (attemptAccounts && attemptAccounts.length > accounts.length) {
             console.log(`Attempt ${i + 1} found more accounts: ${attemptAccounts.length} vs ${accounts.length}`);
             accounts = attemptAccounts;
-            break; // Use the first method that finds more accounts
+            break;
           }
         } catch (attemptError) {
           console.warn(`Attempt ${i + 1} failed:`, attemptError);
@@ -297,7 +277,6 @@ connectButton.addEventListener('click', async () => {
       console.warn('Error with explicit ALL accounts request:', error);
     }
 
-    // Try with different ss58Format values
     const ss58Formats = [0, 2, 42, 1];
     for (const format of ss58Formats) {
       try {
@@ -313,7 +292,6 @@ connectButton.addEventListener('click', async () => {
       }
     }
 
-    // For polkadot-js, also try to get accounts from all extensions as a fallback
     if (walletType === 'polkadot-js') {
       console.log('Trying extension-specific methods for polkadot-js...');
       let allAccounts = [...(accounts || [])];
@@ -323,7 +301,6 @@ connectButton.addEventListener('click', async () => {
         try {
           console.log(`Checking extension: ${ext.name}`);
           if (ext.accounts && typeof ext.accounts.get === 'function') {
-            // Try different parameters for the extension's accounts.get() method
             const params = [
               {},
               { ss58Format: 0 },
@@ -352,7 +329,6 @@ connectButton.addEventListener('click', async () => {
         }
       }
 
-      // Remove duplicate accounts (in case the same account appears in multiple extensions)
       const uniqueAccounts = allAccounts.filter((account, index, self) =>
         index === self.findIndex(a => a.address === account.address)
       );
@@ -370,7 +346,6 @@ connectButton.addEventListener('click', async () => {
       throw new Error('No accounts found in your wallet. Please create an account first.');
     }
 
-    // Always show account selection, even if only one account
     console.log('Final accounts array before showing selection:', accounts);
     console.log('Final accounts length:', accounts.length);
     console.log('Accounts type:', typeof accounts);
@@ -400,7 +375,6 @@ function showAccountSelection(accounts) {
   console.log('Accounts array type:', Array.isArray(accounts));
   console.log('Accounts array keys:', Object.keys(accounts));
 
-  // Ensure accounts is an array
   if (!Array.isArray(accounts)) {
     console.error('Accounts is not an array:', accounts);
     if (accounts && typeof accounts === 'object') {
@@ -412,7 +386,6 @@ function showAccountSelection(accounts) {
     }
   }
 
-  // Create account selection dropdown
   const selectContainer = document.createElement('div');
   selectContainer.className = 'account-select-container';
 
@@ -442,7 +415,6 @@ function showAccountSelection(accounts) {
   selectContainer.appendChild(select);
   selectContainer.appendChild(continueButton);
 
-  // Insert after status div
   statusDiv.parentNode.insertBefore(selectContainer, statusDiv.nextSibling);
   connectButton.style.display = 'none';
 }
@@ -454,18 +426,15 @@ function proceedWithAddress(address) {
 
   console.log('Proceeding with address:', address);
 
-  // Store wallet address in localStorage for home page detection
   localStorage.setItem('walletAddress', address);
 
   updateStatus('Redirecting to challenge page...', 'success');
 
-  // Redirect to challenge page
   window.location.href = '/challenge?address=' +
     encodeURIComponent(address) +
     '&client_id=' + encodeURIComponent(window.SSO_CONFIG.clientId);
 }
 
-// Log initial status for debugging
 console.log('Login page loaded with config:', window.SSO_CONFIG);
 console.log('Polkadot extension available:', !!window.polkadotExtensionDapp);
 console.log('InjectedWeb3 available:', !!window.injectedWeb3);

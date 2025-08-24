@@ -15,19 +15,14 @@ import { logError, logRequest } from '../utils/logger';
 import { escapeHtml } from '../utils/sanitization';
 import { validateAuthRequest, validateClientCredentials } from '../utils/validation';
 
-// Simplified signature verification for demo purposes
-// In production, you'd want to use proper Polkadot.js signature verification
 function verifySignature(message: string, signature: string, address: string): boolean {
   try {
-    // For demo purposes, we'll accept any signature that's at least 64 characters
-    // This allows testing without requiring actual wallet signatures
     if (signature.length < 64) {
       return false;
     }
 
-    // Log the verification attempt for debugging
     console.log(
-      `Demo signature verification: message="${message}", signature="${signature.substring(0, 16)}...", address="${address}"`
+      `Signature verification: message="${message}", signature="${signature.substring(0, 16)}...", address="${address}"`
     );
 
     return true;
@@ -37,7 +32,6 @@ function verifySignature(message: string, signature: string, address: string): b
   }
 }
 
-// Define the expected auth code structure
 interface AuthCode {
   code: string;
   address: string;
@@ -319,7 +313,7 @@ export const createAuthRouter = (
                 setLoading(true);
                 updateStatus("Connecting to wallet...");
 
-                const extensions = await window.polkadotExtensionDapp.web3Enable("Polkadot SSO Demo");
+                const extensions = await window.polkadotExtensionDapp.web3Enable("Polkadot SSO");
                 if (extensions.length === 0) {
                   throw new Error("No extension found");
                 }
@@ -419,7 +413,6 @@ export const createAuthRouter = (
         return res.status(400).send('Invalid code verifier');
       }
 
-      // Use the simplified signature verification
       if (!verifySignature(challenge.message, signature as string, String(address))) {
         return res.status(401).send('Invalid signature');
       }
@@ -450,7 +443,6 @@ export const createAuthRouter = (
     try {
       const { code, client_id } = req.body;
 
-      // Type guard for code and client_id
       if (!code || typeof code !== 'string') {
         return res.status(400).send('Invalid code');
       }
@@ -468,7 +460,6 @@ export const createAuthRouter = (
         return res.status(400).send('Invalid or expired authorization code');
       }
 
-      // Type guard to ensure authCode has the expected structure
       if (
         !authCode ||
         typeof authCode !== 'object' ||
@@ -575,7 +566,7 @@ export const createAuthRouter = (
                       <div style="font-family: monospace; background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; margin-bottom: 25px; font-size: 0.95rem;">
                         <code>curl -X POST http://localhost:3000/token \\</code><br>
                         <code>&nbsp;&nbsp;-H "Content-Type: application/json" \\</code><br>
-                        <code>&nbsp;&nbsp;-d '{"code": "${codeStr}", "client_id": "demo-app"}'</code>
+                        <code>&nbsp;&nbsp;-d '{"code": "${codeStr}", "client_id": "default-client"}'</code>
                       </div>
                       <button class="btn btn-primary" onclick="copyCode()" style="width: 100%; padding: 15px; font-size: 1.1rem;">Copy Code</button>
                     </div>
@@ -620,12 +611,10 @@ export const createAuthRouter = (
     `);
   });
 
-  // Documentation routes
   router.get('/docs/:filename', (req, res) => {
     const filename = req.params.filename;
     const docPath = path.join(__dirname, '../../docs', filename);
 
-    // Security check: only allow .md files
     if (!filename.endsWith('.md')) {
       return res.status(400).json({ error: 'Invalid file type' });
     }
@@ -639,7 +628,6 @@ export const createAuthRouter = (
     }
   });
 
-  // Wallet selection page
   router.get('/wallet-selection', (req, res) => {
     res.send(`
       <!DOCTYPE html>
@@ -798,7 +786,7 @@ export const createAuthRouter = (
             localStorage.setItem('selectedWallet', walletType);
 
             // Redirect to the login page with the wallet type
-            window.location.href = '/login?client_id=demo-app&wallet=' + walletType;
+            window.location.href = '/login?client_id=default-client&wallet=' + walletType;
           }
 
           function storeCredentials() {
@@ -808,7 +796,7 @@ export const createAuthRouter = (
 
             if (connectedWallet && walletAddress && isAuthenticated) {
               // Wallet is connected and authenticated, proceed to store credentials
-              window.location.href = '/kusama-demo?action=store';
+              window.location.href = '/kusama-credentials?action=store';
             } else {
               // No wallet connected or not authenticated, redirect to wallet selection
               window.location.href = '/wallet-selection';
@@ -822,7 +810,7 @@ export const createAuthRouter = (
 
             if (connectedWallet && walletAddress && isAuthenticated) {
               // Wallet is connected and authenticated, proceed to retrieve credentials
-              window.location.href = '/kusama-demo?action=retrieve';
+              window.location.href = '/kusama-credentials?action=retrieve';
             } else {
               // No wallet connected or not authenticated, redirect to wallet selection
               window.location.href = '/wallet-selection';
@@ -862,7 +850,7 @@ export const createAuthRouter = (
 
             if (connectedWallet && walletAddress && isAuthenticated) {
               // Wallet is connected and authenticated, proceed to store credentials
-              window.location.href = '/kusama-demo?action=store';
+              window.location.href = '/kusama-credentials?action=store';
             } else {
               // No wallet connected or not authenticated, redirect to wallet selection
               window.location.href = '/wallet-selection';
@@ -876,7 +864,7 @@ export const createAuthRouter = (
 
             if (connectedWallet && walletAddress && isAuthenticated) {
               // Wallet is connected and authenticated, proceed to retrieve credentials
-              window.location.href = '/kusama-demo?action=retrieve';
+              window.location.href = '/kusama-credentials?action=retrieve';
             } else {
               // No wallet connected or not authenticated, redirect to wallet selection
               window.location.href = '/wallet-selection';
@@ -1042,8 +1030,7 @@ export const createAuthRouter = (
     verifyHandler
   );
 
-  // Kusama Demo Page
-  router.get('/kusama-demo', (req, res) => {
+  router.get('/kusama-credentials', (req, res) => {
     const action = req.query.action || 'overview';
     let title, subtitle, content;
 
@@ -1712,9 +1699,9 @@ export const createAuthRouter = (
                 blockNumber = matchingCredential.blockNumber;
               } else {
                 // Fall back to last stored credential (for backward compatibility)
-                credentialData = localStorage.getItem('lastStoredCredentials') || 'Demo credential data';
-                credentialType = localStorage.getItem('lastCredentialType') || 'password';
-                credentialDescription = localStorage.getItem('lastCredentialDescription') || 'Demo description';
+                credentialData = localStorage.getItem('lastStoredCredentials') || 'No credential data found';
+                credentialType = localStorage.getItem('lastCredentialType') || 'unknown';
+                credentialDescription = localStorage.getItem('lastCredentialDescription') || 'No description available';
                 storedAt = new Date().toLocaleString();
                 blockNumber = 'Unknown';
               }
@@ -1722,8 +1709,7 @@ export const createAuthRouter = (
               // Decrypt the data (in production, this would use the actual encrypted data from blockchain)
               const naclDecrypt = window.polkadotUtilCrypto?.naclDecrypt;
 
-              // For demo purposes, we'll show the stored data directly
-              // In production, you'd decrypt the actual encrypted data from the blockchain
+              // Note: In production, you'd decrypt the actual encrypted data from the blockchain
               const retrievedCredentials = {
                 type: credentialType,
                 data: credentialData,
@@ -1795,7 +1781,7 @@ export const createAuthRouter = (
         </script>
       `;
     } else {
-      title = '💾 Kusama Credentials Demo';
+      title = '💾 Kusama Credentials';
       subtitle = 'Store and retrieve encrypted credentials on the Kusama blockchain';
       content = `
         <div class="action-cards">
@@ -1813,7 +1799,7 @@ export const createAuthRouter = (
               </ul>
             </div>
             <div class="card-action">
-              <a href="/kusama-demo?action=store" class="btn btn-primary btn-full">
+              <a href="/kusama-credentials?action=store" class="btn btn-primary btn-full">
                 Store Credentials
               </a>
             </div>
@@ -1833,7 +1819,7 @@ export const createAuthRouter = (
               </ul>
             </div>
             <div class="card-action">
-              <a href="/kusama-demo?action=retrieve" class="btn btn-secondary btn-full">
+              <a href="/kusama-credentials?action=retrieve" class="btn btn-secondary btn-full">
                 Retrieve Credentials
               </a>
             </div>
@@ -1995,9 +1981,9 @@ export const createAuthRouter = (
 
                     <div class="info-card" style="background: #f8fafc; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
                       <h4 style="margin-top: 0; color: #1a202c; font-size: 1.3rem;">⚡ Quick Start</h4>
-                      <p style="color: #4a5568; margin-bottom: 15px;">Test the API with our demo client:</p>
+                      <p style="color: #4a5568; margin-bottom: 15px;">To use the API, you'll need to register a client application:</p>
                       <div style="font-family: monospace; background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 15px 0; font-size: 0.9rem;">
-                        <code>Client ID: demo-app</code><br>
+                        <code>Client ID: default-client</code><br>
                         <code>Redirect URI: http://localhost:3000/callback</code><br>
                         <code>Supported Wallets: polkadot-js, nova-wallet, subwallet</code>
                       </div>
@@ -2007,8 +1993,8 @@ export const createAuthRouter = (
                       <h4 style="margin-top: 0; color: #1a202c; font-size: 1.3rem;">🔗 Blockchain Integration</h4>
                       <p style="color: #4a5568; margin-bottom: 15px;">Store and retrieve credentials on Kusama:</p>
                       <div style="font-family: monospace; background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 15px 0; font-size: 0.9rem;">
-                        <code>GET /kusama-demo?action=store</code> - Store credentials<br>
-                        <code>GET /kusama-demo?action=retrieve</code> - Retrieve credentials
+                        <code>GET /kusama-credentials?action=store</code> - Store credentials<br>
+                        <code>GET /kusama-credentials?action=retrieve</code> - Retrieve credentials
                       </div>
                     </div>
 

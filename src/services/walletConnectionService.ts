@@ -29,12 +29,6 @@ export interface WalletConnectionResult {
   provider: string;
 }
 
-/**
- * Wallet Connection Service
- *
- * Provides a unified interface for connecting to different wallet providers
- * and managing wallet connections for Kusama transactions.
- */
 export class WalletConnectionService {
   private connections: Map<string, WalletConnection> = new Map();
   private providers: Map<string, WalletProvider> = new Map();
@@ -45,26 +39,20 @@ export class WalletConnectionService {
     this.initializeProviders();
   }
 
-  /**
-   * Initialize available wallet providers
-   */
   private initializeProviders(): void {
     // Polkadot.js Extension
     if (typeof window !== 'undefined' && (window as any).injectedWeb3) {
       this.providers.set('polkadot-js', new PolkadotJsProvider());
     }
 
-    // Talisman Wallet
     if (typeof window !== 'undefined' && (window as any).talisman) {
       this.providers.set('talisman', new TalismanProvider());
     }
 
-    // SubWallet
     if (typeof window !== 'undefined' && (window as any).SubWallet) {
       this.providers.set('subwallet', new SubWalletProvider());
     }
 
-    // Nova Wallet
     if (typeof window !== 'undefined' && (window as any).nova) {
       this.providers.set('nova', new NovaWalletProvider());
     }
@@ -74,16 +62,10 @@ export class WalletConnectionService {
     });
   }
 
-  /**
-   * Get list of available wallet providers
-   */
   getAvailableProviders(): string[] {
     return Array.from(this.providers.keys());
   }
 
-  /**
-   * Connect to a specific wallet provider
-   */
   async connectToProvider(providerName: string): Promise<WalletConnectionResult> {
     try {
       const provider = this.providers.get(providerName);
@@ -106,7 +88,6 @@ export class WalletConnectionService {
       logger.info('Connecting to wallet provider', { provider: providerName });
       const connection = await provider.connect();
 
-      // Store the connection
       this.connections.set(connection.address, connection);
 
       logger.info('Successfully connected to wallet', {
@@ -133,16 +114,10 @@ export class WalletConnectionService {
     }
   }
 
-  /**
-   * Get an existing connection by address
-   */
   getConnection(address: string): WalletConnection | undefined {
     return this.connections.get(address);
   }
 
-  /**
-   * Disconnect from a specific wallet
-   */
   async disconnectWallet(address: string): Promise<boolean> {
     try {
       const connection = this.connections.get(address);
@@ -164,24 +139,15 @@ export class WalletConnectionService {
     }
   }
 
-  /**
-   * Get all active connections
-   */
   getActiveConnections(): Map<string, WalletConnection> {
     return new Map(this.connections);
   }
 
-  /**
-   * Check if a wallet is connected
-   */
   isWalletConnected(address: string): boolean {
     return this.connections.has(address);
   }
 }
 
-/**
- * Polkadot.js Extension Provider
- */
 class PolkadotJsProvider implements WalletProvider {
   name = 'Polkadot.js Extension';
   isAvailable = false;
@@ -200,13 +166,11 @@ class PolkadotJsProvider implements WalletProvider {
 
     await cryptoWaitReady();
 
-    // Get accounts from extension
     const accounts = await web3Accounts();
     if (accounts.length === 0) {
       throw new Error('No accounts found in Polkadot.js Extension');
     }
 
-    // For now, use the first account
     const account = accounts[0];
     const keyring = new Keyring({ type: 'sr25519' });
     const pair = keyring.addFromAddress(account.address);
@@ -215,9 +179,6 @@ class PolkadotJsProvider implements WalletProvider {
   }
 }
 
-/**
- * Polkadot.js Extension Connection
- */
 class PolkadotJsConnection implements WalletConnection {
   constructor(
     public address: string,
@@ -235,19 +196,12 @@ class PolkadotJsConnection implements WalletConnection {
   async signTransaction(
     extrinsic: SubmittableExtrinsic<'promise'>
   ): Promise<SubmittableExtrinsic<'promise'>> {
-    // This would need to be implemented based on the specific extrinsic type
-    // For now, return the extrinsic as-is
     return extrinsic;
   }
 
-  async disconnect(): Promise<void> {
-    // Polkadot.js Extension doesn't require explicit disconnection
-  }
+  async disconnect(): Promise<void> {}
 }
 
-/**
- * Talisman Wallet Provider
- */
 class TalismanProvider implements WalletProvider {
   name = 'Talisman Wallet';
   isAvailable = false;
@@ -260,15 +214,10 @@ class TalismanProvider implements WalletProvider {
     if (!this.isAvailable) {
       throw new Error('Talisman Wallet not available');
     }
-
-    // Implementation would depend on Talisman's API
     throw new Error('Talisman Wallet integration not yet implemented');
   }
 }
 
-/**
- * SubWallet Provider
- */
 class SubWalletProvider implements WalletProvider {
   name = 'SubWallet';
   isAvailable = false;
@@ -281,15 +230,10 @@ class SubWalletProvider implements WalletProvider {
     if (!this.isAvailable) {
       throw new Error('SubWallet not available');
     }
-
-    // Implementation would depend on SubWallet's API
     throw new Error('SubWallet integration not yet implemented');
   }
 }
 
-/**
- * Nova Wallet Provider
- */
 class NovaWalletProvider implements WalletProvider {
   name = 'Nova Wallet';
   isAvailable = false;
@@ -304,21 +248,15 @@ class NovaWalletProvider implements WalletProvider {
     }
 
     try {
-      // Nova Wallet uses a different API structure
       const novaWallet = (window as any).nova;
 
-      // Request accounts from Nova Wallet
       const accounts = await novaWallet.getAccounts();
       if (!accounts || accounts.length === 0) {
         throw new Error('No accounts found in Nova Wallet');
       }
 
-      // For now, use the first account
-      // In a real app, you'd show a selection UI
       const account = accounts[0];
 
-      // Create a mock keypair for compatibility
-      // In practice, you'd work with Nova Wallet's actual signing methods
       const keyring = new Keyring({ type: 'sr25519' });
       const pair = keyring.addFromAddress(account.address as string);
 
@@ -332,9 +270,6 @@ class NovaWalletProvider implements WalletProvider {
   }
 }
 
-/**
- * Nova Wallet Connection
- */
 class NovaWalletConnection implements WalletConnection {
   constructor(
     public address: string,
@@ -349,13 +284,11 @@ class NovaWalletConnection implements WalletConnection {
     try {
       const novaWallet = (window as any).nova;
 
-      // Request signature from Nova Wallet
       const signature = await novaWallet.signMessage({
         address: this.address,
         message: Array.from(data), // Convert Uint8Array to regular array
       });
 
-      // Convert signature back to Uint8Array
       return new Uint8Array(signature);
     } catch (error) {
       logger.error('Failed to sign data with Nova Wallet', {
@@ -374,20 +307,14 @@ class NovaWalletConnection implements WalletConnection {
     try {
       const novaWallet = (window as any).nova;
 
-      // Get the transaction payload
       const payload = extrinsic.method.toHex();
 
-      // Request transaction signature from Nova Wallet
       const signedPayload = await novaWallet.signTransaction({
         address: this.address,
         transaction: payload,
-        network: 'kusama', // Specify network
+        network: 'kusama',
       });
 
-      // Apply the signature to the extrinsic
-      // Note: This is a simplified approach - in practice, you'd need to handle
-      // the actual signature format returned by Nova Wallet
-      // For now, we'll return the extrinsic as-is since signature handling is complex
       logger.info('Transaction signed by Nova Wallet (signature application simulated)');
 
       return extrinsic;

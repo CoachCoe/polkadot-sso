@@ -1,1 +1,1 @@
-{"version":3,"file":"modularDemo.d.ts","sourceRoot":"","sources":["../../src/demo/modularDemo.ts"],"names":[],"mappings":"AAUA,iBAAe,8BAA8B,kBA2C5C;AAOD,OAAO,EAAE,8BAA8B,EAAE,CAAC"}
+{"version":3,"file":"modularDemo.d.ts","sourceRoot":"","sources":["../../src/demo/modularDemo.ts"],"names":[],"mappings":"AACA,iBAAe,8BAA8B,kBAoC5C;AAID,OAAO,EAAE,8BAA8B,EAAE,CAAC"}
