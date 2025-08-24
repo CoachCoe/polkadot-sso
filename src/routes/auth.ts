@@ -1205,7 +1205,16 @@ export const createAuthRouter = (
               }
 
               // Generate a random encryption key (in production, this would be derived from user's private key)
-              const encryptionKey = randomAsHex(32);
+              const encryptionKeyHex = randomAsHex(32);
+
+              // Convert hex string to Uint8Array for naclEncrypt
+              const hexToU8a = window.polkadotUtil?.hexToU8a;
+              if (!hexToU8a) {
+                throw new Error('hexToU8a function not available. Please refresh the page and try again.');
+              }
+
+              const encryptionKey = hexToU8a(encryptionKeyHex);
+              console.log('Encryption key:', { hex: encryptionKeyHex, u8a: encryptionKey });
 
               // Encrypt the credential data
               const message = new TextEncoder().encode(credentialData);
