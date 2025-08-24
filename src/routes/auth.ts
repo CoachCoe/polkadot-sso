@@ -1222,27 +1222,51 @@ export const createAuthRouter = (
 
               document.getElementById('status-message').innerHTML = '📡 Connecting to Kusama network...';
               document.getElementById('status-message').style.background = '#dbeafe';
-              document.getElementById('status-message').style.color = '#2563eb';
+                            document.getElementById('status-message').style.color = '#2563eb';
 
               // Connect to Kusama network
               const ApiPromise = window.polkadotApi?.ApiPromise;
               const WsProvider = window.polkadotApi?.WsProvider;
 
+              console.log('API objects:', { ApiPromise: !!ApiPromise, WsProvider: !!WsProvider });
+              console.log('Full polkadotApi object:', window.polkadotApi);
+
               if (!ApiPromise || !WsProvider) {
                 throw new Error('Polkadot API not available. Please refresh the page and try again.');
               }
 
+              console.log('Creating API connection...');
               const provider = new WsProvider('wss://kusama-rpc.polkadot.io');
+              console.log('Provider created:', provider);
+
               const api = await ApiPromise.create({ provider });
+              console.log('API created:', api);
+              console.log('API structure:', {
+                isConnected: api?.isConnected,
+                hasGenericExtrinsic: !!api?.tx?.GenericExtrinsic,
+                txMethods: Object.keys(api?.tx || {}).slice(0, 5)
+              });
+
+              // Wait for API to be ready
+              console.log('Waiting for API to be ready...');
+              await api.isReady;
+              console.log('API is ready:', api.isReady);
 
               document.getElementById('status-message').innerHTML = '🔍 Preparing transaction...';
 
               // Create a remark transaction to store encrypted credentials
               // In a real implementation, you'd use a custom pallet for credential storage
               const remark = 'CREDENTIAL:' + credentialType + ':' + btoa(encryptedData) + ':' + (credentialDescription || 'No description');
+              console.log('Remark data:', remark);
+
+              // Check if system pallet is available
+              console.log('Available pallets:', Object.keys(api.tx || {}));
+              console.log('System pallet methods:', Object.keys(api.tx?.system || {}));
 
               // Create the transaction
+              console.log('Creating remark transaction...');
               const tx = api.tx.system.remark(remark);
+              console.log('Transaction created:', tx);
 
               document.getElementById('status-message').innerHTML = '📝 Signing transaction with your wallet...';
 
