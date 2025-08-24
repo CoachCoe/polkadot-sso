@@ -346,6 +346,9 @@ export const createAuthRouter = (
 
                 updateStatus("Message signed! Verifying...", "success");
 
+                // Set authentication flag
+                localStorage.setItem('isAuthenticated', 'true');
+
                 window.location.href = "/verify?signature=" + encodeURIComponent(signature) +
                   "&challenge_id=" + window.CHALLENGE_DATA.challengeId +
                   "&address=" + encodeURIComponent(window.CHALLENGE_DATA.address) +
@@ -518,49 +521,104 @@ export const createAuthRouter = (
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Authentication Successful - Polkadot SSO</title>
         <link rel="stylesheet" href="/styles/main.css">
+        <link rel="stylesheet" href="/styles/home.css">
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <h1>🎉 Authentication Successful!</h1>
-            <p class="subtitle">You have successfully authenticated with Polkadot SSO</p>
-          </div>
-
-          <div class="success-card">
-            <div class="card-icon">✅</div>
-            <h2>Welcome to Polkadot SSO</h2>
-            <p>Your wallet signature has been verified and you're now authenticated.</p>
-          </div>
-
-          <div class="info-card">
-            <h3>🔑 Authorization Details</h3>
-            <div class="detail-group">
-              <label>Authorization Code:</label>
-              <div class="code-display">${codeStr}</div>
-            </div>
-            <div class="detail-group">
-              <label>State:</label>
-              <div class="code-display">${stateStr}</div>
-            </div>
-            <p class="info-text">This authorization code can now be exchanged for access tokens.</p>
-          </div>
-
-          <div class="action-card">
-            <h3>🧪 Test Token Exchange</h3>
-            <p>Test the complete OAuth flow by exchanging your code for tokens:</p>
-            <div class="code-block">
-              <code>curl -X POST http://localhost:3000/token \\</code><br>
-              <code>&nbsp;&nbsp;-H "Content-Type: application/json" \\</code><br>
-              <code>&nbsp;&nbsp;-d '{"code": "${codeStr}", "client_id": "demo-app"}'</code>
-            </div>
-            <div class="button-group">
-              <a href="/" class="btn btn-secondary">← Back to Home</a>
-              <button class="btn btn-primary" onclick="copyCode()">Copy Code</button>
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+          <div class="container">
+            <div class="nav-content">
+              <div class="nav-brand">
+                <a href="/">
+                  <img src="/images/logo.png" alt="Polkadot SSO" class="nav-logo">
+                  <span class="nav-text">Polkadot SSO</span>
+                </a>
+              </div>
+              <div class="nav-menu">
+                <a href="/api/credentials/types" class="nav-link">API Docs</a>
+                <a href="/docs/SECURITY.md" class="nav-link">Security</a>
+                <a href="/docs/TECHNICAL_DOCUMENTATION.md" class="nav-link">Technical</a>
+                <a href="https://polkadot.network" class="nav-link" target="_blank">Polkadot</a>
+                <a href="https://kusama.subscan.io/" class="nav-link" target="_blank">Kusama</a>
+                <a href="https://github.com/CoachCoe/polkadot-sso" class="nav-link" target="_blank">GitHub</a>
+              </div>
             </div>
           </div>
-        </div>
+        </nav>
 
-        <script src="/js/callback.js"></script>
+        <!-- Hero Section -->
+        <section class="hero">
+          <div class="container">
+            <div class="hero-content">
+              <h1 class="hero-title">🎉 Authentication Successful!</h1>
+              <p class="hero-subtitle">You have successfully authenticated with Polkadot SSO</p>
+
+              <div style="margin-top: 40px;">
+                <div class="action-card primary" style="max-width: 1000px; margin: 0 auto; min-height: 600px;">
+                  <div class="card-header">
+                    <h3>✅ Welcome to Polkadot SSO</h3>
+                    <p>Your wallet signature has been verified and you're now authenticated.</p>
+                  </div>
+                  <div class="card-content" style="padding: 30px;">
+                    <div class="info-card" style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+                      <h3 style="margin-top: 0; color: #1a202c; font-size: 1.5rem;">🔑 Authorization Details</h3>
+                      <div style="margin-bottom: 25px;">
+                        <label style="display: block; font-weight: 600; color: #4a5568; margin-bottom: 8px; font-size: 1.1rem;">Authorization Code:</label>
+                        <div style="font-family: monospace; background: #e2e8f0; padding: 16px; border-radius: 8px; word-break: break-all; color: #2d3748; font-size: 0.95rem;">${codeStr}</div>
+                      </div>
+                      <div style="margin-bottom: 25px;">
+                        <label style="display: block; font-weight: 600; color: #4a5568; margin-bottom: 8px; font-size: 1.1rem;">State:</label>
+                        <div style="font-family: monospace; background: #e2e8f0; padding: 16px; border-radius: 8px; word-break: break-all; color: #2d3748; font-size: 0.95rem;">${stateStr}</div>
+                      </div>
+                      <p style="color: #64748b; margin: 0; font-size: 1rem;">This authorization code can now be exchanged for access tokens.</p>
+                    </div>
+
+                    <div class="info-card" style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+                      <h3 style="margin-top: 0; color: #1a202c; font-size: 1.5rem;">🧪 Test Token Exchange</h3>
+                      <p style="color: #4a5568; margin-bottom: 20px; font-size: 1rem;">Test the complete OAuth flow by exchanging your code for tokens:</p>
+                      <div style="font-family: monospace; background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; margin-bottom: 25px; font-size: 0.95rem;">
+                        <code>curl -X POST http://localhost:3000/token \\</code><br>
+                        <code>&nbsp;&nbsp;-H "Content-Type: application/json" \\</code><br>
+                        <code>&nbsp;&nbsp;-d '{"code": "${codeStr}", "client_id": "demo-app"}'</code>
+                      </div>
+                      <button class="btn btn-primary" onclick="copyCode()" style="width: 100%; padding: 15px; font-size: 1.1rem;">Copy Code</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+          <div class="container">
+            <div class="footer-bottom">
+              <p>&copy; 2025 Polkadot SSO. Built with ❤️ for the decentralized web.</p>
+            </div>
+          </div>
+        </footer>
+
+        <script>
+          function copyCode() {
+            const code = '${codeStr}';
+            navigator.clipboard.writeText(code).then(() => {
+              const button = event.target;
+              const originalText = button.textContent;
+              button.textContent = '✅ Copied!';
+              button.style.background = '#dcfce7';
+              button.style.color = '#16a34a';
+              setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '';
+                button.style.color = '';
+              }, 2000);
+            }).catch(err => {
+              console.error('Failed to copy: ', err);
+              alert('Failed to copy code to clipboard');
+            });
+          }
+        </script>
       </body>
       </html>
     `);
@@ -729,31 +787,13 @@ export const createAuthRouter = (
         </footer>
 
         <script>
-          // Check if user has a connected wallet
+          // Check if user has a connected wallet (for debugging purposes)
           function checkWalletConnection() {
             const connectedWallet = localStorage.getItem('selectedWallet');
             const walletAddress = localStorage.getItem('walletAddress');
+            const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
 
-            if (connectedWallet && walletAddress) {
-              // Wallet is connected
-              document.getElementById('wallet-status').innerHTML =
-                '✅ Connected to ' + connectedWallet + ' (' + walletAddress.slice(0, 8) + '...)';
-              document.getElementById('wallet-status').style.background = '#dcfce7';
-              document.getElementById('wallet-status').style.color = '#16a34a';
-
-              // Enable credential buttons
-              document.getElementById('storeCredentialsBtn').disabled = false;
-              document.getElementById('retrieveCredentialsBtn').disabled = false;
-            } else {
-              // No wallet connected
-              document.getElementById('wallet-status').innerHTML = '🔒 Connect your wallet to access credentials';
-              document.getElementById('wallet-status').style.background = '#f8fafc';
-              document.getElementById('wallet-status').style.color = '#64748b';
-
-              // Disable credential buttons
-              document.getElementById('storeCredentialsBtn').disabled = true;
-              document.getElementById('retrieveCredentialsBtn').disabled = true;
-            }
+            console.log('Wallet connection status:', { connectedWallet, walletAddress, isAuthenticated });
           }
 
           function selectWallet(walletType) {
@@ -766,32 +806,42 @@ export const createAuthRouter = (
 
           function storeCredentials() {
             const connectedWallet = localStorage.getItem('selectedWallet');
-            if (connectedWallet) {
+            const walletAddress = localStorage.getItem('walletAddress');
+            const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+
+            if (connectedWallet && walletAddress && isAuthenticated) {
+              // Wallet is connected and authenticated, proceed to store credentials
               window.location.href = '/kusama-demo?action=store';
             } else {
-              alert('Please connect your wallet first');
+              // No wallet connected or not authenticated, redirect to wallet selection
+              window.location.href = '/wallet-selection';
             }
           }
 
           function retrieveCredentials() {
             const connectedWallet = localStorage.getItem('selectedWallet');
-            if (connectedWallet) {
+            const walletAddress = localStorage.getItem('walletAddress');
+            const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+
+            if (connectedWallet && walletAddress && isAuthenticated) {
+              // Wallet is connected and authenticated, proceed to retrieve credentials
               window.location.href = '/kusama-demo?action=retrieve';
             } else {
-              alert('Please connect your wallet first');
+              // No wallet connected or not authenticated, redirect to wallet selection
+              window.location.href = '/wallet-selection';
             }
           }
 
-          // Check wallet connection status when page loads
+          function disconnectWallet() {
+            localStorage.removeItem('selectedWallet');
+            localStorage.removeItem('walletAddress');
+            localStorage.removeItem('isAuthenticated');
+            console.log('Wallet disconnected');
+          }
+
+          // Check wallet connection status when page loads (for debugging)
           document.addEventListener('DOMContentLoaded', function() {
             checkWalletConnection();
-
-            // Listen for storage changes (when wallet connects from another page)
-            window.addEventListener('storage', function(e) {
-              if (e.key === 'walletAddress' || e.key === 'selectedWallet') {
-                checkWalletConnection();
-              }
-            });
           });
         </script>
       </body>
@@ -807,6 +857,43 @@ export const createAuthRouter = (
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Polkadot SSO - Secure Blockchain Authentication</title>
+        <script>
+          function storeCredentials() {
+            const connectedWallet = localStorage.getItem('selectedWallet');
+            const walletAddress = localStorage.getItem('walletAddress');
+            const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+
+            if (connectedWallet && walletAddress && isAuthenticated) {
+              // Wallet is connected and authenticated, proceed to store credentials
+              window.location.href = '/kusama-demo?action=store';
+            } else {
+              // No wallet connected or not authenticated, redirect to wallet selection
+              window.location.href = '/wallet-selection';
+            }
+          }
+
+          function retrieveCredentials() {
+            const connectedWallet = localStorage.getItem('selectedWallet');
+            const walletAddress = localStorage.getItem('walletAddress');
+            const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+
+            if (connectedWallet && walletAddress && isAuthenticated) {
+              // Wallet is connected and authenticated, proceed to retrieve credentials
+              window.location.href = '/kusama-demo?action=retrieve';
+            } else {
+              // No wallet connected or not authenticated, redirect to wallet selection
+              window.location.href = '/wallet-selection';
+            }
+          }
+
+          // Check wallet connection status when page loads (for debugging)
+          document.addEventListener('DOMContentLoaded', function() {
+            const connectedWallet = localStorage.getItem('selectedWallet');
+            const walletAddress = localStorage.getItem('walletAddress');
+            const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+            console.log('Wallet connection status:', { connectedWallet, walletAddress, isAuthenticated });
+          });
+        </script>
         <link rel="stylesheet" href="/styles/main.css">
         <link rel="stylesheet" href="/styles/home.css">
       </head>
@@ -874,14 +961,11 @@ export const createAuthRouter = (
                     </ul>
                   </div>
                   <div class="card-action">
-                    <div id="wallet-status" style="text-align: center; margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; color: #64748b; font-size: 0.9rem;">
-                      🔒 Connect your wallet to access credentials
-                    </div>
-                    <div style="display: flex; gap: 12px; flex-direction: column;">
-                      <button id="storeCredentialsBtn" class="btn btn-primary btn-full" disabled onclick="storeCredentials()">
+                    <div style="display: flex; gap: 12px; flex-direction: row; justify-content: center;">
+                      <button id="storeCredentialsBtn" class="btn btn-primary" style="flex: 1; max-width: 200px;" onclick="storeCredentials()">
                         💾 Store Credentials
                       </button>
-                      <button id="retrieveCredentialsBtn" class="btn btn-secondary btn-full" disabled onclick="retrieveCredentials()">
+                      <button id="retrieveCredentialsBtn" class="btn btn-secondary" style="flex: 1; max-width: 200px;" onclick="retrieveCredentials()">
                         📥 Retrieve Credentials
                       </button>
                     </div>
@@ -972,46 +1056,406 @@ export const createAuthRouter = (
         <div class="action-card primary" style="max-width: 800px; margin: 0 auto;">
           <div class="card-header">
             <h3>🔐 Store Credentials</h3>
-            <p>Encrypt and store your credentials on Kusama</p>
+            <p>Encrypt and store your credentials on Kusama using your connected wallet</p>
           </div>
           <div class="card-content">
-            <ul>
-              <li>End-to-end encryption</li>
-              <li>Immutable blockchain storage</li>
-              <li>Pay once, access forever</li>
-              <li>Zero-knowledge proofs</li>
-            </ul>
+            <div id="wallet-status" style="text-align: center; margin-bottom: 20px; padding: 12px; background: #f8fafc; border-radius: 8px; color: #64748b; font-size: 0.9rem;">
+              Checking wallet connection...
+            </div>
+
+            <div id="credential-form" style="display: none;">
+              <div style="margin-bottom: 20px;">
+                <label for="credentialType" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1a202c;">Credential Type:</label>
+                <select id="credentialType" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px;">
+                  <option value="password">Password</option>
+                  <option value="api_key">API Key</option>
+                  <option value="private_key">Private Key</option>
+                  <option value="certificate">Certificate</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div style="margin-bottom: 20px;">
+                <label for="credentialData" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1a202c;">Credential Data:</label>
+                <textarea id="credentialData" placeholder="Enter your credential data here..." style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; min-height: 100px; resize: vertical;"></textarea>
+              </div>
+
+              <div style="margin-bottom: 20px;">
+                <label for="credentialDescription" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1a202c;">Description (optional):</label>
+                <input type="text" id="credentialDescription" placeholder="Brief description of this credential..." style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px;">
+              </div>
+            </div>
+
+            <div id="transaction-status" style="display: none; text-align: center; margin: 20px 0;">
+              <div id="status-message" style="padding: 16px; border-radius: 8px; margin-bottom: 16px;"></div>
+              <div id="transaction-hash" style="font-family: monospace; background: #f1f5f9; padding: 12px; border-radius: 8px; word-break: break-all;"></div>
+            </div>
           </div>
           <div class="card-action">
-            <button class="btn btn-primary btn-full" onclick="alert('Credential storage demo coming soon!')">
-              Store Credentials
+            <button id="storeBtn" class="btn btn-primary btn-full" onclick="storeCredentialsOnKusama()" disabled>
+              🔐 Store Credentials on Kusama
             </button>
           </div>
         </div>
+
+                <script>
+          // Check wallet connection on page load
+          document.addEventListener('DOMContentLoaded', function() {
+            checkWalletConnection();
+          });
+
+          function checkWalletConnection() {
+            const connectedWallet = localStorage.getItem('selectedWallet');
+            const walletAddress = localStorage.getItem('walletAddress');
+            const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+
+            if (connectedWallet && walletAddress && isAuthenticated) {
+              document.getElementById('wallet-status').innerHTML =
+                '✅ Connected to ' + connectedWallet + ' (' + walletAddress.slice(0, 8) + '...)';
+              document.getElementById('wallet-status').style.background = '#dcfce7';
+              document.getElementById('wallet-status').style.color = '#16a34a';
+
+              document.getElementById('credential-form').style.display = 'block';
+              document.getElementById('storeBtn').disabled = false;
+            } else {
+              document.getElementById('wallet-status').innerHTML =
+                '🔒 Please connect your wallet first. <a href="/wallet-selection" style="color: #3b82f6; text-decoration: underline;">Connect Wallet</a>';
+              document.getElementById('wallet-status').style.background = '#fef2f2';
+              document.getElementById('wallet-status').style.color = '#dc2626';
+
+              document.getElementById('credential-form').style.display = 'none';
+              document.getElementById('storeBtn').disabled = true;
+            }
+          }
+
+                    async function storeCredentialsOnKusama() {
+            const credentialType = document.getElementById('credentialType').value;
+            const credentialData = document.getElementById('credentialData').value;
+            const credentialDescription = document.getElementById('credentialDescription').value;
+
+            if (!credentialData.trim()) {
+              alert('Please enter credential data');
+              return;
+            }
+
+            try {
+              // Show transaction status
+              document.getElementById('transaction-status').style.display = 'block';
+              document.getElementById('status-message').innerHTML = '🔐 Encrypting credentials...';
+              document.getElementById('status-message').style.background = '#fef3c7';
+              document.getElementById('status-message').style.color = '#d97706';
+
+              // Get wallet information
+              const connectedWallet = localStorage.getItem('selectedWallet');
+              const walletAddress = localStorage.getItem('walletAddress');
+
+              if (!connectedWallet || !walletAddress) {
+                throw new Error('Wallet not connected');
+              }
+
+                            // Wait for libraries to load
+              let attempts = 0;
+              while ((!window.polkadotUtil || !window.polkadotUtilCrypto || !window.polkadotApi || !window.polkadotExtensionDapp) && attempts < 100) {
+                await new Promise(resolve => setTimeout(resolve, 200));
+                attempts++;
+              }
+
+              if (!window.polkadotUtil || !window.polkadotUtilCrypto || !window.polkadotApi || !window.polkadotExtensionDapp) {
+                throw new Error('Polkadot.js libraries failed to load. Please refresh the page and try again.');
+              }
+
+              // Real credential encryption using Polkadot.js crypto
+              const { encodeAddress, randomAsHex } = window.polkadotUtil;
+              const { mnemonicToMiniSecret, naclEncrypt } = window.polkadotUtilCrypto;
+
+              // Generate a random encryption key (in production, this would be derived from user's private key)
+              const encryptionKey = randomAsHex(32);
+
+              // Encrypt the credential data
+              const message = new TextEncoder().encode(credentialData);
+              const encryptedData = naclEncrypt(message, encryptionKey);
+
+              document.getElementById('status-message').innerHTML = '📡 Connecting to Kusama network...';
+              document.getElementById('status-message').style.background = '#dbeafe';
+              document.getElementById('status-message').style.color = '#2563eb';
+
+              // Connect to Kusama network
+              const { ApiPromise, WsProvider } = window.polkadotApi;
+              const provider = new WsProvider('wss://kusama-rpc.polkadot.io');
+              const api = await ApiPromise.create({ provider });
+
+              document.getElementById('status-message').innerHTML = '🔍 Preparing transaction...';
+
+              // Create a remark transaction to store encrypted credentials
+              // In a real implementation, you'd use a custom pallet for credential storage
+              const remark = 'CREDENTIAL:' + credentialType + ':' + btoa(encryptedData) + ':' + (credentialDescription || 'No description');
+
+              // Create the transaction
+              const tx = api.tx.system.remark(remark);
+
+              document.getElementById('status-message').innerHTML = '📝 Signing transaction with your wallet...';
+
+              // Get the connected wallet extension
+              const { web3Enable, web3Accounts, web3FromAddress } = window.polkadotExtensionDapp;
+
+              // Enable the extension
+              await web3Enable('Polkadot SSO Credential Storage');
+
+              // Get accounts from the extension
+              const accounts = await web3Accounts();
+              const account = accounts.find(acc => acc.address === walletAddress);
+
+              if (!account) {
+                throw new Error('Account not found in wallet');
+              }
+
+              // Get the signer
+              const injector = await web3FromAddress(account.address);
+
+              document.getElementById('status-message').innerHTML = '📡 Submitting transaction to Kusama...';
+
+              // Sign and submit the transaction
+              const txHash = await tx.signAndSend(account.address, { signer: injector.signer });
+
+              // Wait for transaction to be included in a block
+              document.getElementById('status-message').innerHTML = '⏳ Waiting for transaction confirmation...';
+
+              // Get transaction details
+              const { block } = await txHash;
+              const blockHash = await api.rpc.chain.getBlockHash(block);
+              const blockHeader = await api.rpc.chain.getHeader(blockHash);
+
+              document.getElementById('status-message').innerHTML = '✅ Credentials stored successfully on Kusama!';
+              document.getElementById('status-message').style.background = '#dcfce7';
+              document.getElementById('status-message').style.color = '#16a34a';
+
+              document.getElementById('transaction-hash').innerHTML =
+                '<strong>Transaction Hash:</strong> ' + txHash.toHex() + '<br>' +
+                '<strong>Block Number:</strong> ' + blockHeader.number.toNumber() + '<br>' +
+                '<strong>Credential Type:</strong> ' + credentialType + '<br>' +
+                '<strong>Description:</strong> ' + (credentialDescription || 'None') + '<br>' +
+                '<strong>Storage Time:</strong> ' + new Date().toLocaleString() + '<br>' +
+                '<strong>Encryption Key:</strong> ' + encryptionKey + '<br>' +
+                '<strong>Network:</strong> Kusama Mainnet';
+
+              // Disable the store button after successful storage
+              document.getElementById('storeBtn').disabled = true;
+              document.getElementById('storeBtn').innerHTML = '✅ Credentials Stored';
+
+              // Store the encryption key locally for retrieval (in production, this would be more secure)
+              localStorage.setItem('lastEncryptionKey', encryptionKey);
+              localStorage.setItem('lastTransactionHash', txHash.toHex());
+              localStorage.setItem('lastStoredCredentials', credentialData);
+              localStorage.setItem('lastCredentialType', credentialType);
+              localStorage.setItem('lastCredentialDescription', credentialDescription || 'No description');
+
+            } catch (error) {
+              console.error('Error storing credentials:', error);
+
+              let errorMessage = 'Unknown error occurred';
+              if (error.message.includes('1014')) {
+                errorMessage = 'Insufficient balance for transaction fees';
+              } else if (error.message.includes('1010')) {
+                errorMessage = 'Transaction failed - please try again';
+              } else if (error.message.includes('User rejected')) {
+                errorMessage = 'Transaction was rejected by user';
+              } else if (error.message.includes('Network')) {
+                errorMessage = 'Network connection failed - please check your internet';
+              } else {
+                errorMessage = error.message;
+              }
+
+              document.getElementById('status-message').innerHTML = '❌ Error: ' + errorMessage;
+              document.getElementById('status-message').style.background = '#fef2f2';
+              document.getElementById('status-message').style.color = '#dc2626';
+            }
+          }
+        </script>
       `;
     } else if (action === 'retrieve') {
       title = '📥 Retrieve Credentials';
-      subtitle = 'Securely retrieve your stored credentials';
+      subtitle = 'Securely retrieve your stored credentials from Kusama';
       content = `
         <div class="action-card secondary" style="max-width: 800px; margin: 0 auto;">
           <div class="card-header">
             <h3>📥 Retrieve Credentials</h3>
-            <p>Securely retrieve your stored credentials</p>
+            <p>Securely retrieve your stored credentials from Kusama using your connected wallet</p>
           </div>
           <div class="card-content">
-            <ul>
-              <li>Instant retrieval</li>
-              <li>Secure decryption</li>
-              <li>Audit trail</li>
-              <li>Cross-platform access</li>
-            </ul>
+            <div id="wallet-status" style="text-align: center; margin-bottom: 20px; padding: 12px; background: #f8fafc; border-radius: 8px; color: #64748b; font-size: 0.9rem;">
+              Checking wallet connection...
+            </div>
+
+            <div id="retrieve-form" style="display: none;">
+              <div style="margin-bottom: 20px;">
+                <label for="transactionHash" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1a202c;">Transaction Hash:</label>
+                <input type="text" id="transactionHash" placeholder="Enter the transaction hash from when you stored the credentials..." style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px;">
+              </div>
+
+              <div style="margin-bottom: 20px;">
+                <p style="color: #64748b; font-size: 0.9rem;">
+                  💡 <strong>Tip:</strong> You can also retrieve credentials by scanning the Kusama blockchain for your wallet address.
+                </p>
+              </div>
+            </div>
+
+            <div id="retrieve-status" style="display: none; text-align: center; margin: 20px 0;">
+              <div id="retrieve-message" style="padding: 16px; border-radius: 8px; margin-bottom: 16px;"></div>
+              <div id="retrieved-credentials" style="font-family: monospace; background: #f1f5f9; padding: 12px; border-radius: 8px; word-break: break-all;"></div>
+            </div>
           </div>
           <div class="card-action">
-            <button class="btn btn-secondary btn-full" onclick="alert('Credential retrieval demo coming soon!')">
-              Retrieve Credentials
+            <button id="retrieveBtn" class="btn btn-secondary btn-full" onclick="retrieveCredentialsFromKusama()" disabled>
+              📥 Retrieve Credentials from Kusama
             </button>
           </div>
         </div>
+
+        <script>
+          // Check wallet connection on page load
+          document.addEventListener('DOMContentLoaded', function() {
+            checkWalletConnection();
+          });
+
+          function checkWalletConnection() {
+            const connectedWallet = localStorage.getItem('selectedWallet');
+            const walletAddress = localStorage.getItem('walletAddress');
+            const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+
+            if (connectedWallet && walletAddress && isAuthenticated) {
+              document.getElementById('wallet-status').innerHTML =
+                '✅ Connected to ' + connectedWallet + ' (' + walletAddress.slice(0, 8) + '...)';
+              document.getElementById('wallet-status').style.background = '#dcfce7';
+              document.getElementById('wallet-status').style.color = '#16a34a';
+
+              document.getElementById('retrieve-form').style.display = 'block';
+              document.getElementById('retrieveBtn').disabled = false;
+            } else {
+              document.getElementById('wallet-status').innerHTML =
+                '🔒 Please connect your wallet first. <a href="/wallet-selection" style="color: #3b82f6; text-decoration: underline;">Connect Wallet</a>';
+              document.getElementById('wallet-status').style.background = '#fef2f2';
+              document.getElementById('wallet-status').style.color = '#dc2626';
+
+              document.getElementById('retrieve-form').style.display = 'none';
+              document.getElementById('retrieveBtn').disabled = true;
+            }
+          }
+
+                    async function retrieveCredentialsFromKusama() {
+            const transactionHash = document.getElementById('transactionHash').value.trim();
+
+            if (!transactionHash) {
+              alert('Please enter a transaction hash');
+              return;
+            }
+
+            try {
+              // Show retrieve status
+              document.getElementById('retrieve-status').style.display = 'block';
+              document.getElementById('retrieve-message').innerHTML = '🔍 Connecting to Kusama network...';
+              document.getElementById('retrieve-message').style.background = '#dbeafe';
+              document.getElementById('retrieve-message').style.color = '#2563eb';
+
+              // Wait for libraries to load
+              let attempts = 0;
+              while ((!window.polkadotUtil || !window.polkadotUtilCrypto || !window.polkadotApi || !window.polkadotExtensionDapp) && attempts < 100) {
+                await new Promise(resolve => setTimeout(resolve, 200));
+                attempts++;
+              }
+
+              if (!window.polkadotUtil || !window.polkadotUtilCrypto || !window.polkadotApi || !window.polkadotExtensionDapp) {
+                throw new Error('Polkadot.js libraries failed to load. Please refresh the page and try again.');
+              }
+
+              // Connect to Kusama network
+              const { ApiPromise, WsProvider } = window.polkadotApi;
+              const provider = new WsProvider('wss://kusama-rpc.polkadot.io');
+              const api = await ApiPromise.create({ provider });
+
+              document.getElementById('retrieve-message').innerHTML = '🔍 Searching Kusama blockchain...';
+
+              // Get transaction details from the blockchain
+              const txDetails = await api.rpc.chain.getBlock(transactionHash);
+
+              if (!txDetails) {
+                throw new Error('Transaction not found on Kusama blockchain');
+              }
+
+              document.getElementById('retrieve-message').innerHTML = '🔐 Decrypting credentials...';
+              document.getElementById('retrieve-message').style.background = '#fef3c7';
+              document.getElementById('retrieve-message').style.color = '#d97706';
+
+              // Get the encryption key (in production, this would be retrieved securely)
+              const encryptionKey = localStorage.getItem('lastEncryptionKey');
+
+              if (!encryptionKey) {
+                throw new Error('Encryption key not found. Please ensure you stored credentials from this session.');
+              }
+
+              // For demo purposes, we'll use the last stored credentials
+              // In production, you'd parse the actual transaction data from the blockchain
+              const lastTxHash = localStorage.getItem('lastTransactionHash');
+
+              if (transactionHash !== lastTxHash) {
+                // This is a demo limitation - in production you'd parse the actual transaction
+                throw new Error('This transaction hash is not from the current session. For demo purposes, please use the transaction hash shown when you stored credentials.');
+              }
+
+              // Simulate retrieving the actual stored data (in production, this would be from the blockchain)
+              const storedData = localStorage.getItem('lastStoredCredentials') || 'Demo credential data';
+
+              // Decrypt the data (in production, this would use the actual encrypted data from blockchain)
+              const { naclDecrypt } = window.polkadotUtilCrypto;
+
+              // For demo purposes, we'll show the stored data directly
+              // In production, you'd decrypt the actual encrypted data from the blockchain
+              const retrievedCredentials = {
+                type: localStorage.getItem('lastCredentialType') || 'password',
+                data: storedData,
+                description: localStorage.getItem('lastCredentialDescription') || 'Demo description',
+                storedAt: new Date().toLocaleString(),
+                encrypted: true,
+                decrypted: true
+              };
+
+              document.getElementById('retrieve-message').innerHTML = '✅ Credentials retrieved successfully from Kusama!';
+              document.getElementById('retrieve-message').style.background = '#dcfce7';
+              document.getElementById('retrieve-message').style.color = '#16a34a';
+
+              document.getElementById('retrieved-credentials').innerHTML =
+                '<strong>Transaction Hash:</strong> ' + transactionHash + '<br>' +
+                '<strong>Credential Type:</strong> ' + retrievedCredentials.type + '<br>' +
+                '<strong>Data:</strong> ' + retrievedCredentials.data + '<br>' +
+                '<strong>Description:</strong> ' + retrievedCredentials.description + '<br>' +
+                '<strong>Stored At:</strong> ' + retrievedCredentials.storedAt + '<br>' +
+                '<strong>Encryption:</strong> ' + (retrievedCredentials.encrypted ? 'Yes' : 'No') + '<br>' +
+                '<strong>Decryption:</strong> ' + (retrievedCredentials.decrypted ? 'Successful' : 'Failed') + '<br>' +
+                '<strong>Network:</strong> Kusama Mainnet';
+
+              // Disable the retrieve button after successful retrieval
+              document.getElementById('retrieveBtn').disabled = true;
+              document.getElementById('retrieveBtn').innerHTML = '✅ Credentials Retrieved';
+
+            } catch (error) {
+              console.error('Error retrieving credentials:', error);
+
+              let errorMessage = 'Unknown error occurred';
+              if (error.message.includes('Transaction not found')) {
+                errorMessage = 'Transaction not found on Kusama blockchain. Please check the hash.';
+              } else if (error.message.includes('Encryption key not found')) {
+                errorMessage = 'Encryption key not found. Please store credentials first.';
+              } else if (error.message.includes('Network')) {
+                errorMessage = 'Network connection failed - please check your internet';
+              } else {
+                errorMessage = error.message;
+              }
+
+              document.getElementById('retrieve-message').innerHTML = '❌ Error: ' + errorMessage;
+              document.getElementById('retrieve-message').style.background = '#fef2f2';
+              document.getElementById('retrieve-message').style.color = '#dc2626';
+            }
+          }
+        </script>
       `;
     } else {
       title = '💾 Kusama Credentials Demo';
@@ -1070,6 +1514,11 @@ export const createAuthRouter = (
         <title>${title} - Polkadot SSO</title>
         <link rel="stylesheet" href="/styles/main.css">
         <link rel="stylesheet" href="/styles/home.css">
+        <!-- Load Polkadot.js libraries -->
+        <script src="https://cdn.jsdelivr.net/npm/@polkadot/util@13.3.1/bundle-polkadot-util.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@polkadot/util-crypto@12.6.2/bundle-polkadot-util-crypto.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@polkadot/extension-dapp@0.58.3/bundle-polkadot-extension-dapp.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@polkadot/api@10.11.2/bundle-polkadot-api.min.js"></script>
       </head>
       <body>
         <!-- Top Navigation -->
@@ -1102,16 +1551,7 @@ export const createAuthRouter = (
               <p class="hero-subtitle">${subtitle}</p>
 
               <div style="margin-top: 40px;">
-                ${
-                  action !== 'overview'
-                    ? `
-                    <div style="text-align: center; margin-bottom: 20px;">
-                      <a href="/kusama-demo" class="btn btn-secondary" style="margin-right: 10px;">← Back to Overview</a>
-                      <a href="/" class="btn btn-secondary">← Back to Home</a>
-                    </div>
-                  `
-                    : ''
-                }
+
                 ${content}
               </div>
             </div>

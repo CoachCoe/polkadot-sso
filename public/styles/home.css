@@ -178,16 +178,18 @@ body {
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, #E6007A 0%, #FF6B9D 100%);
   color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
+  border: 2px solid #E6007A;
+  box-shadow: 0 4px 20px rgba(230, 0, 122, 0.3);
+  transition: all 0.3s ease;
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translateY(-4px);
+  background: linear-gradient(135deg, #D1006B 0%, #E55A8C 100%);
+  border-color: #D1006B;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(230, 0, 122, 0.4);
 }
 
 .btn-full {

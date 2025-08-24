@@ -52,3 +52,4 @@ var require_challenge = __commonJS({
     })();
   }
 });
+export default require_challenge();
