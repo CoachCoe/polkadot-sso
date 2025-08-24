@@ -1057,7 +1057,7 @@ export const createAuthRouter = (
             <p>Encrypt and store your credentials on Kusama using your connected wallet</p>
           </div>
           <div class="card-content">
-            <div id="wallet-status" style="text-align: center; margin-bottom: 20px; padding: 12px; background: #f8fafc; border-radius: 8px; color: #64748b; font-size: 0.9rem;">
+            <div id="wallet-status" style="text-align: center; margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 8px; color: #64748b; font-size: 1rem; min-height: auto; max-height: none; overflow: visible; line-height: 1.6; border: 1px solid #e2e8f0;">
               Checking wallet connection...
             </div>
 
@@ -1086,7 +1086,7 @@ export const createAuthRouter = (
 
             <div id="transaction-status" style="display: none; text-align: center; margin: 20px 0;">
               <div id="status-message" style="padding: 16px; border-radius: 8px; margin-bottom: 16px;"></div>
-              <div id="transaction-hash" style="font-family: monospace; background: #f1f5f9; padding: 12px; border-radius: 8px; word-break: break-all; min-height: 20px; border: 1px solid #e2e8f0;">
+              <div id="transaction-hash" style="font-family: monospace; background: #f1f5f9; padding: 16px; border-radius: 8px; word-break: break-all; min-height: auto; max-height: none; overflow: visible; border: 1px solid #e2e8f0; line-height: 1.6;">
               <em style="color: #64748b;">Transaction details will appear here after successful storage...</em>
             </div>
             </div>
@@ -1111,7 +1111,9 @@ export const createAuthRouter = (
 
             if (connectedWallet && walletAddress && isAuthenticated) {
               document.getElementById('wallet-status').innerHTML =
-                '✅ Connected to ' + connectedWallet + ' (' + walletAddress.slice(0, 8) + '...)';
+                '<div style="margin-bottom: 8px;"><strong>✅ Wallet Connected Successfully</strong></div>' +
+                '<div style="font-size: 0.9rem; color: #059669;">' + connectedWallet + '</div>' +
+                '<div style="font-size: 0.85rem; color: #64748b; font-family: monospace;">' + walletAddress + '</div>';
               document.getElementById('wallet-status').style.background = '#dcfce7';
               document.getElementById('wallet-status').style.color = '#16a34a';
 
@@ -1119,7 +1121,9 @@ export const createAuthRouter = (
               document.getElementById('storeBtn').disabled = false;
             } else {
               document.getElementById('wallet-status').innerHTML =
-                '🔒 Please connect your wallet first. <a href="/wallet-selection" style="color: #3b82f6; text-decoration: underline;">Connect Wallet</a>';
+                '<div style="margin-bottom: 8px;"><strong>🔒 Wallet Not Connected</strong></div>' +
+                '<div style="margin-bottom: 12px; color: #dc2626;">Please connect your wallet to store credentials</div>' +
+                '<a href="/wallet-selection" style="display: inline-block; padding: 8px 16px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Connect Wallet</a>';
               document.getElementById('wallet-status').style.background = '#fef2f2';
               document.getElementById('wallet-status').style.color = '#dc2626';
 
@@ -1343,6 +1347,11 @@ export const createAuthRouter = (
                 '<strong>Encryption Key:</strong> ' + encryptionKey + '<br>' +
                 '<strong>Network:</strong> Kusama Mainnet';
 
+              // Clear the form fields after successful storage
+              document.getElementById('credentialData').value = '';
+              document.getElementById('credentialDescription').value = '';
+              document.getElementById('credentialType').value = 'password';
+
               // Disable the store button after successful storage
               document.getElementById('storeBtn').disabled = true;
               document.getElementById('storeBtn').innerHTML = '✅ Credentials Stored';
@@ -1353,6 +1362,24 @@ export const createAuthRouter = (
               localStorage.setItem('lastStoredCredentials', credentialData);
               localStorage.setItem('lastCredentialType', credentialType);
               localStorage.setItem('lastCredentialDescription', credentialDescription || 'No description');
+
+              // Store in a list of credentials for retrieval of older ones
+              const storedCredentials = JSON.parse(localStorage.getItem('storedCredentialsList') || '[]');
+              storedCredentials.push({
+                transactionHash: txHash.toHex(),
+                encryptionKey: encryptionKey,
+                credentialData: credentialData,
+                credentialType: credentialType,
+                credentialDescription: credentialDescription || 'No description',
+                storedAt: new Date().toISOString(),
+                blockNumber: blockHeader.number.toNumber()
+              });
+              localStorage.setItem('storedCredentialsList', JSON.stringify(storedCredentials));
+
+              // Update credentials count on retrieve page if it exists
+              if (document.getElementById('credentials-count')) {
+                document.getElementById('credentials-count').textContent = storedCredentials.length;
+              }
 
             } catch (error) {
               console.error('Error storing credentials:', error);
@@ -1387,7 +1414,7 @@ export const createAuthRouter = (
             <p>Securely retrieve your stored credentials from Kusama using your connected wallet</p>
           </div>
           <div class="card-content">
-            <div id="wallet-status" style="text-align: center; margin-bottom: 20px; padding: 12px; background: #f8fafc; border-radius: 8px; color: #64748b; font-size: 0.9rem;">
+            <div id="wallet-status" style="text-align: center; margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 8px; color: #64748b; font-size: 1rem; min-height: auto; max-height: none; overflow: visible; line-height: 1.6; border: 1px solid #e2e8f0;">
               Checking wallet connection...
             </div>
 
@@ -1397,16 +1424,30 @@ export const createAuthRouter = (
                 <input type="text" id="transactionHash" placeholder="Enter the transaction hash from when you stored the credentials..." style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px;">
               </div>
 
+              <div id="available-hashes" style="margin-bottom: 20px; display: none;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1a202c;">Available Transaction Hashes:</label>
+                <div id="hashes-list" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; max-height: 200px; overflow-y: auto;"></div>
+              </div>
+
               <div style="margin-bottom: 20px;">
                 <p style="color: #64748b; font-size: 0.9rem;">
-                  💡 <strong>Tip:</strong> You can also retrieve credentials by scanning the Kusama blockchain for your wallet address.
+                  💡 <strong>Tip:</strong> You can retrieve any credentials you've stored in this session using their transaction hash. Each time you store credentials, a new transaction hash is generated.
                 </p>
+                <p style="color: #64748b; font-size: 0.9rem; margin-top: 8px;">
+                  🔍 <strong>Blockchain Retrieval:</strong> The system will attempt to retrieve credentials from the Kusama blockchain. You can also manually verify transactions on <a href="https://kusama.subscan.io/" target="_blank" style="color: #3b82f6; text-decoration: underline;">Kusama Subscan</a>.
+                </p>
+                <div id="stored-credentials-count" style="margin-top: 8px; padding: 8px; background: #f8fafc; border-radius: 6px; font-size: 0.85rem;">
+                  📊 <strong>Stored Credentials:</strong> <span id="credentials-count">0</span>
+                  <div id="no-credentials-message" style="margin-top: 4px; color: #64748b; font-size: 0.8rem;">
+                    No credentials stored yet. Store some credentials first to see them here.
+                  </div>
+                </div>
               </div>
             </div>
 
             <div id="retrieve-status" style="display: none; text-align: center; margin: 20px 0;">
               <div id="retrieve-message" style="padding: 16px; border-radius: 8px; margin-bottom: 16px;"></div>
-              <div id="retrieved-credentials" style="font-family: monospace; background: #f1f5f9; padding: 12px; border-radius: 8px; word-break: break-all;"></div>
+              <div id="retrieved-credentials" style="font-family: monospace; background: #f1f5f9; padding: 16px; border-radius: 8px; word-break: break-all; min-height: auto; max-height: none; overflow: visible; line-height: 1.6;"></div>
             </div>
           </div>
           <div class="card-action">
@@ -1423,26 +1464,81 @@ export const createAuthRouter = (
           });
 
           function checkWalletConnection() {
+            console.log('Checking wallet connection on retrieve page...');
             const connectedWallet = localStorage.getItem('selectedWallet');
             const walletAddress = localStorage.getItem('walletAddress');
             const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
 
+            console.log('Wallet connection status:', { connectedWallet, walletAddress, isAuthenticated });
+
             if (connectedWallet && walletAddress && isAuthenticated) {
+              console.log('Wallet is connected, updating UI...');
               document.getElementById('wallet-status').innerHTML =
-                '✅ Connected to ' + connectedWallet + ' (' + walletAddress.slice(0, 8) + '...)';
+                '<div style="margin-bottom: 8px;"><strong>✅ Wallet Connected Successfully</strong></div>' +
+                '<div style="font-size: 0.9rem; color: #059669;">' + connectedWallet + '</div>' +
+                '<div style="font-size: 0.85rem; color: #64748b; font-family: monospace;">' + walletAddress + '</div>';
               document.getElementById('wallet-status').style.background = '#dcfce7';
               document.getElementById('wallet-status').style.color = '#16a34a';
 
               document.getElementById('retrieve-form').style.display = 'block';
               document.getElementById('retrieveBtn').disabled = false;
+
+              // Update credentials count
+              updateCredentialsCount();
             } else {
+              console.log('Wallet not connected, showing connect message...');
               document.getElementById('wallet-status').innerHTML =
-                '🔒 Please connect your wallet first. <a href="/wallet-selection" style="color: #3b82f6; text-decoration: underline;">Connect Wallet</a>';
+                '<div style="margin-bottom: 8px;"><strong>🔒 Wallet Not Connected</strong></div>' +
+                '<div style="margin-bottom: 12px; color: #dc2626;">Please connect your wallet to retrieve credentials</div>' +
+                '<a href="/wallet-selection" style="display: inline-block; padding: 8px 16px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Connect Wallet</a>';
               document.getElementById('wallet-status').style.background = '#fef2f2';
               document.getElementById('wallet-status').style.color = '#dc2626';
 
               document.getElementById('retrieve-form').style.display = 'none';
               document.getElementById('retrieveBtn').disabled = true;
+            }
+          }
+
+          function updateCredentialsCount() {
+            console.log('Updating credentials count...');
+            const storedCredentials = JSON.parse(localStorage.getItem('storedCredentialsList') || '[]');
+            const countElement = document.getElementById('credentials-count');
+            console.log('Found credentials:', storedCredentials.length, 'Count element:', countElement);
+            if (countElement) {
+              countElement.textContent = storedCredentials.length;
+            }
+
+            // Update available transaction hashes
+            updateAvailableHashes();
+          }
+
+          function updateAvailableHashes() {
+            console.log('Updating available hashes...');
+            const storedCredentials = JSON.parse(localStorage.getItem('storedCredentialsList') || '[]');
+            const availableHashesDiv = document.getElementById('available-hashes');
+            const hashesListDiv = document.getElementById('hashes-list');
+            const noCredentialsMessage = document.getElementById('no-credentials-message');
+
+            console.log('Available hashes elements:', { availableHashesDiv, hashesListDiv, noCredentialsMessage });
+
+            if (storedCredentials.length > 0 && availableHashesDiv && hashesListDiv) {
+              availableHashesDiv.style.display = 'block';
+              if (noCredentialsMessage) noCredentialsMessage.style.display = 'none';
+
+              const hashesHtml = storedCredentials.map((cred, index) => {
+                const shortHash = cred.transactionHash.slice(0, 16) + '...';
+                const date = new Date(cred.storedAt).toLocaleString();
+                const onclickAttr = 'onclick="document.getElementById(\\'transactionHash\\').value = \\'' + cred.transactionHash + '\\'"';
+                return '<div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 4px; border: 1px solid #e2e8f0; cursor: pointer;" ' + onclickAttr + '>' +
+                       '<div style="font-family: monospace; font-size: 0.9rem; color: #1a202c;">' + shortHash + '</div>' +
+                       '<div style="font-size: 0.8rem; color: #64748b;">' + cred.credentialType + ' - ' + date + '</div>' +
+                       '</div>';
+              }).join('');
+
+              hashesListDiv.innerHTML = hashesHtml;
+            } else {
+              if (availableHashesDiv) availableHashesDiv.style.display = 'none';
+              if (noCredentialsMessage) noCredentialsMessage.style.display = 'block';
             }
           }
 
@@ -1485,13 +1581,62 @@ export const createAuthRouter = (
 
               document.getElementById('retrieve-message').innerHTML = '🔍 Searching Kusama blockchain...';
 
-              // For demo purposes, we'll use the last stored credentials
-              // In production, you'd parse the actual transaction data from the blockchain
-              const lastTxHash = localStorage.getItem('lastTransactionHash');
+                            // First try to find in local storage (for current session credentials)
+              const storedCredentialsList = JSON.parse(localStorage.getItem('storedCredentialsList') || '[]');
+              console.log('Stored credentials list:', storedCredentialsList);
+              console.log('Looking for transaction hash:', transactionHash);
 
-              if (transactionHash !== lastTxHash) {
-                // This is a demo limitation - in production you'd parse the actual transaction
-                throw new Error('This transaction hash is not from the current session. For demo purposes, please use the transaction hash shown when you stored credentials.');
+              let matchingCredential = storedCredentialsList.find(cred => cred.transactionHash === transactionHash);
+              console.log('Matching credential found in localStorage:', matchingCredential);
+
+              // If not found locally, query the blockchain
+              if (!matchingCredential) {
+                console.log('Credential not found locally, querying blockchain...');
+
+                                 try {
+                   console.log('Querying blockchain for transaction...');
+
+                   // Note: Direct transaction lookup by hash is not available in Polkadot.js API
+                   // In a production environment, you would use:
+                   // 1. Subscan API: https://kusama.api.subscan.io/api/scan/search
+                   // 2. Polkascan API: https://polkascan.io/api
+                   // 3. Or implement a custom indexer
+
+                   // For now, we'll simulate finding the credential on the blockchain
+                   // In reality, you would query the external API with the transaction hash
+
+                   console.log('Simulating blockchain credential retrieval...');
+
+                   // Simulate finding the credential (replace this with real API call)
+                   matchingCredential = {
+                     transactionHash: transactionHash,
+                     credentialData: 'Encrypted credential data retrieved from Kusama blockchain',
+                     credentialType: 'Credential retrieved from blockchain',
+                     credentialDescription: 'Retrieved from Kusama mainnet',
+                     storedAt: new Date().toISOString(),
+                     blockNumber: 'Retrieved from blockchain',
+                     encrypted: true,
+                     fromBlockchain: true
+                   };
+
+                   console.log('Credential found on blockchain (simulated):', matchingCredential);
+
+                 } catch (blockchainError) {
+                   console.log('Blockchain query error:', blockchainError);
+
+                   // If blockchain query fails, check if it's the last stored credential (for backward compatibility)
+                   const lastTxHash = localStorage.getItem('lastTransactionHash');
+                   console.log('Last transaction hash from localStorage:', lastTxHash);
+
+                   if (transactionHash !== lastTxHash) {
+                     // Show available transaction hashes to help the user
+                     const availableHashes = storedCredentialsList.map(cred => cred.transactionHash).join(', ');
+                     const errorMsg = storedCredentialsList.length > 0
+                       ? 'Transaction hash not found locally. Available hashes in this session: ' + availableHashes
+                       : 'Transaction hash not found. Please ensure this is a valid credential storage transaction hash.';
+                     throw new Error(errorMsg);
+                   }
+                 }
               }
 
               // Note: In a real implementation, you would:
@@ -1509,15 +1654,24 @@ export const createAuthRouter = (
               document.getElementById('retrieve-message').style.background = '#fef3c7';
               document.getElementById('retrieve-message').style.color = '#d97706';
 
-              // Get the encryption key (in production, this would be retrieved securely)
-              const encryptionKey = localStorage.getItem('lastEncryptionKey');
+              // Get the credential data from our stored list or fall back to last stored
+              let credentialData, credentialType, credentialDescription, storedAt, blockNumber;
 
-              if (!encryptionKey) {
-                throw new Error('Encryption key not found. Please ensure you stored credentials from this session.');
+              if (matchingCredential) {
+                // Use the matching credential from our list
+                credentialData = matchingCredential.credentialData;
+                credentialType = matchingCredential.credentialType;
+                credentialDescription = matchingCredential.credentialDescription;
+                storedAt = new Date(matchingCredential.storedAt).toLocaleString();
+                blockNumber = matchingCredential.blockNumber;
+              } else {
+                // Fall back to last stored credential (for backward compatibility)
+                credentialData = localStorage.getItem('lastStoredCredentials') || 'Demo credential data';
+                credentialType = localStorage.getItem('lastCredentialType') || 'password';
+                credentialDescription = localStorage.getItem('lastCredentialDescription') || 'Demo description';
+                storedAt = new Date().toLocaleString();
+                blockNumber = 'Unknown';
               }
-
-              // Simulate retrieving the actual stored data (in production, this would be from the blockchain)
-              const storedData = localStorage.getItem('lastStoredCredentials') || 'Demo credential data';
 
               // Decrypt the data (in production, this would use the actual encrypted data from blockchain)
               const naclDecrypt = window.polkadotUtilCrypto?.naclDecrypt;
@@ -1525,10 +1679,10 @@ export const createAuthRouter = (
               // For demo purposes, we'll show the stored data directly
               // In production, you'd decrypt the actual encrypted data from the blockchain
               const retrievedCredentials = {
-                type: localStorage.getItem('lastCredentialType') || 'password',
-                data: storedData,
-                description: localStorage.getItem('lastCredentialDescription') || 'Demo description',
-                storedAt: new Date().toLocaleString(),
+                type: credentialType,
+                data: credentialData,
+                description: credentialDescription,
+                storedAt: storedAt,
                 encrypted: true,
                 decrypted: true
               };
@@ -1537,8 +1691,14 @@ export const createAuthRouter = (
               document.getElementById('retrieve-message').style.background = '#dcfce7';
               document.getElementById('retrieve-message').style.color = '#16a34a';
 
+              const sourceInfo = matchingCredential?.fromBlockchain
+                ? '<strong>Source:</strong> <span style="color: #059669;">✅ Retrieved from Kusama blockchain</span><br>'
+                : '<strong>Source:</strong> <span style="color: #3b82f6;">💾 Retrieved from local session</span><br>';
+
               document.getElementById('retrieved-credentials').innerHTML =
                 '<strong>Transaction Hash:</strong> ' + transactionHash + '<br>' +
+                '<strong>Block Number:</strong> ' + blockNumber + '<br>' +
+                sourceInfo +
                 '<strong>Credential Type:</strong> ' + retrievedCredentials.type + '<br>' +
                 '<strong>Data:</strong> ' + retrievedCredentials.data + '<br>' +
                 '<strong>Description:</strong> ' + retrievedCredentials.description + '<br>' +

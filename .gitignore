@@ -26,6 +26,9 @@ dist/
 build/
 *.tsbuildinfo
 
+# Source maps
+*.map
+
 # OS generated files
 .DS_Store
 .DS_Store?
