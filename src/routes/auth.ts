@@ -1159,30 +1159,48 @@ export const createAuthRouter = (
                 throw new Error('Wallet not connected');
               }
 
-              // Wait for libraries to load
+                            // Wait for libraries to load
               console.log('Checking for Polkadot.js libraries...');
               console.log('window.polkadotUtil:', window.polkadotUtil);
               console.log('window.polkadotUtilCrypto:', window.polkadotUtilCrypto);
               console.log('window.polkadotApi:', window.polkadotApi);
               console.log('window.polkadotExtensionDapp:', window.polkadotExtensionDapp);
 
+              // Check for available functions
+              const hasRandomAsHex = window.polkadotUtil?.randomAsHex || window.polkadotUtilCrypto?.randomAsHex || window.polkadotUtil?.randomAsHex;
+              const hasNaclEncrypt = window.polkadotUtilCrypto?.naclEncrypt || window.polkadotUtil?.naclEncrypt;
+              const hasApiPromise = window.polkadotApi?.ApiPromise;
+              const hasWeb3Enable = window.polkadotExtensionDapp?.web3Enable;
+
+              console.log('Available functions:', {
+                randomAsHex: !!hasRandomAsHex,
+                naclEncrypt: !!hasNaclEncrypt,
+                ApiPromise: !!hasApiPromise,
+                web3Enable: !!hasWeb3Enable
+              });
+
               let attempts = 0;
-              while ((!window.polkadotUtil?.randomAsHex || !window.polkadotUtilCrypto?.naclEncrypt || !window.polkadotApi?.ApiPromise || !window.polkadotExtensionDapp?.web3Enable) && attempts < 100) {
+              while ((!hasRandomAsHex || !hasNaclEncrypt || !hasApiPromise || !hasWeb3Enable) && attempts < 100) {
                 await new Promise(resolve => setTimeout(resolve, 200));
                 attempts++;
                 console.log('Library loading attempt:', attempts);
               }
 
-              if (!window.polkadotUtil?.randomAsHex || !window.polkadotUtilCrypto?.naclEncrypt || !window.polkadotApi?.ApiPromise || !window.polkadotExtensionDapp?.web3Enable) {
+              if (!hasRandomAsHex || !hasNaclEncrypt || !hasApiPromise || !hasWeb3Enable) {
                 throw new Error('Polkadot.js libraries failed to load. Please refresh the page and try again.');
               }
 
               // Real credential encryption using Polkadot.js crypto
               // The CDN bundles expose different global variables
+              console.log('Looking for crypto functions...');
+              console.log('Available in polkadotUtil:', Object.keys(window.polkadotUtil || {}).filter(key => key.includes('random') || key.includes('hex')));
+              console.log('Available in polkadotUtilCrypto:', Object.keys(window.polkadotUtilCrypto || {}).filter(key => key.includes('nacl') || key.includes('encrypt') || key.includes('random')));
+
               const randomAsHex = window.polkadotUtil?.randomAsHex || window.polkadotUtilCrypto?.randomAsHex;
               const naclEncrypt = window.polkadotUtilCrypto?.naclEncrypt;
 
               if (!randomAsHex || !naclEncrypt) {
+                console.error('Missing crypto functions:', { randomAsHex: !!randomAsHex, naclEncrypt: !!naclEncrypt });
                 throw new Error('Required crypto functions not available. Please refresh the page and try again.');
               }
 
