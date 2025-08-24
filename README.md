@@ -10,33 +10,30 @@ A comprehensive Single Sign-On (SSO) and credential management service using Pol
 - 📝 Comprehensive audit logging
 - 🔄 Session management with Redis (Production) / Memory Store (Development)
 - 🎯 TypeScript for type safety
-- 🏷️ **Credential Management System**
-  - User profile management
-  - Credential types and schemas
-  - Secure credential storage with encryption
-  - Credential sharing and permissions
-  - Verification and revocation
-  - Issuance request workflow
-- 🌐 **Kusama Blockchain Integration**
-  - Secure credential storage on Kusama blockchain
-  - User-controlled encryption with personal keys
-  - Real-time transaction monitoring
-  - Network health monitoring
-  - Cost estimation and fee management
-  - Multiple storage methods (remarks, batch, custom pallets)
-  - **🆕 Wallet-Based Storage (Recommended)**
-    - No hardcoded seed phrases required
-    - Each user stores credentials with their own wallet
-    - Integrated with SSO authentication flow
-    - Real user ownership and control
-    - Eliminates centralized security risks
-  - **🆕 Real Wallet Integration (Latest)**
-  - Browser wallet extension support (Polkadot.js, Talisman, SubWallet)
-  - **📱 Nova Wallet support (Mobile + Browser Bridge)**
-  - Real transaction signing and submission
-  - Live blockchain interaction
-  - Transaction status monitoring
-  - Fee estimation and cost management
+
+### 🏷️ **Credential Management System**
+- User profile management
+- Credential types and schemas
+- Secure credential storage with encryption
+- Credential sharing and permissions
+- Verification and revocation
+- Issuance request workflow
+
+### 🌐 **Kusama Blockchain Integration** ✅ **NOW FULLY WORKING!**
+- **🔐 Real Encrypted Credential Storage** on Kusama mainnet
+- **🔑 End-to-End Encryption** using NaCl (libsodium) with random 32-byte keys
+- **📱 Wallet Integration** with Polkadot.js, Talisman, SubWallet, and Nova Wallet
+- **💳 Real Transaction Processing** - no simulation, actual blockchain interaction
+- **🔍 Transaction Verification** with real transaction hashes and block details
+- **📊 Cost Management** with real Kusama transaction fees
+- **🔄 Full Credential Lifecycle** - store, retrieve, and manage credentials
+
+### 🆕 **Working Demo System**
+- **✅ Store Credentials**: Encrypt and store on Kusama blockchain
+- **✅ Retrieve Credentials**: Decrypt and retrieve using transaction hashes
+- **✅ Real Blockchain**: Actual Kusama mainnet transactions
+- **✅ Wallet Authentication**: Secure wallet-based access control
+- **✅ Transaction Monitoring**: Real-time transaction status tracking
 
 ## Core Functionality
 
@@ -108,6 +105,39 @@ A comprehensive Single Sign-On (SSO) and credential management service using Pol
 - SQLite3
 - Redis (for production)
 - Kusama account with KSM balance (for blockchain storage)
+
+## 🚀 Quick Start - Test the Working Credential System
+
+Want to see the fully working Kusama credential storage in action? Here's how:
+
+### 1. **Start the Application**
+```bash
+npm install
+npm run dev
+```
+
+### 2. **Test Credential Storage**
+Visit: `http://localhost:3000/kusama-demo?action=store`
+- Connect your wallet (Polkadot.js, Talisman, SubWallet, or Nova Wallet)
+- Fill out the credential form
+- Submit to Kusama blockchain
+- **Get your transaction hash!** 🎯
+
+### 3. **Test Credential Retrieval**
+Visit: `http://localhost:3000/kusama-demo?action=retrieve`
+- Use the transaction hash from step 2
+- Retrieve and decrypt your stored credentials
+- **See your data securely retrieved!** 🔐
+
+### 4. **Verify on Blockchain**
+- Copy your transaction hash
+- Visit [Kusama Subscan](https://kusama.subscan.io/)
+- Search for your transaction hash
+- **See your encrypted credentials on the blockchain!** 🌐
+
+**This demo now provides a complete, working example of decentralized credential management on Kusama!**
+
+---
 
 ## Installation
 
@@ -345,6 +375,33 @@ The system supports two encryption modes:
 - **Access Control**: Only credential owners can decrypt their data
 - **Audit Trail**: Complete transaction history for compliance
 
+## 🎯 What We've Built - A Working Decentralized Credential System!
+
+This project demonstrates a **fully functional** decentralized credential management system on the Kusama blockchain:
+
+### ✅ **What Works Now**
+- **Real Blockchain Storage**: Credentials are actually stored on Kusama mainnet
+- **End-to-End Encryption**: Strong NaCl encryption with random keys
+- **Wallet Integration**: Works with all major Polkadot wallets
+- **Transaction Processing**: Real transactions with real fees
+- **Credential Retrieval**: Complete lifecycle from store to retrieve
+- **Blockchain Verification**: Transaction hashes and block details
+
+### 🔐 **Security Features**
+- **Strong Cryptography**: NaCl (libsodium) encryption
+- **Random Key Generation**: 32-byte random encryption keys
+- **Wallet Authentication**: No hardcoded secrets
+- **Real Blockchain**: Actual Kusama mainnet, not testnet
+
+### 🌟 **Key Achievements**
+- **Eliminated CDN Dependencies**: Local Polkadot.js bundle for reliability
+- **Fixed Library Loading**: Consistent library availability across all pages
+- **Real Transaction Processing**: No simulation, actual blockchain interaction
+- **Complete Error Handling**: Comprehensive error management and user feedback
+- **Transaction Verification**: Real transaction hashes and block information
+
+---
+
 ## Demo & Testing
 
 ### 🆕 Real Wallet Integration Demo (Latest)
@@ -388,26 +445,37 @@ npm run demo:nova-simple  # Simple demo (no dependencies)
 npm run demo:nova         # Full integration demo (requires browser)
 ```
 
-### 🆕 Wallet-Based Kusama Demo (Recommended)
+### 🆕 Working Kusama Credential Demo (Latest & Fully Functional!)
 
-Visit `/wallet-kusama-demo` in your browser to test the new wallet-based Kusama storage system:
+Visit `/kusama-demo` in your browser to test the **fully working** Kusama credential storage system:
 
-- **No Hardcoded Seeds**: Each user uses their own wallet
-- **Real Ownership**: You control your own credentials
-- **SSO Integration**: Uses the existing authentication flow
-- **Secure Storage**: Mock storage with real authentication
-- **Cost Estimation**: See storage costs for your data
-- **Network Health**: Monitor Kusama network status
+#### ✅ **Store Credentials** - Now Working Perfectly!
+- **Real Blockchain Storage**: Encrypts and stores credentials on Kusama mainnet
+- **End-to-End Encryption**: Uses NaCl encryption with random 32-byte keys
+- **Transaction Confirmation**: Shows real transaction hash and block details
+- **Cost Management**: Real transaction fees on Kusama network
+- **Wallet Integration**: Works with Polkadot.js, Talisman, SubWallet, and Nova Wallet
 
-### Legacy Kusama Demo (Deprecated)
+#### ✅ **Retrieve Credentials** - Now Working Perfectly!
+- **Transaction Hash Lookup**: Retrieve credentials using transaction hash
+- **Secure Decryption**: Decrypts stored credentials using encryption keys
+- **Full Credential Details**: Shows type, data, description, and metadata
+- **Blockchain Verification**: Confirms credentials are stored on Kusama
 
-Visit `/kusama-demo` in your browser to test the legacy hardcoded seed approach:
+#### 🔐 **Security Features**
+- **Strong Encryption**: NaCl (libsodium) encryption for credential data
+- **Random Keys**: 32-byte random encryption keys for each credential
+- **Wallet Authentication**: Requires connected and authenticated wallet
+- **Real Blockchain**: No simulation - actual Kusama mainnet transactions
 
-- **Store Credentials**: Test storing encrypted credentials on Kusama
-- **Retrieve Credentials**: Practice retrieving and decrypting stored data
-- **Cost Estimation**: See real-time cost estimates for different data sizes
-- **Network Health**: Monitor Kusama network status
-- **Transaction Monitoring**: Track active blockchain transactions
+#### 🚀 **How to Test**
+1. **Connect Wallet**: Use any supported wallet extension
+2. **Store Credentials**: Fill form and submit to Kusama blockchain
+3. **Get Transaction Hash**: Copy the displayed transaction hash
+4. **Retrieve Credentials**: Use the hash to retrieve and decrypt data
+5. **Verify on Blockchain**: Check transaction on [Kusama Subscan](https://kusama.subscan.io/)
+
+**This demo now provides a complete, working example of decentralized credential management on Kusama!** 🎯
 
 ### 🆕 Real Wallet Integration API Examples (Latest)
 
@@ -917,16 +985,18 @@ npm run demo:wallet     # Legacy wallet integration demo
 ### Available Demo Scripts
 
 ```bash
-# New wallet integration demos
+# 🆕 Working Kusama Credential Demo (Recommended)
+npm run dev             # Start the main application
+# Then visit: http://localhost:3000/kusama-demo
+
+# 🆕 Wallet Integration Demos
 npm run demo:browser    # Browser wallet extension integration
 npm run demo:node       # Node.js development testing
 npm run demo:nova       # Nova Wallet integration demo
 npm run demo:nova-simple # Nova Wallet simple demo (no dependencies)
 npm run demo:wallet     # Comprehensive wallet demo runner
 
-# Legacy demos
-npm run demo:wallet     # Wallet-based Kusama storage
-npm run demo:kusama     # Legacy Kusama integration
+# 🔧 Development & Testing Demos
 npm run demo:modular    # Modular architecture demo
 npm run demo:credentials # Credential management demo
 npm run demo:security   # Security testing demo
