@@ -17,7 +17,8 @@
     "publish-packages": "npm run build && npm publish --workspaces --access public",
     "example:express": "cd examples/express-simple && npm run dev",
     "example:next": "cd examples/next-simple && npm run dev",
-    "example:next:build": "cd examples/next-simple && npm run build"
+    "example:next:build": "cd examples/next-simple && npm run build",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "keywords": [
     "polkadot",

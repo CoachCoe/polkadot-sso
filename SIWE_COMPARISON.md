@@ -8,33 +8,34 @@ This document compares our current Polkadot SSO implementation with the [Sign in
 
 ### ✅ **What We Already Have (Similar to SIWE)**
 
-| Feature | Our Implementation | SIWE Standard | Status |
-|---------|-------------------|---------------|---------|
-| **Wallet-based authentication** | ✅ Polkadot.js, Talisman, SubWallet, Nova Wallet | ✅ MetaMask, WalletConnect, etc. | ✅ On Par |
-| **Self-sovereign identity** | ✅ Users control their credentials | ✅ Users control their identity | ✅ On Par |
-| **Single Sign-On** | ✅ Cross-application authentication | ✅ Cross-application authentication | ✅ On Par |
-| **Cryptographic verification** | ✅ Message signing and verification | ✅ EIP-191 signature verification | ✅ On Par |
-| **Session management** | ✅ Access/refresh tokens | ✅ JWT tokens | ✅ On Par |
+| Feature                         | Our Implementation                               | SIWE Standard                       | Status    |
+| ------------------------------- | ------------------------------------------------ | ----------------------------------- | --------- |
+| **Wallet-based authentication** | ✅ Polkadot.js, Talisman, SubWallet, Nova Wallet | ✅ MetaMask, WalletConnect, etc.    | ✅ On Par |
+| **Self-sovereign identity**     | ✅ Users control their credentials               | ✅ Users control their identity     | ✅ On Par |
+| **Single Sign-On**              | ✅ Cross-application authentication              | ✅ Cross-application authentication | ✅ On Par |
+| **Cryptographic verification**  | ✅ Message signing and verification              | ✅ EIP-191 signature verification   | ✅ On Par |
+| **Session management**          | ✅ Access/refresh tokens                         | ✅ JWT tokens                       | ✅ On Par |
 
 ### 🚀 **Key SIWE Capabilities We Should Adopt**
 
-| Feature | SIWE Standard | Our Current State | Priority |
-|---------|---------------|-------------------|----------|
-| **Standardized message format** | ✅ EIP-4361 human-readable format | ❌ Basic timestamp message | 🔴 High |
-| **Nonce-based replay protection** | ✅ Unique nonce per challenge | ❌ Basic state parameter | 🔴 High |
-| **Domain binding** | ✅ Prevents cross-site attacks | ❌ No domain validation | 🔴 High |
-| **Expiration timestamps** | ✅ Configurable expiration | ✅ 5-minute fixed expiration | 🟡 Medium |
-| **Request ID tracking** | ✅ Unique request identifiers | ❌ No request tracking | 🟡 Medium |
-| **Resource specification** | ✅ Define accessible resources | ❌ No resource scoping | 🟡 Medium |
-| **Chain ID specification** | ✅ Multi-chain support | ❌ Hardcoded to Kusama | 🟡 Medium |
-| **OpenID Connect support** | ✅ OIDC provider | ❌ No OIDC support | 🟢 Low |
-| **Enterprise features** | ✅ Audit trails, compliance | ❌ Basic logging | 🟢 Low |
+| Feature                           | SIWE Standard                     | Our Current State            | Priority  |
+| --------------------------------- | --------------------------------- | ---------------------------- | --------- |
+| **Standardized message format**   | ✅ EIP-4361 human-readable format | ❌ Basic timestamp message   | 🔴 High   |
+| **Nonce-based replay protection** | ✅ Unique nonce per challenge     | ❌ Basic state parameter     | 🔴 High   |
+| **Domain binding**                | ✅ Prevents cross-site attacks    | ❌ No domain validation      | 🔴 High   |
+| **Expiration timestamps**         | ✅ Configurable expiration        | ✅ 5-minute fixed expiration | 🟡 Medium |
+| **Request ID tracking**           | ✅ Unique request identifiers     | ❌ No request tracking       | 🟡 Medium |
+| **Resource specification**        | ✅ Define accessible resources    | ❌ No resource scoping       | 🟡 Medium |
+| **Chain ID specification**        | ✅ Multi-chain support            | ❌ Hardcoded to Kusama       | 🟡 Medium |
+| **OpenID Connect support**        | ✅ OIDC provider                  | ❌ No OIDC support           | 🟢 Low    |
+| **Enterprise features**           | ✅ Audit trails, compliance       | ❌ Basic logging             | 🟢 Low    |
 
 ## Detailed Feature Analysis
 
 ### 1. **Message Format Standardization**
 
 **SIWE (EIP-4361):**
+
 ```
 example.com wants you to sign in with your Ethereum account:
 0x1234567890123456789012345678901234567890
@@ -54,6 +55,7 @@ Resources:
 ```
 
 **Our Current Format:**
+
 ```
 Login to Polkadot SSO at 2025-08-24T18:11:42.069Z
 ```
@@ -63,6 +65,7 @@ Login to Polkadot SSO at 2025-08-24T18:11:42.069Z
 ### 2. **Security Enhancements**
 
 **SIWE Security Features:**
+
 - Nonce-based replay protection
 - Domain binding to prevent cross-site attacks
 - Configurable expiration times
@@ -70,6 +73,7 @@ Login to Polkadot SSO at 2025-08-24T18:11:42.069Z
 - Resource scoping for fine-grained permissions
 
 **Our Current Security:**
+
 - Basic state parameter
 - Fixed 5-minute expiration
 - No domain validation
@@ -87,12 +91,14 @@ Login to Polkadot SSO at 2025-08-24T18:11:42.069Z
 ### 4. **Enterprise Features**
 
 **SIWE Enterprise Features:**
+
 - OpenID Connect provider
 - Comprehensive audit trails
 - Compliance-friendly logging
 - Professional support
 
 **Our Current Features:**
+
 - Basic logging
 - Simple session management
 
@@ -158,7 +164,7 @@ Login to Polkadot SSO at 2025-08-24T18:11:42.069Z
 
 ```typescript
 // Before: Basic message
-message: `Login to Polkadot SSO at ${new Date().toISOString()}`
+message: `Login to Polkadot SSO at ${new Date().toISOString()}`;
 
 // After: SIWE-style message
 message: `polkadot-sso.localhost wants you to sign in with your Polkadot account:
@@ -175,12 +181,13 @@ Expiration Time: 2025-08-24T18:16:42.069Z
 Request ID: 123e4567-e89b-12d3-a456-426614174000
 Resources:
 - https://polkadot-sso.localhost/credentials
-- https://polkadot-sso.localhost/profile`
+- https://polkadot-sso.localhost/profile`;
 ```
 
 ### 2. New SIWE-Style Auth Service
 
 Created `SIWEStyleAuthService` with:
+
 - Message generation and parsing
 - Enhanced signature verification
 - Security validation
@@ -189,6 +196,7 @@ Created `SIWEStyleAuthService` with:
 ### 3. Enhanced Type Definitions
 
 Updated `Challenge` interface with:
+
 - `nonce` field for replay protection
 - `issued_at` and `expires_at` timestamps
 - Better expiration handling
@@ -196,24 +204,28 @@ Updated `Challenge` interface with:
 ## Benefits of SIWE-Style Implementation
 
 ### 1. **Enhanced Security**
+
 - Nonce-based replay protection prevents message reuse
 - Domain binding prevents cross-site attacks
 - Configurable expiration times
 - Request ID tracking for audit trails
 
 ### 2. **Better User Experience**
+
 - Human-readable messages
 - Clear resource scoping
 - Standardized format across applications
 - Better error messages
 
 ### 3. **Developer Experience**
+
 - Standardized API
 - Better debugging capabilities
 - Comprehensive validation
 - Clear documentation
 
 ### 4. **Enterprise Readiness**
+
 - Audit trail support
 - Compliance-friendly design
 - Professional security features
@@ -222,18 +234,21 @@ Updated `Challenge` interface with:
 ## Next Steps
 
 ### Immediate (Phase 1) ✅ **COMPLETED**
+
 - ✅ Implement SIWE-style message format
 - ✅ Add nonce-based security
 - ✅ Enhance signature verification
 - ✅ Update type definitions
 
 ### Short Term (Phase 2) 🚧 **IN PROGRESS**
+
 - 🚧 Add resource scoping
 - 🚧 Implement multi-chain support
 - 🚧 Enhance session management
 - 🚧 Add comprehensive testing
 
 ### Long Term (Phase 3) 📋 **PLANNED**
+
 - 📋 OpenID Connect provider
 - 📋 Enterprise audit features
 - 📋 Professional support tools

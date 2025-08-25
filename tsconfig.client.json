@@ -11,9 +11,6 @@
     "noEmit": false,
     "typeRoots": ["./src/types"]
   },
-  "files": [
-    "src/client/login.ts",
-    "src/client/challenge.ts"
-  ],
+  "files": ["src/client/login.ts", "src/client/challenge.ts"],
   "exclude": ["node_modules"]
 }

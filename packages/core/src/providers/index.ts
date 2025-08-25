@@ -69,8 +69,7 @@ export const polkadotJsProvider: WalletProvider = {
         return signResult.signature;
       },
 
-      disconnect: async (): Promise<void> => {
-      },
+      disconnect: async (): Promise<void> => {},
     };
   },
 };
@@ -128,8 +127,7 @@ export const talismanProvider: WalletProvider = {
         return signResult.signature;
       },
 
-      disconnect: async (): Promise<void> => {
-      },
+      disconnect: async (): Promise<void> => {},
     };
   },
 };
@@ -187,8 +185,7 @@ export const subWalletProvider: WalletProvider = {
         return signResult.signature;
       },
 
-      disconnect: async (): Promise<void> => {
-      },
+      disconnect: async (): Promise<void> => {},
     };
   },
 };

@@ -39,7 +39,9 @@ export function createAuthApiRoutes(config: NextAuthConfig = {}) {
       const { signature, challenge_id, address, message } = req.body;
 
       if (!signature || !challenge_id || !address || !message) {
-        return res.status(400).json({ error: 'challenge_id, signature, address, and message are required' });
+        return res
+          .status(400)
+          .json({ error: 'challenge_id, signature, address, and message are required' });
       }
 
       res.json({

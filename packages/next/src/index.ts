@@ -1,7 +1,4 @@
-export type {
-  AuthContext, NextAuthConfig, NextAuthHandler,
-  NextAuthMiddleware
-} from './types';
+export type { AuthContext, NextAuthConfig, NextAuthHandler, NextAuthMiddleware } from './types';
 
 export { createAuthMiddleware, optionalAuth, requireAuth } from './middleware';
 

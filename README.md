@@ -37,8 +37,8 @@ import { polkadotAuth } from '@polkadot-auth/next';
 export default polkadotAuth({
   pages: {
     signIn: '/auth/signin',
-    error: '/auth/error'
-  }
+    error: '/auth/error',
+  },
 });
 ```
 
@@ -60,6 +60,7 @@ const auth = createPolkadotAuth({
 ## ✨ Features
 
 ### 🔐 SIWE-Style Authentication
+
 - **EIP-4361 Compliant**: Standard authentication messages
 - **Nonce Protection**: Replay attack prevention
 - **Domain Binding**: Enhanced security
@@ -67,6 +68,7 @@ const auth = createPolkadotAuth({
 - **Resource Scoping**: Granular permissions
 
 ### 🏗️ Framework Agnostic
+
 - **Express.js**: Full middleware support
 - **Next.js**: API routes and pages
 - **Remix**: Loader/action integration
@@ -74,6 +76,7 @@ const auth = createPolkadotAuth({
 - **Custom**: Use core package directly
 
 ### 💼 Multi-Wallet Support
+
 - **Polkadot.js Extension**: Official browser extension
 - **Talisman**: Popular wallet extension
 - **SubWallet**: Feature-rich wallet
@@ -81,6 +84,7 @@ const auth = createPolkadotAuth({
 - **Custom Providers**: Extensible architecture
 
 ### ⛓️ Multi-Chain Support
+
 - **Polkadot**: Main network
 - **Kusama**: Canary network
 - **Westend**: Test network
@@ -88,6 +92,7 @@ const auth = createPolkadotAuth({
 - **Custom Chains**: Any Substrate-based chain
 
 ### 🔒 Enterprise Security
+
 - **JWT Sessions**: Stateless authentication
 - **Database Sessions**: Persistent sessions
 - **Rate Limiting**: Built-in protection
@@ -96,13 +101,13 @@ const auth = createPolkadotAuth({
 
 ## 📦 Packages
 
-| Package | Description | Status |
-|---------|-------------|--------|
-| `@polkadot-auth/core` | Framework-agnostic core | ✅ Ready |
-| `@polkadot-auth/express` | Express.js adapter | ✅ Ready |
-| `@polkadot-auth/next` | Next.js adapter | ✅ Ready |
-| `@polkadot-auth/remix` | Remix adapter | 🚧 In Progress |
-| `@polkadot-auth/ui` | React UI components | 🚧 In Progress |
+| Package                  | Description             | Status         |
+| ------------------------ | ----------------------- | -------------- |
+| `@polkadot-auth/core`    | Framework-agnostic core | ✅ Ready       |
+| `@polkadot-auth/express` | Express.js adapter      | ✅ Ready       |
+| `@polkadot-auth/next`    | Next.js adapter         | ✅ Ready       |
+| `@polkadot-auth/remix`   | Remix adapter           | 🚧 In Progress |
+| `@polkadot-auth/ui`      | React UI components     | 🚧 In Progress |
 
 ## 🎯 Examples
 
@@ -152,18 +157,19 @@ export async function GET(request: NextRequest) {
     challenge: `Sign this message...`,
     challenge_id: '...',
     nonce: '...',
-    expires_at: '...'
+    expires_at: '...',
   });
 }
 ```
 
 // Protected route
 app.get('/protected', requireAuth(), (req, res) => {
-  res.json({ user: req.user });
+res.json({ user: req.user });
 });
 
 app.listen(3000);
-```
+
+````
 
 ### Next.js Example
 
@@ -192,25 +198,18 @@ export default function ProtectedPage() {
 
   return <div>Welcome, {session.address}!</div>;
 }
-```
+````
 
 ### React Components
 
 ```tsx
-import {
-  PolkadotSignInButton,
-  WalletSelector,
-  PolkadotProfile
-} from '@polkadot-auth/ui';
+import { PolkadotSignInButton, WalletSelector, PolkadotProfile } from '@polkadot-auth/ui';
 
 function App() {
   return (
     <div>
       <PolkadotSignInButton />
-      <WalletSelector
-        providers={['polkadot-js', 'talisman']}
-        onSelect={handleWalletSelect}
-      />
+      <WalletSelector providers={['polkadot-js', 'talisman']} onSelect={handleWalletSelect} />
       <PolkadotProfile />
     </div>
   );
@@ -240,7 +239,7 @@ const auth = createPolkadotAuth({
       name: 'My Parachain',
       rpcUrl: 'wss://my-parachain-rpc.com',
       ss58Format: 42,
-    }
+    },
   ],
 
   // Wallet providers
@@ -287,7 +286,7 @@ const customProvider = createCustomProvider({
     return {
       provider: customProvider,
       accounts: [],
-      signMessage: async (message) => 'signed-message',
+      signMessage: async message => 'signed-message',
       disconnect: async () => {},
     };
   },
@@ -342,6 +341,7 @@ Resources:
 ## 🚀 Roadmap
 
 ### Phase 1: Core & Express ✅
+
 - [x] Framework-agnostic core
 - [x] Express.js adapter
 - [x] SIWE-style authentication
@@ -349,18 +349,21 @@ Resources:
 - [x] Multi-chain support
 
 ### Phase 2: Framework Support 🚧
+
 - [ ] Next.js adapter
 - [ ] Remix adapter
 - [ ] Fastify adapter
 - [ ] Koa adapter
 
 ### Phase 3: UI Components 🚧
+
 - [ ] React components
 - [ ] Vue components
 - [ ] Vanilla JS components
 - [ ] Styling themes
 
 ### Phase 4: Enterprise Features 📋
+
 - [ ] OpenID Connect provider
 - [ ] Advanced audit trails
 - [ ] Rate limiting

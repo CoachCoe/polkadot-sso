@@ -75,14 +75,14 @@ const auth = createPolkadotAuth({
 
 ```typescript
 interface PolkadotAuthConfig {
-  defaultChain?: string;           // Default chain (default: 'polkadot')
-  chains?: ChainConfig[];          // Custom chains
-  providers?: string[];            // Enabled wallet providers
+  defaultChain?: string; // Default chain (default: 'polkadot')
+  chains?: ChainConfig[]; // Custom chains
+  providers?: string[]; // Enabled wallet providers
   customProviders?: WalletProvider[]; // Custom wallet providers
-  session?: SessionConfig;         // Session configuration
-  database?: DatabaseConfig;       // Database configuration
-  security?: SecurityConfig;       // Security settings
-  ui?: UIConfig;                   // UI configuration
+  session?: SessionConfig; // Session configuration
+  database?: DatabaseConfig; // Database configuration
+  security?: SecurityConfig; // Security settings
+  ui?: UIConfig; // UI configuration
 }
 ```
 
@@ -90,13 +90,13 @@ interface PolkadotAuthConfig {
 
 ```typescript
 interface ChainConfig {
-  id: string;                      // Chain identifier
-  name: string;                    // Display name
-  rpcUrl: string;                  // RPC endpoint
-  ss58Format: number;              // Address format
-  decimals?: number;               // Token decimals
-  symbol?: string;                 // Token symbol
-  isTestnet?: boolean;             // Is testnet
+  id: string; // Chain identifier
+  name: string; // Display name
+  rpcUrl: string; // RPC endpoint
+  ss58Format: number; // Address format
+  decimals?: number; // Token decimals
+  symbol?: string; // Token symbol
+  isTestnet?: boolean; // Is testnet
 }
 ```
 
@@ -104,11 +104,11 @@ interface ChainConfig {
 
 ```typescript
 interface SecurityConfig {
-  enableNonce?: boolean;           // Enable nonce-based replay protection
-  enableDomainBinding?: boolean;   // Enable domain binding
+  enableNonce?: boolean; // Enable nonce-based replay protection
+  enableDomainBinding?: boolean; // Enable domain binding
   enableRequestTracking?: boolean; // Enable request ID tracking
-  challengeExpiration?: number;    // Challenge expiration in seconds
-  allowedDomains?: string[];       // Allowed domains for binding
+  challengeExpiration?: number; // Challenge expiration in seconds
+  allowedDomains?: string[]; // Allowed domains for binding
 }
 ```
 
@@ -183,7 +183,7 @@ const customProvider = createCustomProvider({
     return {
       provider: customProvider,
       accounts: [],
-      signMessage: async (message) => {
+      signMessage: async message => {
         // Implement message signing
         return 'signed-message';
       },
@@ -229,6 +229,7 @@ const auth = createPolkadotAuth({
 Creates a new Polkadot Auth instance.
 
 **Parameters:**
+
 - `config` (optional): Configuration object
 
 **Returns:** `PolkadotAuthInstance`
@@ -240,6 +241,7 @@ Creates a new Polkadot Auth instance.
 Creates a new authentication challenge.
 
 **Parameters:**
+
 - `clientId`: Client identifier
 - `userAddress` (optional): User's address
 - `chainId` (optional): Chain identifier
@@ -251,6 +253,7 @@ Creates a new authentication challenge.
 Verifies a signed message against a challenge.
 
 **Parameters:**
+
 - `signature`: SIWESignature object
 - `challenge`: Challenge object
 

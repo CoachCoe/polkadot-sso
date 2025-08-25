@@ -79,11 +79,7 @@ import { credentialService } from './modules/credentials';
 import { ipfsService } from './modules/storage';
 
 // Import from main modules index
-import {
-  challengeService,
-  credentialService,
-  ipfsService
-} from './modules';
+import { challengeService, credentialService, ipfsService } from './modules';
 ```
 
 ### Module initialization:
@@ -105,21 +101,25 @@ await moduleManager.initializeModules();
 ## Benefits
 
 ### 1. Clear Separation of Concerns
+
 - Each module has a single, well-defined responsibility
 - Easy to understand what each module does
 - Clear boundaries between different functionality
 
 ### 2. Improved Maintainability
+
 - Changes to one module don't affect others
 - Easier to locate and fix issues
 - Simpler to add new features
 
 ### 3. Better Testing
+
 - Each module can be tested independently
 - Clearer test boundaries
 - Easier to mock dependencies
 
 ### 4. Future Flexibility
+
 - Modules can be extracted to separate packages
 - Easy to disable specific modules
 - Simple to add new modules
@@ -127,18 +127,23 @@ await moduleManager.initializeModules();
 ## Module Development Guidelines
 
 ### 1. Single Responsibility
+
 Each module should have one clear purpose and responsibility.
 
 ### 2. Clear Interfaces
+
 Modules should expose clean, well-documented interfaces.
 
 ### 3. Dependency Management
+
 Modules should declare their dependencies clearly.
 
 ### 4. Error Handling
+
 Modules should handle their own errors and provide meaningful error messages.
 
 ### 5. Logging
+
 Modules should use the centralized logging system for consistency.
 
 ## Adding New Modules

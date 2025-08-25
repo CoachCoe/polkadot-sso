@@ -110,40 +110,44 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8">Polkadot Auth - Next.js Example</h1>
+    <main className='min-h-screen p-8'>
+      <div className='max-w-4xl mx-auto'>
+        <h1 className='text-4xl font-bold mb-8'>Polkadot Auth - Next.js Example</h1>
 
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Authentication Status</h2>
+        <div className='bg-white rounded-lg shadow-lg p-6 mb-8'>
+          <h2 className='text-2xl font-semibold mb-4'>Authentication Status</h2>
 
           {authState.isAuthenticated ? (
-            <div className="space-y-4">
-              <p className="text-green-600 font-medium">✅ Authenticated</p>
-              <p><strong>Address:</strong> {authState.user?.address}</p>
-              <p><strong>Chain:</strong> {authState.user?.chain}</p>
-              <div className="flex gap-4">
+            <div className='space-y-4'>
+              <p className='text-green-600 font-medium'>✅ Authenticated</p>
+              <p>
+                <strong>Address:</strong> {authState.user?.address}
+              </p>
+              <p>
+                <strong>Chain:</strong> {authState.user?.chain}
+              </p>
+              <div className='flex gap-4'>
                 <Link
-                  href="/protected"
-                  className="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  href='/protected'
+                  className='inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
                 >
                   View Protected Page
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  className='bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600'
                 >
                   Sign Out
                 </button>
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
-              <p className="text-red-600 font-medium">❌ Not Authenticated</p>
+            <div className='space-y-4'>
+              <p className='text-red-600 font-medium'>❌ Not Authenticated</p>
               <button
                 onClick={handleSignIn}
                 disabled={isLoading}
-                className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 disabled:bg-gray-400"
+                className='bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 disabled:bg-gray-400'
               >
                 {isLoading ? 'Signing in...' : 'Sign In with Polkadot'}
               </button>
@@ -151,9 +155,9 @@ export default function HomePage() {
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-semibold mb-4">Features</h2>
-          <ul className="space-y-2">
+        <div className='bg-white rounded-lg shadow-lg p-6'>
+          <h2 className='text-2xl font-semibold mb-4'>Features</h2>
+          <ul className='space-y-2'>
             <li>✅ SIWE-style authentication messages</li>
             <li>✅ Multiple wallet support (Polkadot.js, Talisman, SubWallet)</li>
             <li>✅ Multi-chain support (Polkadot, Kusama, Westend, Rococo)</li>

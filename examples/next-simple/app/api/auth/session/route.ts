@@ -4,10 +4,7 @@ export async function GET(request: NextRequest) {
   const token = request.cookies.get('polkadot-auth-token')?.value;
 
   if (!token) {
-    return NextResponse.json(
-      { error: 'No valid session' },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: 'No valid session' }, { status: 401 });
   }
 
   const session = {

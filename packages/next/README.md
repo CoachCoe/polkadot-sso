@@ -88,7 +88,11 @@ export default function HomePage() {
       {isAuthenticated ? (
         <p>Welcome, {user?.address}!</p>
       ) : (
-        <button onClick={() => {/* Your sign-in logic */}}>
+        <button
+          onClick={() => {
+            /* Your sign-in logic */
+          }}
+        >
           Sign In with Polkadot
         </button>
       )}
@@ -103,16 +107,16 @@ export default function HomePage() {
 
 ```typescript
 interface NextAuthConfig {
-  basePath?: string;           // API route base path (default: '/api/auth')
-  providers?: string[];        // Supported wallet providers
-  chains?: string[];          // Supported chains
+  basePath?: string; // API route base path (default: '/api/auth')
+  providers?: string[]; // Supported wallet providers
+  chains?: string[]; // Supported chains
   session?: {
-    secret?: string;          // Session secret
-    maxAge?: number;          // Session max age
+    secret?: string; // Session secret
+    maxAge?: number; // Session max age
   };
   security?: {
-    csrf?: boolean;           // Enable CSRF protection
-    rateLimit?: boolean;      // Enable rate limiting
+    csrf?: boolean; // Enable CSRF protection
+    rateLimit?: boolean; // Enable rate limiting
   };
 }
 ```
@@ -129,6 +133,7 @@ The adapter provides these endpoints:
 ### Hooks
 
 #### `useAuthState()`
+
 Placeholder hook with example implementation.
 
 ```tsx
@@ -140,6 +145,7 @@ const { isAuthenticated, user } = useAuthState();
 ```
 
 #### `useSignIn()`
+
 Placeholder hook with example implementation.
 
 ```tsx
@@ -155,6 +161,7 @@ const handleSignIn = async () => {
 ```
 
 #### `useSignOut()`
+
 Placeholder hook with example implementation.
 
 ```tsx
@@ -172,6 +179,7 @@ const handleSignOut = async () => {
 ### Components
 
 #### `SignInButton`
+
 Placeholder component with example implementation.
 
 ```tsx
@@ -180,14 +188,15 @@ Placeholder component with example implementation.
 import { SignInButton } from '@polkadot-auth/next';
 
 <SignInButton
-  onSuccess={(session) => console.log('Success!', session)}
-  onError={(error) => console.error('Error!', error)}
+  onSuccess={session => console.log('Success!', session)}
+  onError={error => console.error('Error!', error)}
 >
   Custom Button Text
-</SignInButton>
+</SignInButton>;
 ```
 
 #### `AuthProvider`
+
 Placeholder component with example implementation.
 
 ```tsx
@@ -196,23 +205,22 @@ Placeholder component with example implementation.
 import { AuthProvider } from '@polkadot-auth/next';
 
 function App({ children }) {
-  return (
-    <AuthProvider>
-      {children}
-    </AuthProvider>
-  );
+  return <AuthProvider>{children}</AuthProvider>;
 }
 ```
 
 ### Middleware
 
 #### `createAuthMiddleware(config)`
+
 Create authentication middleware for Next.js.
 
 #### `requireAuth()`
+
 Middleware that requires authentication.
 
 #### `optionalAuth()`
+
 Middleware that allows optional authentication.
 
 ## Examples

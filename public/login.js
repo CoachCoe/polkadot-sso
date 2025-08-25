@@ -30,7 +30,9 @@ connectButton.addEventListener('click', async () => {
 
     if (!window.polkadotExtensionDapp) {
       console.error('Polkadot extension not found!');
-      throw new Error('Polkadot.js extension not found. Please install the Polkadot.js extension first.');
+      throw new Error(
+        'Polkadot.js extension not found. Please install the Polkadot.js extension first.'
+      );
     }
 
     console.log('Polkadot extension found, checking web3Enable function...');
@@ -47,15 +49,23 @@ connectButton.addEventListener('click', async () => {
     const extensions = await window.polkadotExtensionDapp.web3Enable(window.SSO_CONFIG.appName);
     console.log('web3Enable completed successfully');
     console.log('Available extensions:', extensions);
-    console.log('Extension names:', extensions.map(ext => ext.name));
-    console.log('Extension details:', extensions.map(ext => ({ name: ext.name, version: ext.version })));
+    console.log(
+      'Extension names:',
+      extensions.map(ext => ext.name)
+    );
+    console.log(
+      'Extension details:',
+      extensions.map(ext => ({ name: ext.name, version: ext.version }))
+    );
 
     if (extensions.length === 0) {
       updateStatus('Waiting for wallet authorization...');
       // Wait a bit for user to authorize
       await new Promise(resolve => setTimeout(resolve, 2000));
       // Try again
-      const retryExtensions = await window.polkadotExtensionDapp.web3Enable(window.SSO_CONFIG.appName);
+      const retryExtensions = await window.polkadotExtensionDapp.web3Enable(
+        window.SSO_CONFIG.appName
+      );
       if (retryExtensions.length > 0) {
         extensions.push(...retryExtensions);
         console.log('Found additional extensions after retry:', retryExtensions);
@@ -77,7 +87,7 @@ connectButton.addEventListener('click', async () => {
         version: ext.version,
         hasAccounts: !!ext.accounts,
         accountsType: typeof ext.accounts,
-        accountsMethod: ext.accounts?.get ? 'get() method available' : 'no get() method'
+        accountsMethod: ext.accounts?.get ? 'get() method available' : 'no get() method',
       });
     });
 
@@ -90,7 +100,9 @@ connectButton.addEventListener('click', async () => {
       const targetExt = extensions.find(ext => {
         const extName = ext.name.toLowerCase();
         if (walletType === 'polkadot-js') {
-          return extName.includes('polkadot') || extName.includes('js') || extName.includes('extension');
+          return (
+            extName.includes('polkadot') || extName.includes('js') || extName.includes('extension')
+          );
         } else if (walletType === 'talisman') {
           return extName.includes('talisman');
         } else if (walletType === 'subwallet') {
@@ -158,13 +170,16 @@ connectButton.addEventListener('click', async () => {
 
       try {
         console.log('Trying to get accounts from injected extension...');
-        const injectedAccounts = await window.injectedWeb3['polkadot-js'].enable('Polkadot SSO Demo');
+        const injectedAccounts =
+          await window.injectedWeb3['polkadot-js'].enable('Polkadot SSO Demo');
         console.log('Injected extension enable result:', injectedAccounts);
 
         if (injectedAccounts && injectedAccounts.accounts) {
           console.log('Injected extension accounts:', injectedAccounts.accounts);
           if (injectedAccounts.accounts.length > accounts.length) {
-            console.log(`Found more accounts from injected extension: ${injectedAccounts.accounts.length} vs ${accounts.length}`);
+            console.log(
+              `Found more accounts from injected extension: ${injectedAccounts.accounts.length} vs ${accounts.length}`
+            );
             accounts = injectedAccounts.accounts;
           }
         }
@@ -182,13 +197,15 @@ connectButton.addEventListener('click', async () => {
       const accountsWithParams = await window.polkadotExtensionDapp.web3Accounts({
         ss58Format: 0,
         genesisHash: undefined,
-        accountType: undefined
+        accountType: undefined,
       });
       console.log('Found accounts with explicit parameters:', accountsWithParams);
 
       // If we found more accounts with parameters, use those
       if (accountsWithParams && accountsWithParams.length > accounts.length) {
-        console.log(`Found more accounts with parameters: ${accountsWithParams.length} vs ${accounts.length}`);
+        console.log(
+          `Found more accounts with parameters: ${accountsWithParams.length} vs ${accounts.length}`
+        );
         accounts = accountsWithParams;
       }
     } catch (error) {
@@ -204,12 +221,14 @@ connectButton.addEventListener('click', async () => {
         genesisHash: undefined,
         accountType: undefined,
         // Try to request all accounts explicitly
-        allAccounts: true
+        allAccounts: true,
       });
       console.log('Found accounts with permission request:', accountsWithPermission);
 
       if (accountsWithPermission && accountsWithPermission.length > accounts.length) {
-        console.log(`Found more accounts with permission request: ${accountsWithPermission.length} vs ${accounts.length}`);
+        console.log(
+          `Found more accounts with permission request: ${accountsWithPermission.length} vs ${accounts.length}`
+        );
         accounts = accountsWithPermission;
       }
     } catch (error) {
@@ -224,15 +243,19 @@ connectButton.addEventListener('click', async () => {
       const accountsAll = await window.polkadotExtensionDapp.web3Accounts({
         ss58Format: 0,
         genesisHash: undefined,
-        accountType: undefined
+        accountType: undefined,
       });
       console.log('Accounts with explicit parameters:', accountsAll);
 
       if (accountsAll && accountsAll.length > accounts.length) {
-        console.log(`Using accounts with explicit parameters: ${accountsAll.length} vs ${accounts.length}`);
+        console.log(
+          `Using accounts with explicit parameters: ${accountsAll.length} vs ${accounts.length}`
+        );
         accounts = accountsAll;
       } else if (accountsNoParams && accountsNoParams.length > accounts.length) {
-        console.log(`Using accounts without parameters: ${accountsNoParams.length} vs ${accounts.length}`);
+        console.log(
+          `Using accounts without parameters: ${accountsNoParams.length} vs ${accounts.length}`
+        );
         accounts = accountsNoParams;
       }
     } catch (error) {
@@ -246,26 +269,31 @@ connectButton.addEventListener('click', async () => {
         window.polkadotExtensionDapp.web3Accounts({ ss58Format: 0 }),
         window.polkadotExtensionDapp.web3Accounts({
           ss58Format: 0,
-          genesisHash: '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe9'
+          genesisHash: '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe9',
         }),
         window.polkadotExtensionDapp.web3Accounts({
           ss58Format: 0,
-          accountType: 'sr25519'
+          accountType: 'sr25519',
         }),
 
         window.polkadotExtensionDapp.web3Accounts({
           ss58Format: 0,
-          accountType: 'ed25519'
-        })
+          accountType: 'ed25519',
+        }),
       ];
 
       for (let i = 0; i < allAccountsAttempts.length; i++) {
         try {
           const attemptAccounts = await allAccountsAttempts[i];
-          console.log(`Attempt ${i + 1} returned ${attemptAccounts?.length || 0} accounts:`, attemptAccounts);
+          console.log(
+            `Attempt ${i + 1} returned ${attemptAccounts?.length || 0} accounts:`,
+            attemptAccounts
+          );
 
           if (attemptAccounts && attemptAccounts.length > accounts.length) {
-            console.log(`Attempt ${i + 1} found more accounts: ${attemptAccounts.length} vs ${accounts.length}`);
+            console.log(
+              `Attempt ${i + 1} found more accounts: ${attemptAccounts.length} vs ${accounts.length}`
+            );
             accounts = attemptAccounts;
             break;
           }
@@ -280,11 +308,18 @@ connectButton.addEventListener('click', async () => {
     const ss58Formats = [0, 2, 42, 1];
     for (const format of ss58Formats) {
       try {
-        const formatAccounts = await window.polkadotExtensionDapp.web3Accounts({ ss58Format: format });
-        console.log(`Found ${formatAccounts?.length || 0} accounts with ss58Format=${format}:`, formatAccounts);
+        const formatAccounts = await window.polkadotExtensionDapp.web3Accounts({
+          ss58Format: format,
+        });
+        console.log(
+          `Found ${formatAccounts?.length || 0} accounts with ss58Format=${format}:`,
+          formatAccounts
+        );
 
         if (formatAccounts && formatAccounts.length > accounts.length) {
-          console.log(`Found more accounts with ss58Format=${format}: ${formatAccounts.length} vs ${accounts.length}`);
+          console.log(
+            `Found more accounts with ss58Format=${format}: ${formatAccounts.length} vs ${accounts.length}`
+          );
           accounts = formatAccounts;
         }
       } catch (error) {
@@ -307,20 +342,28 @@ connectButton.addEventListener('click', async () => {
               { ss58Format: 2 },
               { ss58Format: 42 },
               { genesisHash: undefined },
-              { accountType: undefined }
+              { accountType: undefined },
             ];
 
             for (const param of params) {
               try {
                 const extAccounts = await ext.accounts.get(param);
-                console.log(`Extension ${ext.name} with params ${JSON.stringify(param)} has ${extAccounts?.length || 0} accounts:`, extAccounts);
+                console.log(
+                  `Extension ${ext.name} with params ${JSON.stringify(param)} has ${extAccounts?.length || 0} accounts:`,
+                  extAccounts
+                );
                 if (extAccounts && extAccounts.length > 0) {
-                  console.log(`Adding ${extAccounts.length} accounts from ${ext.name} to allAccounts`);
+                  console.log(
+                    `Adding ${extAccounts.length} accounts from ${ext.name} to allAccounts`
+                  );
                   allAccounts = allAccounts.concat(extAccounts);
                   console.log(`allAccounts now has ${allAccounts.length} accounts:`, allAccounts);
                 }
               } catch (paramError) {
-                console.warn(`Error getting accounts from ${ext.name} with params ${JSON.stringify(param)}:`, paramError);
+                console.warn(
+                  `Error getting accounts from ${ext.name} with params ${JSON.stringify(param)}:`,
+                  paramError
+                );
               }
             }
           }
@@ -329,8 +372,8 @@ connectButton.addEventListener('click', async () => {
         }
       }
 
-      const uniqueAccounts = allAccounts.filter((account, index, self) =>
-        index === self.findIndex(a => a.address === account.address)
+      const uniqueAccounts = allAccounts.filter(
+        (account, index, self) => index === self.findIndex(a => a.address === account.address)
       );
 
       console.log('All accounts before deduplication:', allAccounts);
@@ -360,7 +403,6 @@ connectButton.addEventListener('click', async () => {
 
     updateStatus('Please select an account to continue');
     showAccountSelection(accounts);
-
   } catch (error) {
     console.error('Connection error:', error);
     updateStatus(error.message, 'error');
@@ -430,9 +472,11 @@ function proceedWithAddress(address) {
 
   updateStatus('Redirecting to challenge page...', 'success');
 
-  window.location.href = '/challenge?address=' +
+  window.location.href =
+    '/challenge?address=' +
     encodeURIComponent(address) +
-    '&client_id=' + encodeURIComponent(window.SSO_CONFIG.clientId);
+    '&client_id=' +
+    encodeURIComponent(window.SSO_CONFIG.clientId);
 }
 
 console.log('Login page loaded with config:', window.SSO_CONFIG);

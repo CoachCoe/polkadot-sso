@@ -4,6 +4,6 @@ const nextConfig = {
     appDir: true,
   },
   transpilePackages: ['@polkadot-auth/core', '@polkadot-auth/next'],
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

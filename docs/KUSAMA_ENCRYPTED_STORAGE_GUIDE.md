@@ -39,13 +39,11 @@ The Polkadot SSO system now supports storing encrypted credential data directly 
 
 ```typescript
 // Store encrypted data in remarks
-const result = await kusamaService.storeEncryptedDataInRemarks(
-  userAddress,
-  credentialData
-);
+const result = await kusamaService.storeEncryptedDataInRemarks(userAddress, credentialData);
 ```
 
 **How it works**:
+
 - Encrypts credential data using AES-256-GCM
 - Splits data into 1000-character chunks
 - Stores each chunk as a separate remark transaction
@@ -59,13 +57,11 @@ const result = await kusamaService.storeEncryptedDataInRemarks(
 
 ```typescript
 // Store encrypted data using batch transactions
-const result = await kusamaService.storeEncryptedDataInBatch(
-  userAddress,
-  credentialData
-);
+const result = await kusamaService.storeEncryptedDataInBatch(userAddress, credentialData);
 ```
 
 **How it works**:
+
 - Encrypts credential data
 - Splits into chunks
 - Creates batch transaction with multiple remarks
@@ -79,13 +75,11 @@ const result = await kusamaService.storeEncryptedDataInBatch(
 
 ```typescript
 // Store encrypted data using custom pallet
-const result = await kusamaService.storeEncryptedDataInCustomPallet(
-  userAddress,
-  credentialData
-);
+const result = await kusamaService.storeEncryptedDataInCustomPallet(userAddress, credentialData);
 ```
 
 **How it works**:
+
 - Encrypts credential data
 - Stores entire data in single transaction
 - Uses optimized storage pallet
@@ -96,11 +90,13 @@ const result = await kusamaService.storeEncryptedDataInCustomPallet(
 ### Setup
 
 1. **Install dependencies**:
+
 ```bash
 npm install @polkadot/api @polkadot/keyring
 ```
 
 2. **Configure environment**:
+
 ```bash
 # Add to .env file
 KUSAMA_ENDPOINT=wss://kusama-rpc.polkadot.io
@@ -109,8 +105,12 @@ KUSAMA_ACCOUNT_TYPE=sr25519
 ```
 
 3. **Initialize service**:
+
 ```typescript
-import { AdvancedKusamaService, defaultAdvancedKusamaConfig } from './services/advancedKusamaService';
+import {
+  AdvancedKusamaService,
+  defaultAdvancedKusamaConfig,
+} from './services/advancedKusamaService';
 
 const kusamaService = new AdvancedKusamaService(defaultAdvancedKusamaConfig);
 await kusamaService.initialize();
@@ -124,14 +124,11 @@ const credentialData = {
   degree: 'PhD in Computer Science',
   institution: 'MIT',
   graduation_date: '2024-05-15',
-  gpa: 4.0
+  gpa: 4.0,
 };
 
 // Store encrypted data
-const result = await kusamaService.storeEncryptedDataInRemarks(
-  userAddress,
-  credentialData
-);
+const result = await kusamaService.storeEncryptedDataInRemarks(userAddress, credentialData);
 
 console.log('Stored data hash:', result.dataHash);
 console.log('Block hash:', result.blockHash);
@@ -151,11 +148,11 @@ console.log('Retrieved data:', retrievedData);
 
 ### Cost Breakdown
 
-| Method | Base Cost | Efficiency | Best For |
-|--------|-----------|------------|----------|
-| Remarks | 0.001 KSM/1000 chars | Low | Small data |
-| Batch | 0.0008 KSM/1000 chars | Medium | Medium data |
-| Custom Pallet | 0.0005 KSM/transaction | High | Large data |
+| Method        | Base Cost              | Efficiency | Best For    |
+| ------------- | ---------------------- | ---------- | ----------- |
+| Remarks       | 0.001 KSM/1000 chars   | Low        | Small data  |
+| Batch         | 0.0008 KSM/1000 chars  | Medium     | Medium data |
+| Custom Pallet | 0.0005 KSM/transaction | High       | Large data  |
 
 ### Cost Estimation
 
@@ -171,10 +168,10 @@ console.log('Transactions needed:', costEstimate.transactionCount);
 ### Real-world Examples
 
 | Data Size | Remarks Cost | Batch Cost | Custom Pallet Cost |
-|-----------|--------------|------------|-------------------|
-| 1 KB | 0.001 KSM | 0.0008 KSM | 0.0005 KSM |
-| 10 KB | 0.01 KSM | 0.008 KSM | 0.0005 KSM |
-| 100 KB | 0.1 KSM | 0.08 KSM | 0.0005 KSM |
+| --------- | ------------ | ---------- | ------------------ |
+| 1 KB      | 0.001 KSM    | 0.0008 KSM | 0.0005 KSM         |
+| 10 KB     | 0.01 KSM     | 0.008 KSM  | 0.0005 KSM         |
+| 100 KB    | 0.1 KSM      | 0.08 KSM   | 0.0005 KSM         |
 
 ## 🔒 Security Considerations
 
@@ -210,14 +207,11 @@ const academicCredential = {
   institution: 'Stanford University',
   graduation_date: '2024-06-15',
   gpa: 3.9,
-  honors: ['Dean\'s List', 'Research Fellowship'],
-  thesis_title: 'Advanced Blockchain Applications'
+  honors: ["Dean's List", 'Research Fellowship'],
+  thesis_title: 'Advanced Blockchain Applications',
 };
 
-const result = await kusamaService.storeEncryptedDataInBatch(
-  userAddress,
-  academicCredential
-);
+const result = await kusamaService.storeEncryptedDataInBatch(userAddress, academicCredential);
 ```
 
 ### Example 2: Professional Certifications
@@ -230,13 +224,10 @@ const professionalCert = {
   issue_date: '2024-03-01',
   expiry_date: '2027-03-01',
   credential_id: 'AWS-123456789',
-  verification_url: 'https://aws.amazon.com/verification'
+  verification_url: 'https://aws.amazon.com/verification',
 };
 
-const result = await kusamaService.storeEncryptedDataInRemarks(
-  userAddress,
-  professionalCert
-);
+const result = await kusamaService.storeEncryptedDataInRemarks(userAddress, professionalCert);
 ```
 
 ### Example 3: Employment History
@@ -251,18 +242,12 @@ const employmentRecord = {
   responsibilities: [
     'Led development of blockchain infrastructure',
     'Managed team of 5 engineers',
-    'Implemented security best practices'
+    'Implemented security best practices',
   ],
-  achievements: [
-    'Reduced system latency by 40%',
-    'Implemented zero-downtime deployments'
-  ]
+  achievements: ['Reduced system latency by 40%', 'Implemented zero-downtime deployments'],
 };
 
-const result = await kusamaService.storeEncryptedDataInCustomPallet(
-  userAddress,
-  employmentRecord
-);
+const result = await kusamaService.storeEncryptedDataInCustomPallet(userAddress, employmentRecord);
 ```
 
 ## 🚀 Best Practices
@@ -279,10 +264,10 @@ const result = await kusamaService.storeEncryptedDataInCustomPallet(
 // Good: Compact data structure
 const optimizedData = {
   t: 'degree', // type
-  d: 'PhD',    // degree
-  f: 'CS',     // field
-  i: 'MIT',    // institution
-  g: '2024-05' // graduation
+  d: 'PhD', // degree
+  f: 'CS', // field
+  i: 'MIT', // institution
+  g: '2024-05', // graduation
 };
 
 // Avoid: Verbose data structure
@@ -291,7 +276,7 @@ const verboseData = {
   degree_level: 'Doctor of Philosophy',
   field_of_study: 'Computer Science',
   institution_name: 'Massachusetts Institute of Technology',
-  graduation_date: '2024-05-15'
+  graduation_date: '2024-05-15',
 };
 ```
 
@@ -299,10 +284,7 @@ const verboseData = {
 
 ```typescript
 try {
-  const result = await kusamaService.storeEncryptedDataInRemarks(
-    userAddress,
-    credentialData
-  );
+  const result = await kusamaService.storeEncryptedDataInRemarks(userAddress, credentialData);
   console.log('Success:', result);
 } catch (error) {
   if (error.message.includes('insufficient funds')) {
@@ -319,11 +301,7 @@ try {
 
 ```typescript
 // Verify data exists on Kusama
-const exists = await kusamaService.verifyEncryptedData(
-  userAddress,
-  dataHash,
-  'remark'
-);
+const exists = await kusamaService.verifyEncryptedData(userAddress, dataHash, 'remark');
 
 if (exists) {
   console.log('✅ Data verified on Kusama');
@@ -371,10 +349,7 @@ if (!connected) {
 const dataSize = JSON.stringify(credentialData).length;
 if (dataSize > 1000) {
   // Use batch method instead
-  const result = await kusamaService.storeEncryptedDataInBatch(
-    userAddress,
-    credentialData
-  );
+  const result = await kusamaService.storeEncryptedDataInBatch(userAddress, credentialData);
 }
 ```
 

@@ -7,10 +7,7 @@ export async function GET(request: NextRequest) {
   const chain_id = searchParams.get('chain_id');
 
   if (!client_id || !address || !chain_id) {
-    return NextResponse.json(
-      { error: 'Missing required parameters' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
   }
 
   const challenge = {

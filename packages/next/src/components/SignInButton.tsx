@@ -6,7 +6,9 @@ export interface SignInButtonProps {
 }
 
 export function SignInButton(props: SignInButtonProps) {
-  console.warn('SignInButton: This is a placeholder component. Please implement the actual React component in your application.');
+  console.warn(
+    'SignInButton: This is a placeholder component. Please implement the actual React component in your application.'
+  );
 
   return null;
 }

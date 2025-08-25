@@ -1,11 +1,7 @@
 import crypto from 'crypto';
 import { SIWEAuthService } from './auth/siwe';
-import {
-  DEFAULT_CHAINS
-} from './chains';
-import {
-  getProviderById
-} from './providers';
+import { DEFAULT_CHAINS } from './chains';
+import { getProviderById } from './providers';
 import {
   AuthResult,
   ChainConfig,
@@ -15,7 +11,7 @@ import {
   Session,
   SIWEMessage,
   SIWESignature,
-  WalletProvider
+  WalletProvider,
 } from './types';
 
 export function createPolkadotAuth(config: PolkadotAuthConfig = {}): PolkadotAuthInstance {
@@ -70,15 +66,19 @@ export function createPolkadotAuth(config: PolkadotAuthConfig = {}): PolkadotAut
       return siweAuth.verifySIWESignature(signature, challenge);
     },
 
-    async createSession(address: string, clientId: string, parsedMessage: SIWEMessage): Promise<Session> {
+    async createSession(
+      address: string,
+      clientId: string,
+      parsedMessage: SIWEMessage
+    ): Promise<Session> {
       const sessionId = crypto.randomUUID();
       const accessToken = crypto.randomBytes(32).toString('hex');
       const refreshToken = crypto.randomBytes(32).toString('hex');
       const fingerprint = crypto.randomBytes(16).toString('hex');
 
       const now = Date.now();
-      const accessTokenExpiresAt = now + (15 * 60 * 1000); // 15 minutes
-      const refreshTokenExpiresAt = now + (7 * 24 * 60 * 60 * 1000); // 7 days
+      const accessTokenExpiresAt = now + 15 * 60 * 1000; // 15 minutes
+      const refreshTokenExpiresAt = now + 7 * 24 * 60 * 60 * 1000; // 7 days
 
       const session: Session = {
         id: sessionId,
@@ -107,8 +107,7 @@ export function createPolkadotAuth(config: PolkadotAuthConfig = {}): PolkadotAut
       return null;
     },
 
-    async invalidateSession(sessionId: string): Promise<void> {
-    },
+    async invalidateSession(sessionId: string): Promise<void> {},
 
     getProviders(): WalletProvider[] {
       return enabledProviders;
@@ -123,13 +122,22 @@ export function createPolkadotAuth(config: PolkadotAuthConfig = {}): PolkadotAut
 export * from './types';
 
 export {
-  createCustomProvider, DEFAULT_PROVIDERS, getAvailableProviders, getProviderById, novaWalletProvider, polkadotJsProvider, subWalletProvider, talismanProvider
+  createCustomProvider,
+  DEFAULT_PROVIDERS,
+  getAvailableProviders,
+  getProviderById,
+  novaWalletProvider,
+  polkadotJsProvider,
+  subWalletProvider,
+  talismanProvider,
 } from './providers';
 
 export {
   DEFAULT_CHAINS,
   getChainById,
-  getDefaultChain, getMainnetChains, getTestnetChains
+  getDefaultChain,
+  getMainnetChains,
+  getTestnetChains,
 } from './chains';
 
 export { SIWEAuthService } from './auth/siwe';

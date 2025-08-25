@@ -5,6 +5,7 @@ This guide covers all the different ways to test your Polkadot SSO credentials s
 ## ✅ Quick Status Check
 
 Your system is **WORKING**! The demo successfully tested:
+
 - ✅ User profile creation (3 profiles)
 - ✅ Credential type definition (2 types)
 - ✅ Credential issuance (2 credentials)
@@ -23,6 +24,7 @@ npm run demo:credentials
 ```
 
 This demo:
+
 - Creates user profiles for different roles (issuer, holder, verifier)
 - Defines credential types with schemas
 - Issues credentials with encrypted data
@@ -39,6 +41,7 @@ npm test
 ```
 
 Current test coverage:
+
 - ✅ TokenService (JWT token generation)
 - ✅ CredentialService (all major functions)
   - User profile management
@@ -59,11 +62,13 @@ npm run dev
 The server will start on `http://localhost:3000` with the following endpoints:
 
 #### Authentication Endpoints
+
 - `GET /` - Main login page
 - `POST /login` - Polkadot wallet authentication
 - `GET /callback` - OAuth callback handling
 
 #### Credential API Endpoints
+
 - `POST /api/credentials/profiles` - Create user profile
 - `GET /api/credentials/profiles/me` - Get current user profile
 - `PUT /api/credentials/profiles/me` - Update user profile
@@ -87,6 +92,7 @@ The server will start on `http://localhost:3000` with the following endpoints:
 Here are example API calls to test the endpoints:
 
 #### Test User Profile Creation
+
 ```bash
 curl -X POST http://localhost:3000/api/credentials/profiles \
   -H "Content-Type: application/json" \
@@ -99,6 +105,7 @@ curl -X POST http://localhost:3000/api/credentials/profiles \
 ```
 
 #### Test Credential Type Creation
+
 ```bash
 curl -X POST http://localhost:3000/api/credentials/types \
   -H "Content-Type: application/json" \
@@ -115,6 +122,7 @@ curl -X POST http://localhost:3000/api/credentials/types \
 ```
 
 #### Test Credential Issuance
+
 ```bash
 curl -X POST http://localhost:3000/api/credentials/credentials \
   -H "Content-Type: application/json" \
@@ -184,6 +192,7 @@ export PORT=3000
 Based on the successful demo run, your system supports:
 
 ### ✅ Core Functionality
+
 - **User Profile Management**: Create, read, update user profiles
 - **Credential Type Definition**: Define schemas with validation rules
 - **Credential Issuance**: Issue encrypted credentials to users
@@ -191,6 +200,7 @@ Based on the successful demo run, your system supports:
 - **Credential Retrieval**: Get user credentials with proper access control
 
 ### ✅ Advanced Features
+
 - **Credential Sharing**: Share credentials with specific permissions
 - **Credential Verification**: Verify credentials with audit trail
 - **Issuance Requests**: Request-based credential workflow
@@ -198,6 +208,7 @@ Based on the successful demo run, your system supports:
 - **Audit Logging**: Complete audit trail for all operations
 
 ### ✅ Security Features
+
 - **Data Encryption**: All sensitive data is encrypted at rest
 - **Rate Limiting**: API rate limiting to prevent abuse
 - **Input Validation**: Comprehensive input validation with Zod

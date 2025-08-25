@@ -7,6 +7,7 @@ This document outlines the coding standards and best practices for the Polkadot 
 ### **1. TypeScript Best Practices**
 
 #### **Type Safety**
+
 ```typescript
 // ✅ Good: Explicit types
 interface UserProfile {
@@ -26,6 +27,7 @@ const createUser = (data: any): any => {
 ```
 
 #### **Error Handling**
+
 ```typescript
 // ✅ Good: Proper error handling
 try {
@@ -34,7 +36,7 @@ try {
 } catch (error) {
   logger.error('Operation failed', {
     error: error instanceof Error ? error.message : 'Unknown error',
-    context: 'createUser'
+    context: 'createUser',
   });
   throw new Error('Failed to create user');
 }
@@ -50,6 +52,7 @@ try {
 ```
 
 #### **Null Safety**
+
 ```typescript
 // ✅ Good: Null-safe operations
 const userName = user?.profile?.name ?? 'Unknown User';
@@ -62,19 +65,25 @@ const userName = user.profile.name; // Could throw error
 ### **2. Code Style Guidelines**
 
 #### **Naming Conventions**
+
 ```typescript
 // ✅ Good: Descriptive names
 const MAX_RETRY_ATTEMPTS = 3;
-const isValidEmail = (email: string): boolean => { /* ... */ };
+const isValidEmail = (email: string): boolean => {
+  /* ... */
+};
 const userAuthenticationService = new UserAuthenticationService();
 
 // ❌ Bad: Unclear names
 const max = 3;
-const check = (email: string): boolean => { /* ... */ };
+const check = (email: string): boolean => {
+  /* ... */
+};
 const service = new Service();
 ```
 
 #### **Function Design**
+
 ```typescript
 // ✅ Good: Single responsibility, clear parameters
 const validateUserCredentials = (
@@ -92,6 +101,7 @@ const processUser = (userData: any): any => {
 ```
 
 #### **Comments & Documentation**
+
 ```typescript
 /**
  * Validates user credentials against the authentication system
@@ -113,13 +123,14 @@ const validateUserCredentials = async (
 ### **3. Security Best Practices**
 
 #### **Input Validation**
+
 ```typescript
 // ✅ Good: Comprehensive validation
 const validateUserInput = (input: unknown): UserInput => {
   const schema = z.object({
     email: z.string().email(),
     password: z.string().min(8).max(128),
-    age: z.number().min(13).max(120).optional()
+    age: z.number().min(13).max(120).optional(),
   });
 
   return schema.parse(input);
@@ -132,32 +143,32 @@ const processUserInput = (input: any) => {
 ```
 
 #### **Secure Logging**
+
 ```typescript
 // ✅ Good: Sanitized logging
 logger.info('User login attempt', {
   email: sanitizeEmail(email),
   ipAddress: req.ip,
   userAgent: req.get('user-agent'),
-  timestamp: new Date().toISOString()
+  timestamp: new Date().toISOString(),
 });
 
 // ❌ Bad: Logging sensitive data
 logger.info('User login attempt', {
   email: email, // Could contain sensitive data
   password: password, // Never log passwords!
-  fullRequest: req.body // Too much information
+  fullRequest: req.body, // Too much information
 });
 ```
 
 ### **4. Performance Guidelines**
 
 #### **Async/Await Usage**
+
 ```typescript
 // ✅ Good: Proper async handling
 const processUsers = async (users: User[]): Promise<void> => {
-  const results = await Promise.all(
-    users.map(user => processUser(user))
-  );
+  const results = await Promise.all(users.map(user => processUser(user)));
 
   return results;
 };
@@ -171,6 +182,7 @@ const processUsers = async (users: User[]): Promise<void> => {
 ```
 
 #### **Memory Management**
+
 ```typescript
 // ✅ Good: Proper cleanup
 class ResourceManager {
@@ -266,6 +278,7 @@ import { User } from '../types/user';
 ## 🚨 **Common Anti-patterns to Avoid**
 
 ### **1. Type Safety Issues**
+
 ```typescript
 // ❌ Avoid: Using 'any'
 const data: any = getData();
@@ -275,6 +288,7 @@ const data: UserData = getData();
 ```
 
 ### **2. Console Statements**
+
 ```typescript
 // ❌ Avoid: Console in production code
 console.log('User created:', user);
@@ -284,6 +298,7 @@ logger.info('User created', { userId: user.id });
 ```
 
 ### **3. Unhandled Promises**
+
 ```typescript
 // ❌ Avoid: Unhandled promises
 someAsyncFunction();
@@ -295,28 +310,36 @@ someAsyncFunction().catch(error => {
 ```
 
 ### **4. Magic Numbers**
+
 ```typescript
 // ❌ Avoid: Magic numbers
-if (retryCount > 3) { /* ... */ }
+if (retryCount > 3) {
+  /* ... */
+}
 
 // ✅ Use: Named constants
 const MAX_RETRY_ATTEMPTS = 3;
-if (retryCount > MAX_RETRY_ATTEMPTS) { /* ... */ }
+if (retryCount > MAX_RETRY_ATTEMPTS) {
+  /* ... */
+}
 ```
 
 ## 📊 **Quality Metrics**
 
 ### **Code Coverage Targets**
+
 - **Unit Tests**: 80% minimum
 - **Integration Tests**: 70% minimum
 - **Critical Paths**: 95% minimum
 
 ### **Performance Targets**
+
 - **Response Time**: < 200ms for API endpoints
 - **Memory Usage**: < 100MB for typical operations
 - **Database Queries**: < 50ms average
 
 ### **Security Targets**
+
 - **Vulnerability Scan**: 0 critical/high issues
 - **Dependency Audit**: 0 known vulnerabilities
 - **Code Security**: 0 security anti-patterns
@@ -324,16 +347,19 @@ if (retryCount > MAX_RETRY_ATTEMPTS) { /* ... */ }
 ## 🔄 **Continuous Improvement**
 
 ### **1. Regular Reviews**
+
 - Weekly code quality reviews
 - Monthly security audits
 - Quarterly performance analysis
 
 ### **2. Automated Checks**
+
 - CI/CD pipeline integration
 - Automated dependency updates
 - Security scanning in pipeline
 
 ### **3. Team Training**
+
 - TypeScript best practices
 - Security awareness
 - Performance optimization
