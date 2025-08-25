@@ -175,7 +175,6 @@ Alternatively, create `.env` file manually:
 
 - `KUSAMA_ENDPOINT` - Kusama RPC endpoint (default: wss://kusama-rpc.polkadot.io)
 - `KUSAMA_ACCOUNT_TYPE` - Account type: sr25519, ed25519, or ecdsa (default: sr25519)
-- `KUSAMA_ACCOUNT_SEED` - 64-character hex seed for your Kusama account
 
 **Optional Configuration:**
 
@@ -1114,8 +1113,7 @@ npm run format          # Auto-format code
    # Generate session secret
    node -e "console.log('SESSION_SECRET=' + require('crypto').randomBytes(32).toString('base64'))"
 
-   # Generate Kusama account seed
-   node -e "console.log('KUSAMA_ACCOUNT_SEED=' + require('crypto').randomBytes(32).toString('hex'))"
+
    ```
 
 2. **Set Production Environment Variables**:

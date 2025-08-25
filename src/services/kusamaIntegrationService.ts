@@ -29,7 +29,6 @@ export class KusamaIntegrationService {
     // Debug environment variables
     console.log('🔍 Debug - Environment variables:');
     console.log('KUSAMA_ENDPOINT:', process.env.KUSAMA_ENDPOINT);
-    console.log('KUSAMA_ACCOUNT_SEED:', process.env.KUSAMA_ACCOUNT_SEED);
     console.log('KUSAMA_ACCOUNT_TYPE:', process.env.KUSAMA_ACCOUNT_TYPE);
   }
 
