@@ -10,8 +10,11 @@ export interface Challenge extends PKCEChallenge {
   id: string;
   message: string;
   client_id: string;
+  nonce: string;
+  issued_at: string;
+  expires_at: string;
   created_at: number;
-  expires_at: number;
+  expires_at_timestamp: number;
   used: boolean;
 }
 

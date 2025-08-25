@@ -9,6 +9,8 @@ A **production-ready** Single Sign-On (SSO) and credential management service us
 ✅ **Complete wallet support** - Polkadot.js, Talisman, SubWallet, Nova Wallet
 ✅ **Enterprise security** - Rate limiting, audit logging, encryption
 ✅ **Modular architecture** - Maintainable, scalable codebase
+✅ **SIWE-style authentication** - EIP-4361 compliant message format
+✅ **Enhanced security** - Nonce-based replay protection, domain binding
 
 ## Features
 
@@ -1204,6 +1206,16 @@ npm run format          # Auto-format code
 - **Route Updates**: Updated all routes from `/kusama-demo` to `/kusama-credentials`
 - **Production Focus**: All code now serves production functionality
 - **Clean Architecture**: Modular, maintainable codebase with clear separation of concerns
+
+### 🔐 SIWE-Style Authentication (Latest)
+
+- **EIP-4361 Compliant Messages**: Human-readable, standardized message format
+- **Enhanced Security**: Nonce-based replay protection and domain binding
+- **Request Tracking**: Unique request IDs for audit trails and debugging
+- **Resource Scoping**: Define accessible resources in authentication messages
+- **Multi-Chain Support**: Chain ID specification for different networks
+- **Advanced Validation**: Comprehensive message parsing and validation
+- **Professional Standards**: Enterprise-ready authentication patterns
 
 ## Contributing
 
