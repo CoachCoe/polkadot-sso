@@ -29,9 +29,11 @@ For testing, use the **Westend testnet** (free):
    - Request test KSM (free)
 
 2. **Or use our setup script**
+
    ```bash
    npm run setup:kusama
    ```
+
    - Choose "y" for testnet
    - Enter your account seed
    - The script will configure everything automatically
@@ -92,16 +94,18 @@ curl -X POST http://localhost:3000/api/hybrid-credentials/credentials \
 ✅ **Tamper-Proof Timestamps**: Permanent record of credential issuance  
 ✅ **Decentralized Storage**: IPFS for censorship-resistant storage  
 ✅ **Fast Access**: Local storage for performance  
-✅ **Migration Support**: Upgrade storage types over time  
+✅ **Migration Support**: Upgrade storage types over time
 
 ## 💰 Costs
 
 ### **Testnet (Development)**
+
 - **Free**: No real money needed
 - **Test KSM**: Available from faucet
 - **Perfect**: For development and testing
 
 ### **Mainnet (Production)**
+
 - **Transaction Fee**: ~0.001 KSM per credential (~$0.01 USD)
 - **Storage**: Minimal for reference data
 - **Total Cost**: Very low for most use cases
@@ -111,12 +115,14 @@ curl -X POST http://localhost:3000/api/hybrid-credentials/credentials \
 ### **Common Issues**
 
 #### **"Insufficient balance"**
+
 ```bash
 # Get test KSM from faucet
 # Or add real KSM to your account
 ```
 
 #### **"Connection failed"**
+
 ```bash
 # Check your internet connection
 # Verify endpoint URL is correct
@@ -124,6 +130,7 @@ curl -X POST http://localhost:3000/api/hybrid-credentials/credentials \
 ```
 
 #### **"Invalid account seed"**
+
 ```bash
 # Ensure seed is 32-byte hex (64 characters)
 # Copy from Polkadot.js Extension export

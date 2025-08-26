@@ -6,24 +6,24 @@ This document outlines the additional security improvements implemented for the 
 
 ### ✅ **Completed Security Enhancements**
 
-| Component | Status | Impact | Implementation |
-|-----------|---------|---------|----------------|
-| **Authentication & Authorization** | ✅ Completed | High | JWT-based with role/permission checks |
-| **Advanced Security Headers** | ✅ Completed | High | CSP with nonce, HSTS, Permissions Policy |
-| **SQL Injection Protection** | ✅ Completed | Critical | Query validation and parameterization |
-| **Data Retention & Cleanup** | ✅ Completed | Medium | Automated data lifecycle management |
-| **Security Monitoring & Alerting** | ✅ Completed | High | Real-time threat detection |
-| **Enhanced Encryption** | ✅ Completed | Critical | PBKDF2 key derivation with HMAC integrity |
+| Component                          | Status       | Impact   | Implementation                            |
+| ---------------------------------- | ------------ | -------- | ----------------------------------------- |
+| **Authentication & Authorization** | ✅ Completed | High     | JWT-based with role/permission checks     |
+| **Advanced Security Headers**      | ✅ Completed | High     | CSP with nonce, HSTS, Permissions Policy  |
+| **SQL Injection Protection**       | ✅ Completed | Critical | Query validation and parameterization     |
+| **Data Retention & Cleanup**       | ✅ Completed | Medium   | Automated data lifecycle management       |
+| **Security Monitoring & Alerting** | ✅ Completed | High     | Real-time threat detection                |
+| **Enhanced Encryption**            | ✅ Completed | Critical | PBKDF2 key derivation with HMAC integrity |
 
 ### 🔄 **Pending Security Enhancements**
 
-| Component | Status | Priority | Recommended Implementation |
-|-----------|---------|----------|---------------------------|
-| **CSP Nonce Generation** | 🔄 Pending | Medium | Dynamic nonce for script execution |
-| **Redis Session Storage** | 🔄 Pending | Medium | Scalable session management |
-| **Input Size & Upload Limits** | 🔄 Pending | High | Prevent resource exhaustion |
-| **API Versioning** | 🔄 Pending | Low | Backward compatibility |
-| **Error Sanitization** | 🔄 Pending | Medium | Prevent information disclosure |
+| Component                      | Status     | Priority | Recommended Implementation         |
+| ------------------------------ | ---------- | -------- | ---------------------------------- |
+| **CSP Nonce Generation**       | 🔄 Pending | Medium   | Dynamic nonce for script execution |
+| **Redis Session Storage**      | 🔄 Pending | Medium   | Scalable session management        |
+| **Input Size & Upload Limits** | 🔄 Pending | High     | Prevent resource exhaustion        |
+| **API Versioning**             | 🔄 Pending | Low      | Backward compatibility             |
+| **Error Sanitization**         | 🔄 Pending | Medium   | Prevent information disclosure     |
 
 ## 🚀 **Implementation Details**
 
@@ -32,6 +32,7 @@ This document outlines the additional security improvements implemented for the 
 **File**: `src/middleware/authenticationMiddleware.ts`
 
 **Features**:
+
 - JWT token validation with comprehensive error handling
 - Role-based access control (RBAC)
 - Permission-based authorization
@@ -40,6 +41,7 @@ This document outlines the additional security improvements implemented for the 
 - Comprehensive audit logging
 
 **Usage**:
+
 ```typescript
 import { createAuthenticationMiddleware } from './middleware/authenticationMiddleware';
 
@@ -52,9 +54,12 @@ app.use('/api/protected', authMiddleware({ required: true }));
 app.use('/api/admin', authMiddleware({ adminOnly: true }));
 
 // Specific permissions required
-app.use('/api/credentials', authMiddleware({ 
-  permissions: ['read:credentials', 'write:credentials'] 
-}));
+app.use(
+  '/api/credentials',
+  authMiddleware({
+    permissions: ['read:credentials', 'write:credentials'],
+  })
+);
 ```
 
 ### 2. 🛡️ **Advanced Security Headers**
@@ -62,6 +67,7 @@ app.use('/api/credentials', authMiddleware({
 **File**: `src/middleware/advancedSecurityHeaders.ts`
 
 **Features**:
+
 - Dynamic Content Security Policy with nonce generation
 - HTTP Strict Transport Security (HSTS)
 - Referrer Policy configuration
@@ -70,6 +76,7 @@ app.use('/api/credentials', authMiddleware({
 - CSP violation reporting
 
 **Usage**:
+
 ```typescript
 import { advancedSecurityHeaders } from './middleware/advancedSecurityHeaders';
 
@@ -87,6 +94,7 @@ app.get('/page', (req, res) => {
 **File**: `src/utils/queryProtection.ts`
 
 **Features**:
+
 - Real-time SQL injection pattern detection
 - Query validation and sanitization
 - Parameterized query enforcement
@@ -95,16 +103,17 @@ app.get('/page', (req, res) => {
 - Safe query builder methods
 
 **Usage**:
+
 ```typescript
 import { QueryProtection } from './utils/queryProtection';
 
 const queryProtection = QueryProtection.getInstance(database);
 
 // Safe parameterized queries
-const result = await queryProtection.safeQuery(
-  'SELECT * FROM users WHERE id = ? AND status = ?',
-  [userId, 'active']
-);
+const result = await queryProtection.safeQuery('SELECT * FROM users WHERE id = ? AND status = ?', [
+  userId,
+  'active',
+]);
 
 // Safe query builder
 const users = await queryProtection.safeSelect(
@@ -120,6 +129,7 @@ const users = await queryProtection.safeSelect(
 **File**: `src/services/dataRetentionService.ts`
 
 **Features**:
+
 - Configurable retention policies
 - Automated data cleanup
 - Encrypted data archival
@@ -128,14 +138,11 @@ const users = await queryProtection.safeSelect(
 - Compliance reporting
 
 **Usage**:
+
 ```typescript
 import { DataRetentionService, defaultRetentionConfig } from './services/dataRetentionService';
 
-const retentionService = new DataRetentionService(
-  database,
-  auditService,
-  defaultRetentionConfig
-);
+const retentionService = new DataRetentionService(database, auditService, defaultRetentionConfig);
 
 // Execute retention policies
 const results = await retentionService.executeRetentionPolicies();
@@ -149,6 +156,7 @@ const preview = await retentionService.previewRetentionCleanup();
 **File**: `src/services/securityMonitoringService.ts`
 
 **Features**:
+
 - Real-time security event detection
 - Configurable alert rules
 - Automated response actions (IP blocking, user disabling)
@@ -157,6 +165,7 @@ const preview = await retentionService.previewRetentionCleanup();
 - Integration points for external systems
 
 **Usage**:
+
 ```typescript
 import { SecurityMonitoringService } from './services/securityMonitoringService';
 
@@ -170,7 +179,7 @@ await securityMonitoring.recordEvent({
   description: 'Multiple failed login attempts',
   details: { attempts: 5, timeframe: '5min' },
   ip: req.ip,
-  userId: req.user?.id
+  userId: req.user?.id,
 });
 
 // Get security metrics
@@ -211,9 +220,9 @@ const alertRules: AlertRule[] = [
     enabled: true,
     actions: [
       { type: 'block_ip', config: { blockDuration: 3600000 } },
-      { type: 'email', config: { recipients: ['security@company.com'] } }
-    ]
-  }
+      { type: 'email', config: { recipients: ['security@company.com'] } },
+    ],
+  },
 ];
 ```
 
@@ -241,9 +250,12 @@ app.use(createSecurityMonitoringMiddleware(securityMonitoring));
 
 // Protected routes
 app.use('/api/admin', authMiddleware({ adminOnly: true }));
-app.use('/api/credentials', authMiddleware({ 
-  permissions: ['read:credentials'] 
-}));
+app.use(
+  '/api/credentials',
+  authMiddleware({
+    permissions: ['read:credentials'],
+  })
+);
 ```
 
 ### **Environment Configuration**
@@ -282,10 +294,9 @@ Create comprehensive security tests:
 describe('Security Improvements', () => {
   test('SQL Injection Protection', async () => {
     const maliciousQuery = "'; DROP TABLE users; --";
-    const result = await queryProtection.safeQuery(
-      'SELECT * FROM users WHERE name = ?',
-      [maliciousQuery]
-    );
+    const result = await queryProtection.safeQuery('SELECT * FROM users WHERE name = ?', [
+      maliciousQuery,
+    ]);
     expect(result.success).toBe(true);
     expect(result.data).toBeDefined();
   });
@@ -294,7 +305,7 @@ describe('Security Improvements', () => {
     const response = await request(app)
       .get('/api/admin/users')
       .set('Authorization', 'Bearer invalid-token');
-    
+
     expect(response.status).toBe(401);
     expect(response.body.code).toBe('INVALID_TOKEN');
   });
@@ -305,7 +316,7 @@ describe('Security Improvements', () => {
       severity: 'high',
       source: 'test',
       description: 'Test attack',
-      details: {}
+      details: {},
     });
 
     const metrics = securityMonitoring.getSecurityMetrics();
@@ -370,7 +381,7 @@ describe('Security Improvements', () => {
 
 **Security Team**: security@polkadot-sso.com  
 **Incident Response**: security-incident@polkadot-sso.com  
-**Bug Bounty**: security-bounty@polkadot-sso.com  
+**Bug Bounty**: security-bounty@polkadot-sso.com
 
 ---
 

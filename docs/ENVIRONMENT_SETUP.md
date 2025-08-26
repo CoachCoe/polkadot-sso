@@ -46,6 +46,7 @@ node -e "console.log('KUSAMA_ACCOUNT_SEED=' + require('crypto').randomBytes(32).
 ## Production Deployment
 
 For production, set:
+
 - `NODE_ENV=production`
 - `ENABLE_REAL_KUSAMA_STORAGE=true`
 - `KUSAMA_TESTNET_MODE=false`

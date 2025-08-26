@@ -5,5 +5,5 @@ export default {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testMatch: ['**/*.test.ts'],
-  verbose: true
+  verbose: true,
 };

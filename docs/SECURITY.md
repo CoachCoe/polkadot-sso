@@ -5,7 +5,9 @@ This document outlines security best practices for deploying the Polkadot SSO se
 ## Secret Management
 
 ### Development Environment
+
 For development, use the provided secret generation script:
+
 ```bash
 npm run generate-secrets
 ```
@@ -13,7 +15,9 @@ npm run generate-secrets
 ### Production Environment
 
 #### Option 1: Environment Variables (Basic)
+
 Set environment variables directly on your production server:
+
 ```bash
 export SESSION_SECRET="your-64-char-secret"
 export JWT_SECRET="your-64-char-secret"
@@ -23,6 +27,7 @@ export DATABASE_ENCRYPTION_KEY="your-64-char-secret"
 #### Option 2: Secrets Management Services (Recommended)
 
 **AWS Secrets Manager:**
+
 ```bash
 # Store secrets
 aws secretsmanager create-secret \
@@ -39,6 +44,7 @@ aws secretsmanager get-secret-value --secret-id "polkadot-sso/prod"
 ```
 
 **HashiCorp Vault:**
+
 ```bash
 # Enable key-value secrets engine
 vault secrets enable -path=polkadot-sso kv-v2
@@ -51,6 +57,7 @@ vault kv put polkadot-sso/prod \
 ```
 
 **Docker Secrets:**
+
 ```bash
 # Create secrets
 echo "your-secret" | docker secret create session_secret -
@@ -75,35 +82,39 @@ services:
 ## Secret Rotation
 
 ### Automated Rotation
+
 Implement automated secret rotation using your secrets management service:
 
 **AWS Secrets Manager with Lambda:**
+
 ```javascript
 // Lambda function for automatic rotation
-exports.handler = async (event) => {
+exports.handler = async event => {
   const { SecretId } = event;
-  
+
   // Generate new secrets
   const newSecrets = {
     SESSION_SECRET: crypto.randomBytes(64).toString('base64'),
     JWT_SECRET: crypto.randomBytes(64).toString('base64'),
-    DATABASE_ENCRYPTION_KEY: crypto.randomBytes(64).toString('base64')
+    DATABASE_ENCRYPTION_KEY: crypto.randomBytes(64).toString('base64'),
   };
-  
+
   // Update secret
   await secretsManager.updateSecret({
     SecretId,
-    SecretString: JSON.stringify(newSecrets)
+    SecretString: JSON.stringify(newSecrets),
   });
-  
+
   return { statusCode: 200 };
 };
 ```
 
 ### Manual Rotation
+
 For manual rotation, follow these steps:
 
 1. **Generate new secrets:**
+
    ```bash
    npm run generate-secrets
    ```
@@ -117,16 +128,19 @@ For manual rotation, follow these steps:
 ## Database Security
 
 ### Encryption at Rest
+
 - Use encrypted storage volumes (AWS EBS encryption, Azure Disk Encryption)
 - Enable database-level encryption if available
 - Encrypt sensitive fields using the built-in encryption utilities
 
 ### Access Control
+
 - Use least-privilege database users
 - Implement connection pooling with authentication
 - Use SSL/TLS for database connections
 
 ### Backup Security
+
 - Encrypt database backups
 - Store backups in secure, access-controlled locations
 - Test backup restoration procedures regularly
@@ -134,6 +148,7 @@ For manual rotation, follow these steps:
 ## Network Security
 
 ### TLS/SSL Configuration
+
 ```javascript
 // Example HTTPS configuration
 const https = require('https');
@@ -142,18 +157,20 @@ const fs = require('fs');
 const options = {
   key: fs.readFileSync('/path/to/private-key.pem'),
   cert: fs.readFileSync('/path/to/certificate.pem'),
-  ca: fs.readFileSync('/path/to/ca-bundle.pem')
+  ca: fs.readFileSync('/path/to/ca-bundle.pem'),
 };
 
 https.createServer(options, app).listen(443);
 ```
 
 ### Firewall Configuration
+
 - Restrict access to necessary ports only (443, 80)
 - Use security groups/network ACLs
 - Implement IP whitelisting for admin access
 
 ### CORS Configuration
+
 ```javascript
 // Production CORS configuration
 const corsOptions = {
@@ -161,13 +178,14 @@ const corsOptions = {
   credentials: true,
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  maxAge: 86400
+  maxAge: 86400,
 };
 ```
 
 ## Application Security
 
 ### Rate Limiting
+
 The application includes built-in rate limiting. Configure appropriately for production:
 
 ```javascript
@@ -190,32 +208,36 @@ const apiLimiter = rateLimit({
 ```
 
 ### Security Headers
+
 The application uses Helmet.js for security headers. Additional configuration:
 
 ```javascript
 // Additional security headers
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'nonce-${nonce}'"],
-      styleSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "wss://rpc.polkadot.io"],
-      frameAncestors: ["'none'"],
-      objectSrc: ["'none'"],
-      upgradeInsecureRequests: []
-    }
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  }
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'nonce-${nonce}'"],
+        styleSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'", 'wss://rpc.polkadot.io'],
+        frameAncestors: ["'none'"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  })
+);
 ```
 
 ### Session Security
+
 ```javascript
 // Production session configuration
 const sessionConfig = {
@@ -226,17 +248,18 @@ const sessionConfig = {
     httpOnly: true,
     sameSite: 'strict',
     maxAge: 15 * 60 * 1000, // 15 minutes
-    domain: process.env.COOKIE_DOMAIN
+    domain: process.env.COOKIE_DOMAIN,
   },
   resave: false,
   saveUninitialized: false,
-  rolling: true
+  rolling: true,
 };
 ```
 
 ## Monitoring and Logging
 
 ### Security Event Logging
+
 The application includes comprehensive audit logging. Configure log aggregation:
 
 ```javascript
@@ -245,27 +268,27 @@ const winston = require('winston');
 
 const logger = winston.createLogger({
   level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
+  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
   transports: [
     new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' })
-  ]
+    new winston.transports.File({ filename: 'combined.log' }),
+  ],
 });
 
 // Send to external logging service
 if (process.env.NODE_ENV === 'production') {
-  logger.add(new winston.transports.Http({
-    host: 'your-logging-service.com',
-    port: 443,
-    ssl: true
-  }));
+  logger.add(
+    new winston.transports.Http({
+      host: 'your-logging-service.com',
+      port: 443,
+      ssl: true,
+    })
+  );
 }
 ```
 
 ### Security Monitoring
+
 - Monitor for failed authentication attempts
 - Track rate limit violations
 - Monitor for unusual API usage patterns
@@ -274,12 +297,14 @@ if (process.env.NODE_ENV === 'production') {
 ## Compliance
 
 ### GDPR Compliance
+
 - Implement data retention policies
 - Provide data export/deletion capabilities
 - Document data processing activities
 - Ensure user consent mechanisms
 
 ### SOC 2 Compliance
+
 - Implement access controls
 - Maintain audit trails
 - Regular security assessments
@@ -288,6 +313,7 @@ if (process.env.NODE_ENV === 'production') {
 ## Incident Response
 
 ### Security Incident Procedures
+
 1. **Detection**: Monitor logs and alerts
 2. **Assessment**: Evaluate scope and impact
 3. **Containment**: Isolate affected systems
@@ -296,6 +322,7 @@ if (process.env.NODE_ENV === 'production') {
 6. **Lessons Learned**: Document and improve
 
 ### Contact Information
+
 - Security Team: security@yourdomain.com
 - Emergency Contact: +1-XXX-XXX-XXXX
 - Incident Response Playbook: [Link to internal documentation]
@@ -303,18 +330,21 @@ if (process.env.NODE_ENV === 'production') {
 ## Regular Security Tasks
 
 ### Monthly
+
 - Review access logs
 - Update dependencies
 - Rotate secrets
 - Review security configurations
 
 ### Quarterly
+
 - Security assessments
 - Penetration testing
 - Update security policies
 - Review compliance status
 
 ### Annually
+
 - Comprehensive security audit
 - Update incident response procedures
 - Review disaster recovery plans
@@ -325,4 +355,4 @@ if (process.env.NODE_ENV === 'production') {
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [Node.js Security Best Practices](https://nodejs.org/en/docs/guides/security/)
 - [Express.js Security Best Practices](https://expressjs.com/en/advanced/best-practices-security.html)
-- [Polkadot Security Guidelines](https://wiki.polkadot.network/docs/learn-security) 
+- [Polkadot Security Guidelines](https://wiki.polkadot.network/docs/learn-security)

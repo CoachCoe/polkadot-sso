@@ -3,7 +3,6 @@ module.exports = {
   extends: [
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    'prettier'
   ],
   parserOptions: {
     ecmaVersion: 2020,
@@ -11,15 +10,8 @@ module.exports = {
     project: './tsconfig.json',
     tsconfigRootDir: __dirname,
   },
-  plugins: [
-    '@typescript-eslint',
-    'prefer-arrow',
-    'security',
-    'prettier'
-  ],
+  plugins: ['@typescript-eslint', 'security'],
   rules: {
-    'prettier/prettier': 'error',
-
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unsafe-assignment': 'warn',
     '@typescript-eslint/no-unsafe-call': 'warn',
@@ -27,10 +19,13 @@ module.exports = {
     '@typescript-eslint/no-unsafe-return': 'warn',
     '@typescript-eslint/prefer-nullish-coalescing': 'warn',
     '@typescript-eslint/prefer-optional-chain': 'warn',
-    '@typescript-eslint/no-unused-vars': ['warn', {
-      argsIgnorePattern: '^_',
-      varsIgnorePattern: '^_'
-    }],
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+      },
+    ],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-non-null-assertion': 'warn',
@@ -60,33 +55,26 @@ module.exports = {
     'prefer-destructuring': 'off',
     'no-array-constructor': 'error',
 
-    'complexity': 'off',
+    complexity: 'off',
     'max-depth': 'off',
     'max-lines-per-function': 'off',
-    'max-params': 'off'
+    'max-params': 'off',
   },
   overrides: [
     {
       files: ['**/*.test.ts', '**/*.spec.ts'],
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
-        'no-console': 'off'
-      }
+        'no-console': 'off',
+      },
     },
     {
       files: ['**/demo/**/*.ts', '**/scripts/**/*.ts'],
       rules: {
         'no-console': 'off',
-        '@typescript-eslint/explicit-function-return-type': 'off'
-      }
-    }
+        '@typescript-eslint/explicit-function-return-type': 'off',
+      },
+    },
   ],
-  ignorePatterns: [
-    'dist/',
-    'node_modules/',
-    'public/js/',
-    'src/client/',
-    'src/__tests__/',
-    '*.js'
-  ]
+  ignorePatterns: ['dist/', 'node_modules/', 'public/js/', 'src/client/', 'src/__tests__/', '*.js'],
 };
