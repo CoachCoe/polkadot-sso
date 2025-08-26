@@ -25,7 +25,7 @@ export interface WalletProvider {
   description?: string;
   icon?: string;
   connect: () => Promise<WalletConnection>;
-  isAvailable: () => boolean;
+  isAvailable: () => boolean | Promise<boolean>;
 }
 
 export interface WalletConnection {

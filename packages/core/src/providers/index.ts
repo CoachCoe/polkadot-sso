@@ -16,15 +16,31 @@ function getInjectedWeb3(): any {
   return isBrowser() ? window.injectedWeb3 : undefined;
 }
 
+// Helper function to detect available extensions
+async function getAvailableExtensions(): Promise<string[]> {
+  if (!isBrowser()) return [];
+
+  try {
+    const { web3Enable } = await import('@polkadot/extension-dapp');
+    const extensions = await web3Enable('Polkadot Auth');
+    return extensions.map(ext => ext.name.toLowerCase());
+  } catch (error) {
+    console.warn('Failed to detect extensions:', error);
+    return [];
+  }
+}
+
 export const polkadotJsProvider: WalletProvider = {
   id: 'polkadot-js',
   name: 'Polkadot.js Extension',
   description: 'Official Polkadot browser extension',
   icon: 'https://polkadot.js.org/extension/assets/logo.svg',
 
-  isAvailable: () => {
-    const injectedWeb3 = getInjectedWeb3();
-    return !!injectedWeb3 && !!injectedWeb3['polkadot-js'];
+  isAvailable: async () => {
+    const extensions = await getAvailableExtensions();
+    return extensions.some(
+      name => name.includes('polkadot') || name.includes('js') || name.includes('extension')
+    );
   },
 
   connect: async (): Promise<WalletConnection> => {
@@ -80,9 +96,9 @@ export const talismanProvider: WalletProvider = {
   description: 'Talisman wallet extension',
   icon: 'https://talisman.xyz/favicon.ico',
 
-  isAvailable: () => {
-    const injectedWeb3 = getInjectedWeb3();
-    return !!injectedWeb3 && !!injectedWeb3.talisman;
+  isAvailable: async () => {
+    const extensions = await getAvailableExtensions();
+    return extensions.some(name => name.includes('talisman'));
   },
 
   connect: async (): Promise<WalletConnection> => {
@@ -138,9 +154,9 @@ export const subWalletProvider: WalletProvider = {
   description: 'SubWallet extension',
   icon: 'https://subwallet.app/favicon.ico',
 
-  isAvailable: () => {
-    const injectedWeb3 = getInjectedWeb3();
-    return !!injectedWeb3 && !!injectedWeb3.SubWallet;
+  isAvailable: async () => {
+    const extensions = await getAvailableExtensions();
+    return extensions.some(name => name.includes('subwallet') || name.includes('sub'));
   },
 
   connect: async (): Promise<WalletConnection> => {
@@ -196,9 +212,9 @@ export const novaWalletProvider: WalletProvider = {
   description: 'Nova Wallet mobile app with browser bridge',
   icon: 'https://novawallet.io/favicon.ico',
 
-  isAvailable: () => {
-    const injectedWeb3 = getInjectedWeb3();
-    return !!injectedWeb3 && !!injectedWeb3.nova;
+  isAvailable: async () => {
+    const extensions = await getAvailableExtensions();
+    return extensions.some(name => name.includes('nova'));
   },
 
   connect: async (): Promise<WalletConnection> => {
@@ -261,21 +277,28 @@ export function getProviderById(id: string): WalletProvider | undefined {
   return DEFAULT_PROVIDERS.find(provider => provider.id === id);
 }
 
-export function getAvailableProviders(): WalletProvider[] {
-  return DEFAULT_PROVIDERS.filter(provider => provider.isAvailable());
+export async function getAvailableProviders(): Promise<WalletProvider[]> {
+  const availableProviders: WalletProvider[] = [];
+
+  for (const provider of DEFAULT_PROVIDERS) {
+    if (await provider.isAvailable()) {
+      availableProviders.push(provider);
+    }
+  }
+
+  return availableProviders;
 }
 
 export function createCustomProvider(config: Partial<WalletProvider>): WalletProvider {
   return {
-    id: config.id || 'custom',
-    name: config.name || 'Custom Provider',
-    description: config.description,
-    icon: config.icon,
-    connect:
-      config.connect ||
-      (async () => {
-        throw new Error('Custom provider connect method not implemented');
-      }),
-    isAvailable: config.isAvailable || (() => false),
+    id: 'custom',
+    name: 'Custom Provider',
+    description: 'Custom wallet provider',
+    icon: '',
+    isAvailable: () => Promise.resolve(false),
+    connect: async () => {
+      throw new Error('Custom provider not implemented');
+    },
+    ...config,
   };
 }
