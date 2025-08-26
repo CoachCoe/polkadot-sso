@@ -18,6 +18,8 @@
     "example:express": "cd examples/express-simple && npm run dev",
     "example:next": "cd examples/next-simple && npm run dev",
     "example:next:build": "cd examples/next-simple && npm run build",
+    "example:remix": "cd examples/remix-simple && npm run dev",
+    "example:remix:build": "cd examples/remix-simple && npm run build",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "keywords": [
@@ -35,12 +37,15 @@
   "author": "Polkadot Auth Team",
   "license": "MIT",
   "devDependencies": {
+    "@types/jest": "^29.5.8",
     "@types/node": "^20.10.0",
-    "typescript": "^5.3.2",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
+    "esbuild": "^0.25.9",
     "eslint": "^8.55.0",
-    "prettier": "^3.1.0",
     "jest": "^29.7.0",
-    "@types/jest": "^29.5.8"
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.2"
   },
   "engines": {
     "node": ">=16.0.0",

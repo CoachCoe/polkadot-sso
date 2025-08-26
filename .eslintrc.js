@@ -3,7 +3,6 @@ module.exports = {
   extends: [
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    'prettier',
   ],
   parserOptions: {
     ecmaVersion: 2020,
@@ -11,10 +10,8 @@ module.exports = {
     project: './tsconfig.json',
     tsconfigRootDir: __dirname,
   },
-  plugins: ['@typescript-eslint', 'prefer-arrow', 'security', 'prettier'],
+  plugins: ['@typescript-eslint', 'security'],
   rules: {
-    'prettier/prettier': 'error',
-
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unsafe-assignment': 'warn',
     '@typescript-eslint/no-unsafe-call': 'warn',

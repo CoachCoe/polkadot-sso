@@ -4,6 +4,39 @@
 
 A plug-and-play authentication solution for Polkadot ecosystem, inspired by [Better Auth](https://www.better-auth.com/). Zero configuration, multiple framework support, and enterprise-grade security.
 
+## 🎯 Inspiration & Vision
+
+This project was inspired by several key developments in the authentication space:
+
+### 🔐 **Sign in with Ethereum (SIWE)**
+
+Following the [EIP-4361 standard](https://docs.siwe.xyz/), we've implemented SIWE-style authentication for Polkadot. This provides:
+
+- **Standardized message format** for consistent user experience
+- **Nonce-based replay protection** for enhanced security
+- **Domain binding** to prevent cross-site attacks
+- **Request ID tracking** for audit trails
+- **Resource specification** for granular permissions
+
+### 🏗️ **Better Auth Architecture**
+
+Inspired by [Better Auth](https://www.better-auth.com/)'s comprehensive approach to authentication infrastructure, we've built:
+
+- **Framework-agnostic core** that works with any web framework
+- **Zero-configuration setup** for rapid development
+- **Plugin architecture** for extensibility
+- **TypeScript-first design** with full type safety
+- **Enterprise-ready features** out of the box
+
+### 🌐 **Web3 Authentication Evolution**
+
+As noted by [Brantly Millegan](https://x.com/BrantlyMillegan/status/1956389297461899533), the future of authentication is moving toward self-sovereign identity and blockchain-based solutions. Polkadot Auth represents our contribution to this evolution, bringing the benefits of:
+
+- **Self-sovereign identity** - users control their credentials
+- **Cross-chain compatibility** - works across the Polkadot ecosystem
+- **Decentralized authentication** - no central authority required
+- **Enhanced privacy** - minimal data collection
+
 ## 🚀 Quick Start
 
 ### Express.js (Zero Config)
@@ -106,7 +139,7 @@ const auth = createPolkadotAuth({
 | `@polkadot-auth/core`    | Framework-agnostic core | ✅ Ready       |
 | `@polkadot-auth/express` | Express.js adapter      | ✅ Ready       |
 | `@polkadot-auth/next`    | Next.js adapter         | ✅ Ready       |
-| `@polkadot-auth/remix`   | Remix adapter           | 🚧 In Progress |
+| `@polkadot-auth/remix`   | Remix adapter           | ✅ Ready       |
 | `@polkadot-auth/ui`      | React UI components     | 🚧 In Progress |
 
 ## 🎯 Examples
@@ -171,8 +204,6 @@ app.listen(3000);
 
 ````
 
-### Next.js Example
-
 ```typescript
 // pages/api/auth/[...polkadot].ts
 import { polkadotAuth } from '@polkadot-auth/next';
@@ -199,6 +230,194 @@ export default function ProtectedPage() {
   return <div>Welcome, {session.address}!</div>;
 }
 ````
+
+### Remix Example
+
+```tsx
+// app/routes/api.auth.challenge.ts
+import { createAuthApiRoutes } from '@polkadot-auth/remix';
+import type { LoaderFunctionArgs } from '@remix-run/node';
+
+const authRoutes = createAuthApiRoutes({
+  sessionSecret: process.env.SESSION_SECRET || 'your-secret-key',
+  sessionMaxAge: 3600, // 1 hour
+});
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  return authRoutes.challenge(request);
+}
+
+// app/routes/protected.tsx
+import { createAuthMiddleware, getUserFromRequest } from '@polkadot-auth/remix';
+
+const authMiddleware = createAuthMiddleware({
+  sessionSecret: process.env.SESSION_SECRET || 'your-secret-key',
+});
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  // Check authentication
+  const authResponse = await authMiddleware.requireAuth(request);
+  if (authResponse) {
+    return authResponse; // Redirect to login
+  }
+
+  // Get user data
+  const user = await getUserFromRequest(request);
+
+  return json({ user });
+}
+
+export default function ProtectedPage() {
+  const { user } = useLoaderData<typeof loader>();
+
+  return (
+    <div>
+      <h1>Protected Page</h1>
+      <p>Welcome, {user?.address}!</p>
+    </div>
+  );
+}
+```
+
+```tsx
+// app/routes/api.auth.challenge.ts
+import { createAuthApiRoutes } from '@polkadot-auth/remix';
+import type { LoaderFunctionArgs } from '@remix-run/node';
+
+const authRoutes = createAuthApiRoutes({
+  sessionSecret: process.env.SESSION_SECRET || 'your-secret-key',
+  sessionMaxAge: 3600, // 1 hour
+});
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  return authRoutes.challenge(request);
+}
+
+// app/routes/protected.tsx
+import { createAuthMiddleware, getUserFromRequest } from '@polkadot-auth/remix';
+
+const authMiddleware = createAuthMiddleware({
+  sessionSecret: process.env.SESSION_SECRET || 'your-secret-key',
+});
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  // Check authentication
+  const authResponse = await authMiddleware.requireAuth(request);
+  if (authResponse) {
+    return authResponse; // Redirect to login
+  }
+
+  // Get user data
+  const user = await getUserFromRequest(request);
+
+  return json({ user });
+}
+
+export default function ProtectedPage() {
+  const { user } = useLoaderData<typeof loader>();
+
+  return (
+    <div>
+      <h1>Protected Page</h1>
+      <p>Welcome, {user?.address}!</p>
+    </div>
+  );
+}
+```
+
+```tsx
+// app/routes/api.auth.challenge.ts
+import { createAuthApiRoutes } from '@polkadot-auth/remix';
+import type { LoaderFunctionArgs } from '@remix-run/node';
+
+const authRoutes = createAuthApiRoutes({
+  sessionSecret: process.env.SESSION_SECRET || 'your-secret-key',
+  sessionMaxAge: 3600, // 1 hour
+});
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  return authRoutes.challenge(request);
+}
+
+// app/routes/protected.tsx
+import { createAuthMiddleware, getUserFromRequest } from '@polkadot-auth/remix';
+
+const authMiddleware = createAuthMiddleware({
+  sessionSecret: process.env.SESSION_SECRET || 'your-secret-key',
+});
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  // Check authentication
+  const authResponse = await authMiddleware.requireAuth(request);
+  if (authResponse) {
+    return authResponse; // Redirect to login
+  }
+
+  // Get user data
+  const user = await getUserFromRequest(request);
+
+  return json({ user });
+}
+
+export default function ProtectedPage() {
+  const { user } = useLoaderData<typeof loader>();
+
+  return (
+    <div>
+      <h1>Protected Page</h1>
+      <p>Welcome, {user?.address}!</p>
+    </div>
+  );
+}
+```
+
+### Remix Example
+
+```tsx
+// app/routes/api.auth.challenge.ts
+import { createAuthApiRoutes } from '@polkadot-auth/remix';
+import type { LoaderFunctionArgs } from '@remix-run/node';
+
+const authRoutes = createAuthApiRoutes({
+  sessionSecret: process.env.SESSION_SECRET || 'your-secret-key',
+  sessionMaxAge: 3600, // 1 hour
+});
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  return authRoutes.challenge(request);
+}
+
+// app/routes/protected.tsx
+import { createAuthMiddleware, getUserFromRequest } from '@polkadot-auth/remix';
+
+const authMiddleware = createAuthMiddleware({
+  sessionSecret: process.env.SESSION_SECRET || 'your-secret-key',
+});
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  // Check authentication
+  const authResponse = await authMiddleware.requireAuth(request);
+  if (authResponse) {
+    return authResponse; // Redirect to login
+  }
+
+  // Get user data
+  const user = await getUserFromRequest(request);
+
+  return json({ user });
+}
+
+export default function ProtectedPage() {
+  const { user } = useLoaderData<typeof loader>();
+
+  return (
+    <div>
+      <h1>Protected Page</h1>
+      <p>Welcome, {user?.address}!</p>
+    </div>
+  );
+}
+```
 
 ### React Components
 
@@ -350,8 +569,8 @@ Resources:
 
 ### Phase 2: Framework Support 🚧
 
-- [ ] Next.js adapter
-- [ ] Remix adapter
+- [x] Next.js adapter
+- [x] Remix adapter
 - [ ] Fastify adapter
 - [ ] Koa adapter
 
