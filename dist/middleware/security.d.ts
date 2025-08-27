@@ -6,7 +6,7 @@ export interface ResponseWithLocals extends ExpressResponse {
     };
 }
 export declare const securityMiddleware: RequestHandler[];
-export declare const csrfProtection: import("express-serve-static-core").RequestHandler<import("express-serve-static-core").ParamsDictionary, any, any, import("qs").ParsedQs, Record<string, any>>;
+export declare const csrfProtection: any;
 export declare const errorHandler: (err: Error, req: Request, res: ResponseWithLocals) => void;
 export declare const securityHeaders: (req: Request, res: ResponseWithLocals, next: NextFunction) => void;
 type NonceMiddleware = (req: Request, res: ResponseWithLocals, next: NextFunction) => void;

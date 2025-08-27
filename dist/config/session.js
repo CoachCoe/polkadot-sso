@@ -1,8 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sessionConfig = void 0;
 const redis_1 = require("redis");
-const connect_redis_1 = require("connect-redis");
+const connect_redis_1 = __importDefault(require("connect-redis"));
 const crypto_1 = require("crypto");
 console.log('Environment variables:', {
     SESSION_SECRET: `${process.env.SESSION_SECRET?.slice(0, 10)}...`,
@@ -17,7 +20,7 @@ if (process.env.NODE_ENV === 'production') {
         url: process.env.REDIS_URL,
     });
     redisClient.connect().catch(console.error);
-    store = new connect_redis_1.RedisStore({
+    store = new connect_redis_1.default({
         client: redisClient,
         prefix: 'sso:',
     });

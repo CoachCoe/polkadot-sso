@@ -46,9 +46,12 @@ export async function initializeDatabase(): Promise<Database> {
       client_id TEXT NOT NULL,
       created_at INTEGER NOT NULL,
       expires_at INTEGER NOT NULL,
+      expires_at_timestamp INTEGER NOT NULL,
       code_verifier TEXT NOT NULL,
       code_challenge TEXT NOT NULL,
       state TEXT NOT NULL,
+      nonce TEXT,
+      issued_at TEXT,
       used BOOLEAN NOT NULL DEFAULT 0
     );
 
@@ -264,6 +267,18 @@ export async function initializeDatabase(): Promise<Database> {
     CREATE INDEX IF NOT EXISTS idx_credential_revocations_credential ON credential_revocations(credential_id);
     CREATE INDEX IF NOT EXISTS idx_credential_revocations_revoked_by ON credential_revocations(revoked_by_address);
   `);
+
+  // Migration: Add missing columns to existing challenges table
+  try {
+    await db.exec(`
+      ALTER TABLE challenges ADD COLUMN expires_at_timestamp INTEGER;
+      ALTER TABLE challenges ADD COLUMN nonce TEXT;
+      ALTER TABLE challenges ADD COLUMN issued_at TEXT;
+    `);
+  } catch (error) {
+    // Columns might already exist, ignore error
+    console.log('Migration completed (some columns may already exist)');
+  }
 
   return db;
 }

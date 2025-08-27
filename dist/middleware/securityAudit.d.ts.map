@@ -1,1 +1,0 @@
-{"version":3,"file":"securityAudit.d.ts","sourceRoot":"","sources":["../../src/middleware/securityAudit.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,QAAQ,EAAE,MAAM,SAAS,CAAC;AAE5C,OAAO,EAAE,YAAY,EAAE,MAAM,qBAAqB,CAAC;AAEnD,eAAO,MAAM,mBAAmB,iBAAkB,YAAY;4BAElC,OAAO,OAAO,QAAQ;4BAmBtB,OAAO;CAelC,CAAC"}
