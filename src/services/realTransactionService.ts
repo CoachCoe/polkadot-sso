@@ -1,7 +1,7 @@
-import { WalletProvider } from '@polkadot-auth/core';
 import { ApiPromise } from '@polkadot/api';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { ISubmittableResult } from '@polkadot/types/types';
+import { WalletProvider } from '../../packages/core/dist';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('RealTransactionService');
@@ -24,6 +24,7 @@ export interface CredentialTransaction {
 export class RealTransactionService {
   private api: ApiPromise | null = null;
   private availableProviders: WalletProvider[] = [];
+  private walletService: any = null; // TODO: Add proper wallet service interface
 
   constructor(api: ApiPromise) {
     this.api = api;

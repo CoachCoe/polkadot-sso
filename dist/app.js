@@ -71,33 +71,15 @@ async function initializeApp() {
     const challengeService = new challengeService_1.ChallengeService(db);
     const auditService = new auditService_1.AuditService(db);
     const credentialService = new credentialService_1.CredentialService(db);
-    // Create demo client with secret for testing
-    const demoClientSecret = 'demo-client-secret-32-chars-minimum-required';
-    // Insert demo client into database if it doesn't exist
-    await db.run(`
-    INSERT OR IGNORE INTO clients (
-      client_id, client_secret, name, redirect_urls, allowed_origins, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)
-  `, [
-        'demo-app',
-        demoClientSecret,
-        'Polkadot SSO Demo',
-        JSON.stringify(['http://localhost:3000/callback']),
-        JSON.stringify(['http://localhost:3000']),
-        Date.now(),
-        Date.now(),
-    ]);
-    const clients = new Map([
-        [
-            'demo-app',
-            {
-                client_id: 'demo-app',
-                name: 'Polkadot SSO Demo',
-                redirect_url: 'http://localhost:3000/callback',
-                allowed_origins: ['http://localhost:3000'],
-            },
-        ],
-    ]);
+    const clients = new Map();
+    // Create a default client for testing
+    clients.set('default-client', {
+        client_id: 'default-client',
+        name: 'Polkadot SSO Demo',
+        client_secret: 'default-client-secret-32-chars-minimum-required',
+        redirect_url: 'http://localhost:3000/callback',
+        allowed_origins: ['http://localhost:3000'],
+    });
     const bruteForceMiddleware = (0, bruteForce_1.createBruteForceProtection)(auditService);
     app.use('/', (0, auth_1.createAuthRouter)(tokenService, challengeService, auditService, clients, db));
     app.use('/api/tokens', (0, tokens_1.createTokenRouter)(tokenService, db, auditService));
@@ -106,13 +88,6 @@ async function initializeApp() {
     // Temporarily disabled due to Polkadot.js dependency issues
     // app.use('/api/kusama', kusamaRoutes);
     // app.use('/api/wallet-kusama', walletKusamaRoutes);
-    // Demo page routes (temporarily disabled)
-    // app.get('/kusama-demo', (req, res) => {
-    //   res.sendFile(path.join(__dirname, '../public/views/kusama-demo.html'));
-    // });
-    // app.get('/wallet-kusama-demo', (req, res) => {
-    //   res.sendFile(path.join(__dirname, '../public/views/wallet-kusama-demo.html'));
-    // });
     app.use(bruteForceMiddleware);
     app.use((0, validation_1.sanitizeRequestParams)());
     app.use((err, req, res, next) => {

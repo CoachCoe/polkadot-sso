@@ -27,12 +27,7 @@ async function validateClientCredentials(req) {
     if (!client_id || !client_secret) {
         return false;
     }
-    // For demo purposes, we'll validate against the hardcoded demo client
-    // In production, this would query the database
-    if (client_id === 'demo-app' &&
-        client_secret === 'demo-client-secret-32-chars-minimum-required') {
-        return true;
-    }
+    // TODO: Implement proper client validation against database
     return false;
 }
 //# sourceMappingURL=validation.js.map

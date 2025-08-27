@@ -1,5 +1,4 @@
 "use strict";
-// Removed unused storage services - using wallet-based services instead
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.kusamaIntegrationService = exports.KusamaIntegrationService = void 0;
 var kusamaIntegrationService_1 = require("../../services/kusamaIntegrationService");

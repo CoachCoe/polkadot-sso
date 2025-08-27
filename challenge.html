@@ -1,0 +1,180 @@
+
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Polkadot SSO Demo - Sign Message</title>
+          <link rel="stylesheet" href="/styles/main.css">
+          <link rel="stylesheet" href="/styles/home.css">
+          <script nonce="r/XGXd1ZN2E5MYjpr33SEA==">
+            window.CHALLENGE_DATA = {
+              address: "5EJP9eSB1HpzjpuCJrna8KMcA6mmgaT8gSmwHaVDn25gHQ",
+              message: "polkadot-sso.localhost wants you to sign in with your Polkadot account:
+0x...
+
+Sign this message to authenticate with Polkadot SSO
+
+URI: http://localhost:3000
+Version: 1
+Chain ID: kusama
+Nonce: 6cbbd5b63ffbe3c38a1c17f7048bd9428a731d2f5c5053934b8d8c7e01a3ac54
+Issued At: 2025-08-27T02:22:44.433Z
+Expiration Time: 2025-08-27T02:27:44.433Z
+Request ID: 49f2c50e-768a-400d-8198-5ce805d7d1e4
+Resources:
+- https://polkadot-sso.localhost/credentials
+- https://polkadot-sso.localhost/profile",
+              challengeId: "db8edfb0-dac8-4cd3-acf3-f0651eaf2538",
+              codeVerifier: "1UGysRz3cFydXKNnAO_BjlUOFn9I-IEDr3EBc0L1Qgo",
+              state: "baa682e9ec96f224a72f98ee8a52d04c"
+            };
+          </script>
+          <script src="/js/polkadot-bundle.min.js"></script>
+        </head>
+        <body>
+          <!-- Top Navigation -->
+          <nav class="top-nav">
+            <div class="container">
+              <div class="nav-content">
+                <div class="nav-brand">
+                  <a href="/">
+                    <img src="/images/logo.png" alt="Polkadot SSO" class="nav-logo">
+                    <span class="nav-text">Polkadot SSO</span>
+                  </a>
+                </div>
+                <div class="nav-menu">
+                  <a href="/api/credentials/types" class="nav-link">API Docs</a>
+                  <a href="/docs/SECURITY.md" class="nav-link">Security</a>
+                  <a href="/docs/TECHNICAL_DOCUMENTATION.md" class="nav-link">Technical</a>
+                  <a href="https://polkadot.network" class="nav-link" target="_blank">Polkadot</a>
+                  <a href="https://kusama.subscan.io/" class="nav-link" target="_blank">Kusama</a>
+                  <a href="https://github.com/CoachCoe/polkadot-sso" class="nav-link" target="_blank">GitHub</a>
+                </div>
+              </div>
+            </div>
+          </nav>
+
+          <!-- Hero Section -->
+          <section class="hero">
+            <div class="container">
+              <div class="hero-content">
+                <h1 class="hero-title">Sign Message</h1>
+                <p class="hero-subtitle">Sign the challenge message with your wallet to continue</p>
+
+                <div class="container" style="max-width: 600px; margin-top: 40px; padding-bottom: 40px;">
+                  <div class="message-box" style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <p style="margin-bottom: 10px;"><strong>Message:</strong> polkadot-sso.localhost wants you to sign in with your Polkadot account:
+0x...
+
+Sign this message to authenticate with Polkadot SSO
+
+URI: http://localhost:3000
+Version: 1
+Chain ID: kusama
+Nonce: 6cbbd5b63ffbe3c38a1c17f7048bd9428a731d2f5c5053934b8d8c7e01a3ac54
+Issued At: 2025-08-27T02:22:44.433Z
+Expiration Time: 2025-08-27T02:27:44.433Z
+Request ID: 49f2c50e-768a-400d-8198-5ce805d7d1e4
+Resources:
+- https://polkadot-sso.localhost/credentials
+- https://polkadot-sso.localhost/profile</p>
+                    <p><strong>Address:</strong> 5EJP9eSB1HpzjpuCJrna8KMcA6mmgaT8gSmwHaVDn25gHQ</p>
+                  </div>
+                  <div id="status" style="text-align: center; margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 12px; color: #64748b;"></div>
+                  <button id="signButton" class="btn btn-primary btn-large" style="width: 100%;">
+                    <span id="buttonText">Sign with Wallet</span>
+                    <span id="loadingSpinner" class="loading"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <script>
+            // Wait for DOM to be ready
+            document.addEventListener('DOMContentLoaded', function() {
+              const statusDiv = document.getElementById("status");
+              const signButton = document.getElementById("signButton");
+              const buttonText = document.getElementById("buttonText");
+              const loadingSpinner = document.getElementById("loadingSpinner");
+
+              // Debug: Check if CHALLENGE_DATA is set
+              console.log('CHALLENGE_DATA:', window.CHALLENGE_DATA);
+              if (!window.CHALLENGE_DATA || !window.CHALLENGE_DATA.address) {
+                console.error('CHALLENGE_DATA not properly set:', window.CHALLENGE_DATA);
+                updateStatus("Error: Challenge data not loaded", "error");
+                return;
+              }
+
+            function setLoading(isLoading) {
+              signButton.disabled = isLoading;
+              loadingSpinner.style.display = isLoading ? "inline-block" : "none";
+              buttonText.textContent = isLoading ? "Signing..." : "Sign with Wallet";
+            }
+
+            function updateStatus(message, type = "info") {
+              statusDiv.className = type;
+              statusDiv.textContent = message;
+              statusDiv.style.background = type === "error" ? "#fee2e2" : type === "success" ? "#dcfce7" : "#f8fafc";
+              statusDiv.style.color = type === "error" ? "#dc2626" : type === "success" ? "#16a34a" : "#64748b";
+            }
+
+              signButton.addEventListener("click", async () => {
+                try {
+                  setLoading(true);
+                  updateStatus("Connecting to wallet...");
+
+                  const extensions = await window.polkadotExtensionDapp.web3Enable("Polkadot SSO");
+                  if (extensions.length === 0) {
+                    throw new Error("No extension found");
+                  }
+
+                  const injector = await window.polkadotExtensionDapp.web3FromAddress(
+                    window.CHALLENGE_DATA.address
+                  );
+
+                  if (!injector?.signer?.signRaw) {
+                    throw new Error("Wallet does not support message signing");
+                  }
+
+                  updateStatus("Please sign the message in your wallet...", "info");
+
+                  const { signature } = await injector.signer.signRaw({
+                    address: window.CHALLENGE_DATA.address,
+                    data: window.CHALLENGE_DATA.message,
+                    type: "bytes"
+                  });
+
+                  updateStatus("Message signed! Verifying...", "success");
+
+                  // Set authentication flag
+                  localStorage.setItem('isAuthenticated', 'true');
+
+                  window.location.href = "/verify?signature=" + encodeURIComponent(signature) +
+                    "&challenge_id=" + window.CHALLENGE_DATA.challengeId +
+                    "&address=" + encodeURIComponent(window.CHALLENGE_DATA.address) +
+                    "&code_verifier=" + encodeURIComponent(window.CHALLENGE_DATA.codeVerifier) +
+                    "&state=" + encodeURIComponent(window.CHALLENGE_DATA.state);
+
+                } catch (error) {
+                  console.error("Signing error:", error);
+                  updateStatus(error instanceof Error ? error.message : "Unknown error", "error");
+                } finally {
+                  setLoading(false);
+                }
+              });
+            });
+          </script>
+
+          <!-- Footer -->
+          <footer class="footer">
+            <div class="container">
+              <div class="footer-bottom">
+                <p>&copy; 2025 Polkadot SSO. Built with ❤️ for the decentralized web.</p>
+              </div>
+            </div>
+          </footer>
+        </body>
+      </html>
+    

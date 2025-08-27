@@ -236,7 +236,7 @@ export const createAuthRouter = (
           <script nonce="${res.locals.nonce}">
             window.CHALLENGE_DATA = {
               address: "${escapeHtml(String(address ?? ''))}",
-              message: "${escapeHtml(challenge.message)}",
+              message: ${JSON.stringify(challenge.message)},
               challengeId: "${escapeHtml(challenge.id)}",
               codeVerifier: "${escapeHtml(challenge.code_verifier)}",
               state: "${escapeHtml(challenge.state)}"
@@ -290,10 +290,20 @@ export const createAuthRouter = (
           </section>
 
           <script>
-            const statusDiv = document.getElementById("status");
-            const signButton = document.getElementById("signButton");
-            const buttonText = document.getElementById("buttonText");
-            const loadingSpinner = document.getElementById("loadingSpinner");
+            // Wait for DOM to be ready
+            document.addEventListener('DOMContentLoaded', function() {
+              const statusDiv = document.getElementById("status");
+              const signButton = document.getElementById("signButton");
+              const buttonText = document.getElementById("buttonText");
+              const loadingSpinner = document.getElementById("loadingSpinner");
+
+              // Debug: Check if CHALLENGE_DATA is set
+              console.log('CHALLENGE_DATA:', window.CHALLENGE_DATA);
+              if (!window.CHALLENGE_DATA || !window.CHALLENGE_DATA.address) {
+                console.error('CHALLENGE_DATA not properly set:', window.CHALLENGE_DATA);
+                updateStatus("Error: Challenge data not loaded", "error");
+                return;
+              }
 
             function setLoading(isLoading) {
               signButton.disabled = isLoading;
@@ -308,49 +318,50 @@ export const createAuthRouter = (
               statusDiv.style.color = type === "error" ? "#dc2626" : type === "success" ? "#16a34a" : "#64748b";
             }
 
-            signButton.addEventListener("click", async () => {
-              try {
-                setLoading(true);
-                updateStatus("Connecting to wallet...");
+              signButton.addEventListener("click", async () => {
+                try {
+                  setLoading(true);
+                  updateStatus("Connecting to wallet...");
 
-                const extensions = await window.polkadotExtensionDapp.web3Enable("Polkadot SSO");
-                if (extensions.length === 0) {
-                  throw new Error("No extension found");
+                  const extensions = await window.polkadotExtensionDapp.web3Enable("Polkadot SSO");
+                  if (extensions.length === 0) {
+                    throw new Error("No extension found");
+                  }
+
+                  const injector = await window.polkadotExtensionDapp.web3FromAddress(
+                    window.CHALLENGE_DATA.address
+                  );
+
+                  if (!injector?.signer?.signRaw) {
+                    throw new Error("Wallet does not support message signing");
+                  }
+
+                  updateStatus("Please sign the message in your wallet...", "info");
+
+                  const { signature } = await injector.signer.signRaw({
+                    address: window.CHALLENGE_DATA.address,
+                    data: window.CHALLENGE_DATA.message,
+                    type: "bytes"
+                  });
+
+                  updateStatus("Message signed! Verifying...", "success");
+
+                  // Set authentication flag
+                  localStorage.setItem('isAuthenticated', 'true');
+
+                  window.location.href = "/verify?signature=" + encodeURIComponent(signature) +
+                    "&challenge_id=" + window.CHALLENGE_DATA.challengeId +
+                    "&address=" + encodeURIComponent(window.CHALLENGE_DATA.address) +
+                    "&code_verifier=" + encodeURIComponent(window.CHALLENGE_DATA.codeVerifier) +
+                    "&state=" + encodeURIComponent(window.CHALLENGE_DATA.state);
+
+                } catch (error) {
+                  console.error("Signing error:", error);
+                  updateStatus(error instanceof Error ? error.message : "Unknown error", "error");
+                } finally {
+                  setLoading(false);
                 }
-
-                const injector = await window.polkadotExtensionDapp.web3FromAddress(
-                  window.CHALLENGE_DATA.address
-                );
-
-                if (!injector?.signer?.signRaw) {
-                  throw new Error("Wallet does not support message signing");
-                }
-
-                updateStatus("Please sign the message in your wallet...", "info");
-
-                const { signature } = await injector.signer.signRaw({
-                  address: window.CHALLENGE_DATA.address,
-                  data: window.CHALLENGE_DATA.message,
-                  type: "bytes"
-                });
-
-                updateStatus("Message signed! Verifying...", "success");
-
-                // Set authentication flag
-                localStorage.setItem('isAuthenticated', 'true');
-
-                window.location.href = "/verify?signature=" + encodeURIComponent(signature) +
-                  "&challenge_id=" + window.CHALLENGE_DATA.challengeId +
-                  "&address=" + encodeURIComponent(window.CHALLENGE_DATA.address) +
-                  "&code_verifier=" + encodeURIComponent(window.CHALLENGE_DATA.codeVerifier) +
-                  "&state=" + encodeURIComponent(window.CHALLENGE_DATA.state);
-
-              } catch (error) {
-                console.error("Signing error:", error);
-                updateStatus(error instanceof Error ? error.message : "Unknown error", "error");
-              } finally {
-                setLoading(false);
-              }
+              });
             });
           </script>
 
@@ -1016,7 +1027,7 @@ export const createAuthRouter = (
 
   router.get(
     '/challenge',
-    rateLimiters.challenge,
+    // rateLimiters.challenge, // Temporarily disabled for testing
     sanitizeRequest(),
     validateBody(challengeSchema),
     challengeHandler
