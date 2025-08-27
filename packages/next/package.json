@@ -14,7 +14,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@polkadot-auth/core": "file:../core"
+    "@polkadot-auth/core": "file:../core",
+    "@polkadot-auth/sso": "file:../sso"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
