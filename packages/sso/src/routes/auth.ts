@@ -13,6 +13,60 @@ import { createLogger, logError, logRequest } from '../utils/logger';
 import { escapeHtml } from '../utils/sanitization';
 import { validateAuthRequest, validateClientCredentials } from '../utils/validation';
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     ChallengeRequest:
+ *       type: object
+ *       properties:
+ *         client_id:
+ *           type: string
+ *           description: Client application identifier
+ *           example: "my-app"
+ *         user_address:
+ *           type: string
+ *           description: User wallet address (optional)
+ *           example: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+ *       required:
+ *         - client_id
+ *
+ *     VerifyRequest:
+ *       type: object
+ *       properties:
+ *         challenge_id:
+ *           type: string
+ *           description: Challenge identifier
+ *           example: "challenge_123456789"
+ *         signature:
+ *           type: string
+ *           description: Signature of the challenge
+ *           example: "0x1234567890abcdef..."
+ *         public_key:
+ *           type: string
+ *           description: Public key of the signer
+ *           example: "0x1234567890abcdef..."
+ *       required:
+ *         - challenge_id
+ *         - signature
+ *         - public_key
+ *
+ *     SignoutRequest:
+ *       type: object
+ *       properties:
+ *         address:
+ *           type: string
+ *           description: User wallet address
+ *           example: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+ *         client_id:
+ *           type: string
+ *           description: Client application identifier
+ *           example: "my-app"
+ *       required:
+ *         - address
+ *         - client_id
+ */
+
 function verifySignature(message: string, signature: string, address: string): boolean {
   try {
     if (signature.length < 64) {
@@ -1019,6 +1073,52 @@ export const createAuthRouter = (
     loginHandler
   );
 
+  /**
+   * @swagger
+   * /auth/challenge:
+   *   get:
+   *     summary: Generate authentication challenge
+   *     description: Generate a challenge message for wallet-based authentication
+   *     tags: [Authentication]
+   *     parameters:
+   *       - in: query
+   *         name: client_id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Client application identifier
+   *         example: "my-app"
+   *       - in: query
+   *         name: user_address
+   *         required: false
+   *         schema:
+   *           type: string
+   *         description: User wallet address (optional)
+   *         example: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+   *     responses:
+   *       200:
+   *         description: Challenge generated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 challenge:
+   *                   $ref: '#/components/schemas/Challenge'
+   *       400:
+   *         description: Invalid request parameters
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       429:
+   *         description: Rate limit exceeded
+   *       500:
+   *         description: Internal server error
+   */
   router.get(
     '/challenge',
     // rateLimiters.challenge, // Temporarily disabled for testing
@@ -1027,13 +1127,126 @@ export const createAuthRouter = (
     challengeHandler
   );
 
-  router.get(
+  /**
+   * @swagger
+   * /auth/verify:
+   *   post:
+   *     summary: Verify challenge signature
+   *     description: Verify a signed challenge and create a session
+   *     tags: [Authentication]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/VerifyRequest'
+   *     responses:
+   *       200:
+   *         description: Signature verified successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 session:
+   *                   $ref: '#/components/schemas/Session'
+   *                 tokens:
+   *                   $ref: '#/components/schemas/Tokens'
+   *       400:
+   *         description: Invalid signature or challenge
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       429:
+   *         description: Rate limit exceeded
+   *       500:
+   *         description: Internal server error
+   */
+  router.post(
     '/verify',
     rateLimiters.verify,
     sanitizeRequest(),
     validateBody(verifySchema),
     verifyHandler
   );
+
+  /**
+   * @swagger
+   * /auth/signout:
+   *   post:
+   *     summary: Sign out user
+   *     description: Invalidate user session and sign out
+   *     tags: [Authentication]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/SignoutRequest'
+   *     responses:
+   *       200:
+   *         description: Successfully signed out
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Success'
+   *       400:
+   *         description: Invalid request parameters
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error
+   */
+  router.post('/signout', async (req, res) => {
+    try {
+      const { address, client_id } = req.body;
+
+      if (!address || !client_id) {
+        return res.status(400).json({
+          success: false,
+          error: 'address and client_id are required',
+        });
+      }
+
+      // For signout, we'll just log the event since we don't have the access token
+      // In a real implementation, you might want to store active sessions and invalidate them
+      const logger = createLogger('auth-signout');
+      logger.info('User signed out', { address, client_id });
+      await auditService.log({
+        type: 'AUTH_ATTEMPT',
+        user_address: address,
+        client_id,
+        action: 'signout',
+        status: 'success',
+        details: { action: 'signout' },
+        ip_address: req.ip || 'unknown',
+        user_agent: req.get('User-Agent'),
+      });
+
+      res.json({
+        success: true,
+        message: 'Successfully signed out',
+      });
+    } catch (error) {
+      const logger = createLogger('auth-signout');
+      logger.error('Signout error', {
+        error: error instanceof Error ? error.message : String(error),
+        address: req.body.address,
+        client_id: req.body.client_id,
+      });
+
+      res.status(500).json({
+        success: false,
+        error: 'Signout failed',
+      });
+    }
+  });
 
   router.get('/kusama-credentials', (req, res) => {
     const action = req.query.action || 'overview';

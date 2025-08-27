@@ -8,6 +8,8 @@ import { rateLimit } from 'express-rate-limit';
 import session from 'express-session';
 import helmet from 'helmet';
 import path from 'path';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 import { corsConfig } from './config/cors';
 import { initializeDatabasePool, shutdownDatabasePool } from './config/db';
 import { sessionConfig } from './config/session';
@@ -30,6 +32,55 @@ import { validateEnvironment } from './utils/envValidation';
 import { createLogger } from './utils/logger';
 
 const logger = createLogger('app');
+
+// Swagger configuration
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Polkadot SSO API',
+      version: '1.0.0',
+      description:
+        'Polkadot Single Sign-On (SSO) service API for wallet-based authentication and credential management',
+      contact: {
+        name: 'Polkadot Auth Team',
+        email: 'support@polkadot-auth.com',
+      },
+      license: {
+        name: 'MIT',
+        url: 'https://opensource.org/licenses/MIT',
+      },
+    },
+    servers: [
+      {
+        url:
+          process.env.NODE_ENV === 'production'
+            ? 'https://api.polkadot-auth.com'
+            : 'http://localhost:3000',
+        description:
+          process.env.NODE_ENV === 'production' ? 'Production server' : 'Development server',
+      },
+    ],
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'JWT token obtained from authentication',
+        },
+      },
+    },
+    security: [
+      {
+        BearerAuth: [],
+      },
+    ],
+  },
+  apis: ['./src/routes/*.ts', './src/app.ts'], // Path to the API docs
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 // Validate environment variables before starting the application
 const envValidation = validateEnvironment();
@@ -159,6 +210,50 @@ async function initializeApp() {
   }
 
   const bruteForceMiddleware = createBruteForceProtection(auditService);
+
+  // Swagger documentation routes
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, {
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'Polkadot SSO API Documentation',
+    })
+  );
+
+  /**
+   * @swagger
+   * /health:
+   *   get:
+   *     summary: Health check endpoint
+   *     description: Check if the service is running and healthy
+   *     tags: [Health]
+   *     responses:
+   *       200:
+   *         description: Service is healthy
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: string
+   *                   example: "ok"
+   *                 timestamp:
+   *                   type: string
+   *                   format: date-time
+   *                   example: "2024-01-01T12:00:00.000Z"
+   *                 version:
+   *                   type: string
+   *                   example: "1.0.0"
+   */
+  app.get('/health', (req, res) => {
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
+    });
+  });
 
   app.use('/', createAuthRouter(tokenService, challengeService, auditService, clients));
   app.use('/api/tokens', createTokenRouter(tokenService, auditService));
