@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken';
 import { getCacheStrategies } from '../../services/cacheService';
 import { TokenService } from '../../services/token';
 
-// Mock the cache service
 jest.mock('../../services/cacheService');
 jest.mock('../../config/db');
 
@@ -12,7 +11,20 @@ const mockCacheStrategies = {
   deleteSession: jest.fn(),
 };
 
+const mockDb = {
+  get: jest.fn(),
+  run: jest.fn(),
+};
+
 (getCacheStrategies as jest.Mock).mockReturnValue(mockCacheStrategies);
+
+const mockGetDatabaseConnection = jest.fn();
+const mockReleaseDatabaseConnection = jest.fn();
+
+jest.doMock('../../config/db', () => ({
+  getDatabaseConnection: mockGetDatabaseConnection,
+  releaseDatabaseConnection: mockReleaseDatabaseConnection,
+}));
 
 describe('TokenService', () => {
   let tokenService: TokenService;
@@ -21,8 +33,10 @@ describe('TokenService', () => {
     tokenService = new TokenService();
     jest.clearAllMocks();
 
-    // Set up JWT secret for testing
     process.env.JWT_SECRET = 'test-secret-key-for-testing-only';
+
+    mockGetDatabaseConnection.mockResolvedValue(mockDb);
+    mockReleaseDatabaseConnection.mockResolvedValue(undefined);
   });
 
   describe('generateTokens', () => {
@@ -35,8 +49,9 @@ describe('TokenService', () => {
       expect(result.accessToken).toBeDefined();
       expect(result.refreshToken).toBeDefined();
       expect(result.fingerprint).toBeDefined();
+      expect(result.accessJwtid).toBeDefined();
+      expect(result.refreshJwtid).toBeDefined();
 
-      // Verify tokens can be decoded
       const decodedAccess = jwt.verify(result.accessToken, process.env.JWT_SECRET!) as any;
       const decodedRefresh = jwt.verify(result.refreshToken, process.env.JWT_SECRET!) as any;
 
@@ -63,12 +78,30 @@ describe('TokenService', () => {
       const clientId = 'test-client';
       const { accessToken } = tokenService.generateTokens(address, clientId);
 
+      const mockSession = {
+        id: 'test-session-id',
+        address,
+        client_id: clientId,
+        access_token: accessToken,
+        refresh_token: 'test-refresh-token',
+        access_token_id: 'test-access-id',
+        refresh_token_id: 'test-refresh-id',
+        fingerprint: 'test-fingerprint',
+        access_token_expires_at: Date.now() + 3600000,
+        refresh_token_expires_at: Date.now() + 86400000,
+        created_at: Date.now(),
+        last_used_at: Date.now(),
+        is_active: true,
+      };
+
+      mockCacheStrategies.getSession.mockResolvedValue(mockSession);
+
       const result = await tokenService.verifyToken(accessToken, 'access');
 
-      expect(result).toBeDefined();
-      expect(result?.address).toBe(address);
-      expect(result?.client_id).toBe(clientId);
-      expect(result?.type).toBe('access');
+      expect(result.valid).toBe(true);
+      expect(result.decoded?.address).toBe(address);
+      expect(result.decoded?.client_id).toBe(clientId);
+      expect(result.decoded?.type).toBe('access');
     });
 
     it('should verify valid refresh token', async () => {
@@ -76,20 +109,39 @@ describe('TokenService', () => {
       const clientId = 'test-client';
       const { refreshToken } = tokenService.generateTokens(address, clientId);
 
+      const mockSession = {
+        id: 'test-session-id',
+        address,
+        client_id: clientId,
+        access_token: 'test-access-token',
+        refresh_token: refreshToken,
+        access_token_id: 'test-access-id',
+        refresh_token_id: 'test-refresh-id',
+        fingerprint: 'test-fingerprint',
+        access_token_expires_at: Date.now() + 3600000,
+        refresh_token_expires_at: Date.now() + 86400000,
+        created_at: Date.now(),
+        last_used_at: Date.now(),
+        is_active: true,
+      };
+
+      mockCacheStrategies.getSession.mockResolvedValue(mockSession);
+
       const result = await tokenService.verifyToken(refreshToken, 'refresh');
 
-      expect(result).toBeDefined();
-      expect(result?.address).toBe(address);
-      expect(result?.client_id).toBe(clientId);
-      expect(result?.type).toBe('refresh');
+      expect(result.valid).toBe(true);
+      expect(result.decoded?.address).toBe(address);
+      expect(result.decoded?.client_id).toBe(clientId);
+      expect(result.decoded?.type).toBe('refresh');
     });
 
-    it('should return null for invalid token', async () => {
+    it('should return invalid result for invalid token', async () => {
       const result = await tokenService.verifyToken('invalid-token', 'access');
-      expect(result).toBeNull();
+      expect(result.valid).toBe(false);
+      expect(result.error).toBeDefined();
     });
 
-    it('should return null for expired token', async () => {
+    it('should return invalid result for expired token', async () => {
       const expiredToken = jwt.sign(
         {
           address: 'test',
@@ -101,16 +153,18 @@ describe('TokenService', () => {
       );
 
       const result = await tokenService.verifyToken(expiredToken, 'access');
-      expect(result).toBeNull();
+      expect(result.valid).toBe(false);
+      expect(result.error).toBeDefined();
     });
 
-    it('should return null for wrong token type', async () => {
+    it('should return invalid result for wrong token type', async () => {
       const address = 'test-address';
       const clientId = 'test-client';
       const { accessToken } = tokenService.generateTokens(address, clientId);
 
       const result = await tokenService.verifyToken(accessToken, 'refresh');
-      expect(result).toBeNull();
+      expect(result.valid).toBe(false);
+      expect(result.error).toBeDefined();
     });
   });
 
@@ -118,25 +172,43 @@ describe('TokenService', () => {
     it('should create a new session', async () => {
       const address = 'test-address';
       const clientId = 'test-client';
-      const { accessToken, refreshToken } = tokenService.generateTokens(address, clientId);
 
-      const result = await tokenService.createSession(address, clientId, accessToken, refreshToken);
+      mockDb.run.mockResolvedValue({} as any);
+
+      const result = await tokenService.createSession(address, clientId);
 
       expect(result).toBeDefined();
       expect(result?.address).toBe(address);
       expect(result?.client_id).toBe(clientId);
-      expect(result?.access_token).toBe(accessToken);
-      expect(result?.refresh_token).toBe(refreshToken);
+      expect(result?.access_token).toBeDefined();
+      expect(result?.refresh_token).toBeDefined();
       expect(result?.is_active).toBe(true);
     });
   });
 
   describe('invalidateSession', () => {
     it('should invalidate an existing session', async () => {
-      const address = 'test-address';
-      const clientId = 'test-client';
+      const accessToken = 'test-access-token';
+      const mockSession = {
+        id: 'test-session-id',
+        address: 'test-address',
+        client_id: 'test-client',
+        access_token: accessToken,
+        refresh_token: 'test-refresh-token',
+        access_token_id: 'test-access-id',
+        refresh_token_id: 'test-refresh-id',
+        fingerprint: 'test-fingerprint',
+        access_token_expires_at: Date.now() + 3600000,
+        refresh_token_expires_at: Date.now() + 86400000,
+        created_at: Date.now(),
+        last_used_at: Date.now(),
+        is_active: true,
+      };
 
-      const result = await tokenService.invalidateSession(address, clientId);
+      mockCacheStrategies.getSession.mockResolvedValue(mockSession);
+      mockDb.run.mockResolvedValue({} as any);
+
+      const result = await tokenService.invalidateSession(accessToken);
 
       expect(result).toBe(true);
     });
@@ -148,11 +220,30 @@ describe('TokenService', () => {
       const clientId = 'test-client';
       const { refreshToken } = tokenService.generateTokens(address, clientId);
 
+      const mockSession = {
+        id: 'test-session-id',
+        address,
+        client_id: clientId,
+        access_token: 'old-access-token',
+        refresh_token: refreshToken,
+        access_token_id: 'old-access-id',
+        refresh_token_id: 'old-refresh-id',
+        fingerprint: 'old-fingerprint',
+        access_token_expires_at: Date.now() - 1000,
+        refresh_token_expires_at: Date.now() + 86400000,
+        created_at: Date.now() - 86400000,
+        last_used_at: Date.now() - 1000,
+        is_active: true,
+      };
+
+      mockCacheStrategies.getSession.mockResolvedValue(mockSession);
+      mockDb.run.mockResolvedValue({} as any);
+
       const result = await tokenService.refreshSession(refreshToken);
 
       expect(result).toBeDefined();
-      expect(result?.accessToken).toBeDefined();
-      expect(result?.refreshToken).toBeDefined();
+      expect(result?.access_token).toBeDefined();
+      expect(result?.refresh_token).toBeDefined();
       expect(result?.fingerprint).toBeDefined();
     });
 
@@ -164,12 +255,13 @@ describe('TokenService', () => {
 
   describe('getSessionStats', () => {
     it('should return session statistics', async () => {
+      mockDb.get.mockResolvedValueOnce({ count: 5 }).mockResolvedValueOnce({ count: 10 });
+
       const stats = await tokenService.getSessionStats();
 
       expect(stats).toBeDefined();
-      expect(typeof stats.totalSessions).toBe('number');
-      expect(typeof stats.activeSessions).toBe('number');
-      expect(typeof stats.inactiveSessions).toBe('number');
+      expect(typeof stats.active).toBe('number');
+      expect(typeof stats.total).toBe('number');
     });
   });
 });

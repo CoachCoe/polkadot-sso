@@ -1,7 +1,6 @@
-import { CredentialService } from '../../services/credentialService';
 import { getCacheStrategies } from '../../services/cacheService';
+import { CredentialService } from '../../services/credentialService';
 
-// Mock the cache service
 jest.mock('../../services/cacheService');
 jest.mock('../../config/db');
 

@@ -1,7 +1,6 @@
-import { ChallengeService } from '../../services/challengeService';
 import { getCacheStrategies } from '../../services/cacheService';
+import { ChallengeService } from '../../services/challengeService';
 
-// Mock the cache service
 jest.mock('../../services/cacheService');
 jest.mock('../../config/db');
 

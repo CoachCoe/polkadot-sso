@@ -81,20 +81,17 @@ export class TokenService {
         throw new Error('Invalid token type');
       }
 
-      // Try to get session from cache first
       const cacheStrategies = getCacheStrategies();
       const cacheKey = `session:${decoded.address}:${decoded.client_id}`;
       let session = await cacheStrategies.getSession<Session>(cacheKey);
 
       if (!session) {
-        // Cache miss, get from database
         db = await getDatabaseConnection();
         session = (await db.get(
           'SELECT * FROM sessions WHERE address = ? AND client_id = ? AND is_active = 1',
           [decoded.address, decoded.client_id]
         )) as Session | null;
 
-        // Cache the session for future requests
         if (session) {
           await cacheStrategies.setSession(cacheKey, session);
         }
@@ -174,7 +171,6 @@ export class TokenService {
         ]
       );
 
-      // Cache the session
       const cacheStrategies = getCacheStrategies();
       const cacheKey = `session:${address}:${client_id}`;
       await cacheStrategies.setSession(cacheKey, session);
@@ -211,7 +207,6 @@ export class TokenService {
       db = await getDatabaseConnection();
       await db.run('UPDATE sessions SET is_active = 0 WHERE id = ?', [result.session.id]);
 
-      // Clear session from cache
       const cacheStrategies = getCacheStrategies();
       const cacheKey = `session:${result.session.address}:${result.session.client_id}`;
       await cacheStrategies.getSession(cacheKey); // This will clear the cache entry
@@ -242,13 +237,11 @@ export class TokenService {
         return null;
       }
 
-      // Generate new tokens
       const tokens = this.generateTokens(result.session.address, result.session.client_id);
       const now = Date.now();
       const accessTokenExpiresAt = now + JWT_CONFIG.accessTokenExpiry * 1000;
       const refreshTokenExpiresAt = now + JWT_CONFIG.refreshTokenExpiry * 1000;
 
-      // Update session in database
       db = await getDatabaseConnection();
       await db.run(
         `UPDATE sessions SET
@@ -270,7 +263,6 @@ export class TokenService {
         ]
       );
 
-      // Update cached session
       const updatedSession: Session = {
         ...result.session,
         access_token: tokens.accessToken,

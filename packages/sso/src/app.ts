@@ -33,7 +33,6 @@ import { createLogger } from './utils/logger';
 
 const logger = createLogger('app');
 
-// Swagger configuration
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -77,36 +76,31 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ['./src/routes/*.ts', './src/app.ts'], // Path to the API docs
+  apis: ['./src/routes/*.ts', './src/app.ts'],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-// Validate environment variables before starting the application
 const envValidation = validateEnvironment();
 if (!envValidation.valid) {
   logger.error('Environment validation failed:', envValidation.errors);
   process.exit(1);
 }
 
-// Log warnings if any
 if (envValidation.warnings.length > 0) {
   logger.warn('Environment validation warnings:', envValidation.warnings);
 }
 
 const app = express();
 
-// Performance optimizations
 app.use(
   compression({
-    level: 6, // Balanced compression level
-    threshold: 1024, // Only compress responses larger than 1KB
+    level: 6,
+    threshold: 1024,
     filter: (req, res) => {
-      // Don't compress if client doesn't support it
       if (req.headers['x-no-compression']) {
         return false;
       }
-      // Use compression for all other requests
       return compression.filter(req, res);
     },
   })
@@ -117,7 +111,7 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(
   express.static(path.join(__dirname, '../public'), {
-    maxAge: process.env.NODE_ENV === 'production' ? '1h' : '0', // Cache static files in production
+    maxAge: process.env.NODE_ENV === 'production' ? '1h' : '0',
     etag: true,
     lastModified: true,
   })
@@ -130,7 +124,7 @@ app.use(
         ? {
             directives: {
               defaultSrc: ["'self'"],
-              scriptSrc: ["'self'", "'unsafe-inline'"], // Allow inline scripts for wallet integration
+              scriptSrc: ["'self'", "'unsafe-inline'"],
               styleSrc: ["'self'", "'unsafe-inline'"],
               imgSrc: ["'self'", 'data:', 'https:'],
               connectSrc: ["'self'", 'https://kusama-rpc.polkadot.io', 'https://kusama.subscan.io'],
@@ -139,7 +133,7 @@ app.use(
               upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
             },
           }
-        : false, // Disable CSP in development for easier debugging
+        : false,
     hsts: {
       maxAge: 31536000,
       includeSubDomains: true,
@@ -175,19 +169,13 @@ app.use(
   })
 );
 
-// Temporarily disabled security middleware to allow WebAssembly to work
-// app.use(securityMiddleware);
-// But keep nonce middleware for proper nonce generation
 app.use((req, res, next) => nonceMiddleware(req, res as ResponseWithLocals, next));
 
 async function initializeApp() {
-  // Initialize database pool
   await initializeDatabasePool();
 
-  // Initialize cache service
   const cacheService = getCacheService();
 
-  // Health check for cache service
   const cacheHealth = await cacheService.healthCheck();
   logger.info('Cache service health check', { healthy: cacheHealth });
 
@@ -198,7 +186,6 @@ async function initializeApp() {
 
   const clients = new Map<string, Client>();
 
-  // Create a default client for testing (only in development)
   if (process.env.NODE_ENV === 'development') {
     clients.set('default-client', {
       client_id: 'default-client',
@@ -211,7 +198,6 @@ async function initializeApp() {
 
   const bruteForceMiddleware = createBruteForceProtection(auditService);
 
-  // Swagger documentation routes
   app.use(
     '/api-docs',
     swaggerUi.serve,
@@ -259,9 +245,6 @@ async function initializeApp() {
   app.use('/api/tokens', createTokenRouter(tokenService, auditService));
   app.use('/api/clients', createClientRouter());
   app.use('/api/credentials', createCredentialRouter(credentialService, auditService));
-  // Temporarily disabled due to Polkadot.js dependency issues
-  // app.use('/api/kusama', kusamaRoutes);
-  // app.use('/api/wallet-kusama', walletKusamaRoutes);
 
   app.use(bruteForceMiddleware);
   app.use(sanitizeRequestParams());
@@ -297,7 +280,6 @@ async function initializeApp() {
   });
 }
 
-// Graceful shutdown
 process.on('SIGTERM', async () => {
   logger.info('Received SIGTERM, starting graceful shutdown...');
   await shutdownDatabasePool();

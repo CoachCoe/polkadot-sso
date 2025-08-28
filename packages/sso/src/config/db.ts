@@ -6,7 +6,6 @@ import { createLogger } from '../utils/logger';
 
 const logger = createLogger('database-pool');
 
-// Database connection pool configuration
 const DB_POOL_CONFIG = {
   min: parseInt(process.env.DB_POOL_MIN || '2'),
   max: parseInt(process.env.DB_POOL_MAX || '10'),
@@ -34,12 +33,10 @@ class DatabasePool {
   async initialize(): Promise<void> {
     await mkdir(dirname(this.dbPath), { recursive: true });
 
-    // Create initial pool connections
     for (let i = 0; i < DB_POOL_CONFIG.min; i++) {
       await this.createConnection();
     }
 
-    // Start connection reaper
     this.startReaper();
 
     logger.info('Database pool initialized', {
@@ -57,7 +54,6 @@ class DatabasePool {
         mode: sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
       });
 
-      // Enable WAL mode for better concurrency
       await db.exec('PRAGMA journal_mode = WAL');
       await db.exec('PRAGMA synchronous = NORMAL');
       await db.exec('PRAGMA cache_size = 10000');
@@ -85,7 +81,6 @@ class DatabasePool {
       throw new Error('Database pool is shutting down');
     }
 
-    // Try to find an available connection
     const availableConnection = this.pool.find(conn => !conn.inUse);
 
     if (availableConnection) {
@@ -94,7 +89,6 @@ class DatabasePool {
       return availableConnection.db;
     }
 
-    // If no available connection and we haven't reached max, create a new one
     if (this.pool.length < DB_POOL_CONFIG.max) {
       const newConnection = await this.createConnection();
       newConnection.inUse = true;
@@ -102,7 +96,6 @@ class DatabasePool {
       return newConnection.db;
     }
 
-    // Wait for a connection to become available
     return new Promise<Database>((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error('Database connection timeout'));
@@ -127,7 +120,6 @@ class DatabasePool {
       connection.inUse = false;
       connection.lastUsed = Date.now();
 
-      // Process waiting requests
       if (this.waiting.length > 0) {
         const waiter = this.waiting.shift();
         if (waiter) {
@@ -151,7 +143,6 @@ class DatabasePool {
       conn => !conn.inUse && now - conn.lastUsed > DB_POOL_CONFIG.idleTimeout
     );
 
-    // Keep at least min connections
     const connectionsToRemove = Math.max(0, idleConnections.length - DB_POOL_CONFIG.min);
 
     for (let i = 0; i < connectionsToRemove; i++) {
@@ -178,13 +169,11 @@ class DatabasePool {
   async shutdown(): Promise<void> {
     this.isShuttingDown = true;
 
-    // Reject all waiting requests
     this.waiting.forEach(waiter => {
       waiter.reject(new Error('Database pool shutting down'));
     });
     this.waiting = [];
 
-    // Close all connections
     const closePromises = this.pool.map(async connection => {
       try {
         await connection.db.close();
@@ -217,7 +206,6 @@ class DatabasePool {
   }
 }
 
-// Global database pool instance
 let dbPool: DatabasePool | null = null;
 
 export async function initializeDatabasePool(): Promise<DatabasePool> {

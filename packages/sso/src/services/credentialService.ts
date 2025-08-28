@@ -19,7 +19,6 @@ import { getCacheStrategies } from './cacheService';
 
 const logger = createLogger('credential-service');
 
-// Type for creating credential types
 interface CreateCredentialTypeRequest {
   name: string;
   description?: string;
@@ -88,7 +87,6 @@ export class CredentialService {
         ]
       );
 
-      // Cache the user profile
       const cacheStrategies = getCacheStrategies();
       await cacheStrategies.setUserProfile(address, profile);
 
@@ -110,18 +108,15 @@ export class CredentialService {
   async getUserProfile(address: string): Promise<UserProfile | undefined> {
     let db: any = null;
     try {
-      // Try to get from cache first
       const cacheStrategies = getCacheStrategies();
       let profile = (await cacheStrategies.getUserProfile(address)) as UserProfile | null;
 
       if (!profile) {
-        // Cache miss, get from database
         db = await getDatabaseConnection();
         profile = (await db.get('SELECT * FROM user_profiles WHERE address = ?', [
           address,
         ])) as UserProfile | null;
 
-        // Cache the profile if found
         if (profile) {
           await cacheStrategies.setUserProfile(address, profile);
         }

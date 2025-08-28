@@ -17,7 +17,6 @@ describe('CredentialService', () => {
       all: jest.fn(),
     } as unknown as jest.Mocked<Database>;
 
-    // Set up required environment variables for testing
     process.env.DATABASE_ENCRYPTION_KEY = 'test-encryption-key-32-chars-long';
     process.env.JWT_SECRET = 'test-jwt-secret-key';
 

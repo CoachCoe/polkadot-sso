@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// Base schemas
 export const addressSchema = z
   .string()
   .regex(/^[1-9A-HJ-NP-Za-km-z]{32,}$/, 'Invalid Polkadot address format');
@@ -8,7 +7,6 @@ export const hexStringSchema = z.string().regex(/^0x[a-fA-F0-9]+$/, 'Invalid hex
 export const uuidSchema = z.string().uuid('Invalid UUID format');
 export const timestampSchema = z.number().int().positive('Timestamp must be a positive integer');
 
-// Challenge schemas
 export const challengeQuerySchema = z.object({
   client_id: z.string().min(1, 'Client ID is required'),
   address: addressSchema.optional(),
@@ -23,7 +21,6 @@ export const challengeResponseSchema = z.object({
   expires_at: timestampSchema,
 });
 
-// Verification schemas
 export const verificationQuerySchema = z.object({
   signature: hexStringSchema.min(64, 'Signature must be at least 64 characters'),
   challenge_id: uuidSchema,
@@ -38,7 +35,6 @@ export const verificationResponseSchema = z.object({
   error: z.string().optional(),
 });
 
-// Token schemas
 export const tokenRequestSchema = z.object({
   grant_type: z.literal('authorization_code'),
   code: z.string().min(32, 'Authorization code must be at least 32 characters'),
@@ -55,7 +51,6 @@ export const tokenResponseSchema = z.object({
   scope: z.string().optional(),
 });
 
-// Client schemas
 export const clientCreateSchema = z.object({
   client_id: z.string().min(1, 'Client ID is required').max(100, 'Client ID too long'),
   name: z.string().min(1, 'Client name is required').max(200, 'Client name too long'),
@@ -80,7 +75,6 @@ export const clientResponseSchema = z.object({
   is_active: z.boolean(),
 });
 
-// Credential schemas
 export const credentialTypeCreateSchema = z.object({
   name: z.string().min(1, 'Credential type name is required').max(100, 'Name too long'),
   description: z.string().max(500, 'Description too long').optional(),
@@ -121,7 +115,6 @@ export const credentialResponseSchema = z.object({
   is_revoked: z.boolean(),
 });
 
-// Session schemas
 export const sessionCreateSchema = z.object({
   address: addressSchema,
   client_id: z.string().min(1, 'Client ID is required'),
@@ -141,7 +134,6 @@ export const sessionResponseSchema = z.object({
   is_active: z.boolean(),
 });
 
-// Audit log schemas
 export const auditLogCreateSchema = z.object({
   event_type: z.enum([
     'login',
@@ -173,7 +165,6 @@ export const auditLogResponseSchema = z.object({
   created_at: timestampSchema,
 });
 
-// Kusama integration schemas
 export const kusamaStoreSchema = z.object({
   credential_data: z.string().min(1, 'Credential data is required'),
   encryption_key: hexStringSchema.optional(),
@@ -199,7 +190,6 @@ export const kusamaResponseSchema = z.object({
     .optional(),
 });
 
-// Error response schema
 export const errorResponseSchema = z.object({
   error: z.string(),
   message: z.string().optional(),
@@ -208,7 +198,6 @@ export const errorResponseSchema = z.object({
   timestamp: timestampSchema,
 });
 
-// Pagination schemas
 export const paginationQuerySchema = z.object({
   page: z.string().transform(Number).pipe(z.number().int().min(1)).default('1'),
   limit: z.string().transform(Number).pipe(z.number().int().min(1).max(100)).default('20'),
@@ -229,50 +218,39 @@ export const paginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =
     }),
   });
 
-// Export all schemas
 export const schemas = {
-  // Base schemas
   address: addressSchema,
   hexString: hexStringSchema,
   uuid: uuidSchema,
   timestamp: timestampSchema,
 
-  // Challenge schemas
   challengeQuery: challengeQuerySchema,
   challengeResponse: challengeResponseSchema,
 
-  // Verification schemas
   verificationQuery: verificationQuerySchema,
   verificationResponse: verificationResponseSchema,
 
-  // Token schemas
   tokenRequest: tokenRequestSchema,
   tokenResponse: tokenResponseSchema,
 
-  // Client schemas
   clientCreate: clientCreateSchema,
   clientUpdate: clientUpdateSchema,
   clientResponse: clientResponseSchema,
 
-  // Credential schemas
   credentialTypeCreate: credentialTypeCreateSchema,
   credentialCreate: credentialCreateSchema,
   credentialResponse: credentialResponseSchema,
 
-  // Session schemas
   sessionCreate: sessionCreateSchema,
   sessionResponse: sessionResponseSchema,
 
-  // Audit log schemas
   auditLogCreate: auditLogCreateSchema,
   auditLogResponse: auditLogResponseSchema,
 
-  // Kusama schemas
   kusamaStore: kusamaStoreSchema,
   kusamaRetrieve: kusamaRetrieveSchema,
   kusamaResponse: kusamaResponseSchema,
 
-  // Utility schemas
   errorResponse: errorResponseSchema,
   paginationQuery: paginationQuerySchema,
   paginatedResponse: paginatedResponseSchema,

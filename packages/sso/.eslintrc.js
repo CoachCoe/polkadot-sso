@@ -11,7 +11,6 @@ module.exports = {
     es2020: true,
   },
   rules: {
-    // General rules
     'no-console': 'warn',
     'no-debugger': 'error',
     'no-var': 'error',

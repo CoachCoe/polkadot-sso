@@ -3,20 +3,15 @@ import { createLogger } from './logger';
 
 const logger = createLogger('env-validation');
 
-// Environment variable schema
 const envSchema = z.object({
-  // Required for all environments
   SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be at least 32 characters'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
-  // Server configuration
   PORT: z.string().transform(Number).pipe(z.number().min(1).max(65535)).default('3000'),
 
-  // Database configuration
   DATABASE_URL: z.string().url().optional(),
   DATABASE_PATH: z.string().default('./data/sso.db'),
 
-  // Database pool configuration
   DB_POOL_MIN: z.string().transform(Number).pipe(z.number().min(1).max(20)).default('2'),
   DB_POOL_MAX: z.string().transform(Number).pipe(z.number().min(1).max(50)).default('10'),
   DB_POOL_ACQUIRE_TIMEOUT: z
@@ -35,7 +30,6 @@ const envSchema = z.object({
     .pipe(z.number().min(100).max(10000))
     .default('1000'),
 
-  // Redis configuration (optional for development)
   REDIS_URL: z.string().url().optional(),
   REDIS_MAX_RETRIES: z.string().transform(Number).pipe(z.number().min(1).max(10)).default('3'),
   REDIS_CONNECT_TIMEOUT: z
@@ -49,20 +43,17 @@ const envSchema = z.object({
     .pipe(z.number().min(1000).max(60000))
     .default('30000'),
 
-  // CORS configuration
   ALLOWED_ORIGINS: z
     .string()
     .transform(val => val.split(',').map(s => s.trim()))
     .default('http://localhost:3000,http://localhost:3001'),
 
-  // Cookie configuration
   COOKIE_DOMAIN: z.string().optional(),
   COOKIE_SECURE: z
     .string()
     .transform(val => val === 'true')
     .default('false'),
 
-  // JWT configuration
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters').optional(),
   JWT_ISSUER: z.string().default('polkadot-sso'),
   JWT_ACCESS_TOKEN_EXPIRY: z.string().transform(Number).pipe(z.number().min(60)).default('900'), // 15 minutes
@@ -72,29 +63,23 @@ const envSchema = z.object({
     .pipe(z.number().min(3600))
     .default('604800'), // 7 days
 
-  // Rate limiting
-  RATE_LIMIT_WINDOW_MS: z.string().transform(Number).pipe(z.number().min(1000)).default('900000'), // 15 minutes
+  RATE_LIMIT_WINDOW_MS: z.string().transform(Number).pipe(z.number().min(1000)).default('900000'),
   RATE_LIMIT_MAX_REQUESTS: z.string().transform(Number).pipe(z.number().min(1)).default('100'),
 
-  // Compression configuration
   COMPRESSION_LEVEL: z.string().transform(Number).pipe(z.number().min(0).max(9)).default('6'),
   COMPRESSION_THRESHOLD: z.string().transform(Number).pipe(z.number().min(0)).default('1024'),
 
-  // Static file caching
   STATIC_CACHE_MAX_AGE: z.string().default('1h'),
   STATIC_CACHE_ENABLED: z
     .string()
     .transform(val => val === 'true')
     .default('true'),
 
-  // Polkadot/Kusama configuration
   KUSAMA_ENDPOINT: z.string().url().optional(),
   KUSAMA_ACCOUNT_TYPE: z.enum(['sr25519', 'ed25519', 'ecdsa']).default('sr25519'),
 
-  // Development/testing
   DEFAULT_CLIENT_SECRET: z.string().min(32).optional(),
 
-  // Logging
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
   LOG_FILE: z.string().optional(),
 });
@@ -115,7 +100,6 @@ export function validateEnvironment(): EnvValidationResult {
   try {
     const env = envSchema.parse(process.env);
 
-    // Additional validation logic
     if (env.NODE_ENV === 'production') {
       if (!env.REDIS_URL) {
         warnings.push(
@@ -201,5 +185,4 @@ export function getValidatedEnv(): ValidatedEnv {
   return result.env;
 }
 
-// Export commonly used environment variables
 export const env = getValidatedEnv();

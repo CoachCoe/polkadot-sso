@@ -97,7 +97,6 @@ export class ChallengeService {
       const issuedAt = new Date().toISOString();
       const expirationTime = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes
 
-      // Create SIWE-style message
       const message = this.formatSIWEStyleMessage({
         domain: 'polkadot-sso.localhost',
         address: userAddress || '0x...', // Will be replaced with actual address
@@ -150,7 +149,6 @@ export class ChallengeService {
         ]
       );
 
-      // Cache the challenge for quick access
       const cacheStrategies = getCacheStrategies();
       await cacheStrategies.setChallenge(challenge.id, challenge);
 
@@ -178,12 +176,10 @@ export class ChallengeService {
   async getChallenge(challengeId: string): Promise<Challenge | null> {
     let db: any = null;
     try {
-      // Try to get challenge from cache first
       const cacheStrategies = getCacheStrategies();
       let challenge = await cacheStrategies.getChallenge<Challenge>(challengeId);
 
       if (!challenge) {
-        // Cache miss, get from database
         db = await getDatabaseConnection();
         const result = await db.get(
           'SELECT * FROM challenges WHERE id = ? AND used = 0 AND expires_at > ?',
@@ -206,7 +202,6 @@ export class ChallengeService {
             used: Boolean(result.used),
           };
 
-          // Cache the challenge
           await cacheStrategies.setChallenge(challengeId, challenge);
         }
       }
@@ -232,9 +227,8 @@ export class ChallengeService {
       const result = await db.run('UPDATE challenges SET used = 1 WHERE id = ?', [challengeId]);
 
       if (result.changes > 0) {
-        // Remove from cache since it's now used
         const cacheStrategies = getCacheStrategies();
-        await cacheStrategies.getChallenge(challengeId); // This will clear the cache entry
+        await cacheStrategies.getChallenge(challengeId);
 
         logger.info('Challenge marked as used', { challengeId });
         return true;

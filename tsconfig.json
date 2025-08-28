@@ -4,7 +4,7 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -35,7 +35,7 @@
       "@/config/*": ["config/*"]
     }
   },
-  "include": ["src/**/*", "src/**/*.json"],
+  "include": ["packages/sso/src/**/*", "packages/sso/src/**/*.json", "examples/**/*"],
   "exclude": [
     "node_modules",
     "dist",

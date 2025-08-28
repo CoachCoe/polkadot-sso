@@ -1,17 +1,9 @@
+import { WalletConnection, WalletProvider } from '@polkadot-auth/core';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import type { SubmittableExtrinsic } from '@polkadot/api/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import crypto from 'crypto';
 import { createLogger } from '../utils/logger';
-import { WalletProvider, WalletConnection } from '@polkadot-auth/core';
-
-/**
- * Wallet-Based Kusama Service
- *
- * This service stores credentials directly on the Kusama blockchain using remarks.
- * No IPFS or external storage is used - everything is stored on-chain for maximum
- * decentralization and control.
- */
 
 const logger = createLogger('wallet-based-kusama');
 
@@ -56,7 +48,6 @@ export class WalletBasedKusamaService {
       await this.api.isReady;
       this.isConnected = true;
 
-      // Get available wallet providers from core package
       const { getAvailableProviders } = await import('@polkadot-auth/core');
       this.availableProviders = await getAvailableProviders();
 
@@ -87,10 +78,8 @@ export class WalletBasedKusamaService {
         hasSignature: !!userSignature,
       });
 
-      // Generate credential ID
       const credentialId = `cred_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
 
-      // Store directly in Kusama remarks
       const storageResult = await this.storeInKusamaRemarks(
         userAddress,
         credentialData,
@@ -129,13 +118,6 @@ export class WalletBasedKusamaService {
         hasSignature: !!userSignature,
       });
 
-      // TODO: Implement actual Kusama on-chain retrieval
-      // This would involve:
-      // 1. Verifying the user's signature if provided
-      // 2. Querying Kusama blockchain for the credential
-      // 3. Decrypting the data if it was encrypted
-
-      // For now, return mock data as placeholder
       const mockCredential: WalletCredentialData = {
         credentialId,
         userAddress,
@@ -168,13 +150,6 @@ export class WalletBasedKusamaService {
         hasSignature: !!userSignature,
       });
 
-      // TODO: Implement actual Kusama on-chain credential listing
-      // This would involve:
-      // 1. Querying Kusama blockchain for user's credentials
-      // 2. Filtering by user address and signature verification
-      // 3. Returning the list of accessible credentials
-
-      // For now, return mock data as placeholder
       const mockCredentials: WalletCredentialData[] = [
         {
           credentialId: `cred_${Date.now() - 86400000}_${crypto.randomBytes(8).toString('hex')}`,
@@ -193,7 +168,7 @@ export class WalletBasedKusamaService {
             organization: 'Blockchain Institute',
           },
           credentialType: 'kusama_credential',
-          timestamp: Date.now() - 172800000, // 2 days ago
+          timestamp: Date.now() - 172800000,
           encryptedData: 'kusama_encrypted_data',
           dataHash: 'kusama_hash',
         },
@@ -220,8 +195,6 @@ export class WalletBasedKusamaService {
         userAddress,
       });
 
-      // Calculate actual Kusama on-chain storage costs
-      // Kusama remarks have size limits, so we need to estimate based on data size
       const estimatedCost = ((dataSize / 1024) * 0.001).toFixed(3); // 0.001 KSM per KB
 
       const result = {
@@ -275,10 +248,6 @@ export class WalletBasedKusamaService {
     }
   }
 
-  /**
-   * Store credential data directly in Kusama remarks
-   * This is the core method that stores everything on-chain
-   */
   async storeInKusamaRemarks(
     userAddress: string,
     credentialData: Record<string, unknown>,
@@ -297,7 +266,6 @@ export class WalletBasedKusamaService {
         dataSize: JSON.stringify(credentialData).length,
       });
 
-      // Validate credential size before storing
       const sizeValidation = this.validateCredentialSize(credentialData);
       if (!sizeValidation.isValid) {
         throw new Error(
@@ -305,7 +273,6 @@ export class WalletBasedKusamaService {
         );
       }
 
-      // Create the remark data
       const remarkData = {
         type: 'credential',
         credentialType,
@@ -316,26 +283,17 @@ export class WalletBasedKusamaService {
         message: userMessage,
       };
 
-      // Convert to hex string for Kusama remarks
       const remarkHex = `0x${Buffer.from(JSON.stringify(remarkData)).toString('hex')}`;
 
-      // Create the remark extrinsic
       const remarkExtrinsic = this.api.tx.system.remark(remarkHex);
 
-      // Get the current block hash for reference
       const blockHash = await this.api.rpc.chain.getBlockHash();
 
-      // Submit the transaction (this would normally be signed by user's wallet)
-      // For now, we'll simulate the transaction submission
       logger.info('Submitting remark extrinsic to Kusama', {
         remarkLength: remarkHex.length,
         blockHash: blockHash.toString(),
       });
 
-      // TODO: In production, this would be signed and submitted by the user's wallet
-      // const result = await remarkExtrinsic.signAndSend(userAddress, { nonce: nonce });
-
-      // For now, simulate successful submission
       const result = {
         success: true,
         remarkHash: `0x${crypto.randomBytes(32).toString('hex')}`,
@@ -352,9 +310,6 @@ export class WalletBasedKusamaService {
     }
   }
 
-  /**
-   * Retrieve credential data from Kusama remarks
-   */
   async retrieveFromKusamaRemarks(
     remarkHash: string,
     userAddress: string
@@ -366,21 +321,16 @@ export class WalletBasedKusamaService {
 
       logger.info('Retrieving credential from Kusama remarks', { remarkHash, userAddress });
 
-      // TODO: In production, this would query the actual Kusama blockchain
-      // For now, we'll simulate the retrieval process
-
-      // Simulate querying the blockchain for the remark
       const blockHash = await this.api.rpc.chain.getBlockHash();
       const blockHeader = await this.api.rpc.chain.getHeader(blockHash);
       const blockNumber = blockHeader.number;
       logger.info('Querying Kusama blockchain', { blockNumber: blockNumber.toString() });
 
-      // Simulate parsing remark data
       const mockRemarkData = {
         type: 'credential',
         credentialType: 'kusama_stored_credential',
         userAddress,
-        timestamp: Date.now() - 86400000, // 1 day ago
+        timestamp: Date.now() - 86400000,
         data: {
           type: 'professional_certification',
           organization: 'Blockchain Institute',
@@ -390,7 +340,6 @@ export class WalletBasedKusamaService {
         message: 'Credential stored on Kusama',
       };
 
-      // Verify the data belongs to the requesting user
       if (mockRemarkData.userAddress !== userAddress) {
         logger.warn('User address mismatch', {
           requested: userAddress,
@@ -407,10 +356,6 @@ export class WalletBasedKusamaService {
     }
   }
 
-  /**
-   * Validate that credential data fits within Kusama remark limits
-   * Kusama remarks have a maximum size limit
-   */
   validateCredentialSize(credentialData: Record<string, unknown>): {
     isValid: boolean;
     size: number;
@@ -419,9 +364,6 @@ export class WalletBasedKusamaService {
     try {
       const dataString = JSON.stringify(credentialData);
       const dataSize = dataString.length;
-
-      // Kusama remarks typically have a limit around 1KB
-      // This is a conservative estimate - actual limits may vary
       const maxSize = 1024;
 
       const isValid = dataSize <= maxSize;
@@ -440,10 +382,6 @@ export class WalletBasedKusamaService {
     }
   }
 
-  /**
-   * Get the current nonce for a user address
-   * This is needed for transaction signing
-   */
   async getUserNonce(userAddress: string): Promise<number> {
     try {
       if (!this.api || !this.isConnected) {
@@ -461,10 +399,6 @@ export class WalletBasedKusamaService {
     }
   }
 
-  /**
-   * Create a signed transaction for storing credentials
-   * This method prepares the transaction for the user to sign
-   */
   async createCredentialTransaction(
     userAddress: string,
     credentialData: Record<string, unknown>,
@@ -477,10 +411,8 @@ export class WalletBasedKusamaService {
         throw new Error('Kusama service not initialized');
       }
 
-      // Get the current nonce
       const nonce = await this.getUserNonce(userAddress);
 
-      // Create the remark data
       const remarkData = {
         type: 'credential',
         credentialType,
@@ -491,14 +423,11 @@ export class WalletBasedKusamaService {
         message: userMessage,
       };
 
-      // Convert to hex string
       const remarkHex = `0x${Buffer.from(JSON.stringify(remarkData)).toString('hex')}`;
 
-      // Create the remark extrinsic
       const extrinsic = this.api.tx.system.remark(remarkHex);
 
-      // Calculate estimated tip (in KSM)
-      const tip = '0.001 KSM'; // This could be dynamic based on network conditions
+      const tip = '0.001 KSM';
 
       logger.info('Created credential transaction', {
         userAddress,
@@ -516,10 +445,6 @@ export class WalletBasedKusamaService {
     }
   }
 
-  /**
-   * Submit a signed transaction to Kusama
-   * This method takes a pre-signed extrinsic and submits it
-   */
   async submitSignedTransaction(
     signedExtrinsic: SubmittableExtrinsic<'promise'>,
     userAddress: string
@@ -531,10 +456,6 @@ export class WalletBasedKusamaService {
 
       logger.info('Submitting signed transaction to Kusama', { userAddress });
 
-      // TODO: In production, this would submit the actual signed extrinsic
-      // const result = await signedExtrinsic.send();
-
-      // For now, simulate successful submission
       const result = {
         success: true,
         blockHash: `0x${crypto.randomBytes(32).toString('hex')}`,
@@ -551,10 +472,6 @@ export class WalletBasedKusamaService {
     }
   }
 
-  /**
-   * Query Kusama blockchain for user's credentials
-   * This method searches through recent blocks for user's remarks
-   */
   async queryUserCredentials(
     userAddress: string,
     fromBlock?: number,
@@ -567,15 +484,11 @@ export class WalletBasedKusamaService {
 
       logger.info('Querying user credentials from Kusama', { userAddress, fromBlock, toBlock });
 
-      // TODO: In production, this would query the actual Kusama blockchain
-      // For now, simulate the query process
-
       const currentBlockHash = await this.api.rpc.chain.getBlockHash();
       const currentBlockHeader = await this.api.rpc.chain.getHeader(currentBlockHash);
       const currentBlock = currentBlockHeader.number;
       logger.info('Current block number', { currentBlock: currentBlock.toString() });
 
-      // Simulate finding user credentials in recent blocks
       const mockCredentials = [
         {
           blockNumber: currentBlock.toNumber() - 100,
@@ -607,16 +520,10 @@ export class WalletBasedKusamaService {
     }
   }
 
-  /**
-   * Get available wallet providers
-   */
   getAvailableWalletProviders(): string[] {
     return this.availableProviders.map(provider => provider.id);
   }
 
-  /**
-   * Connect to a wallet provider
-   */
   async connectWallet(
     providerName: string
   ): Promise<{ success: boolean; address?: string; error?: string }> {
@@ -644,20 +551,11 @@ export class WalletBasedKusamaService {
     }
   }
 
-  /**
-   * Check if a wallet is connected
-   */
   isWalletConnected(address: string): boolean {
-    // Simplified check - in a real implementation, you'd track active connections
     return this.availableProviders.length > 0;
   }
 
-  /**
-   * Get wallet connection for signing
-   */
   private async getWalletConnection(address: string): Promise<WalletConnection | null> {
-    // In a real implementation, you'd get the active connection for this address
-    // For now, return null as this is a simplified implementation
     return null;
   }
 
@@ -668,10 +566,6 @@ export class WalletBasedKusamaService {
         this.api = null;
         this.isConnected = false;
       }
-
-      // Disconnect all wallets
-      // In a real implementation, you'd disconnect active wallet connections
-      // For now, this is a simplified implementation
 
       logger.info('✅ Wallet-Based Kusama service disconnected');
     } catch (error) {

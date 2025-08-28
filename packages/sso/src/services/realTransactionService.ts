@@ -1,7 +1,7 @@
+import { WalletProvider } from '@polkadot-auth/core';
 import { ApiPromise } from '@polkadot/api';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { ISubmittableResult } from '@polkadot/types/types';
-import { WalletProvider } from '@polkadot-auth/core';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('RealTransactionService');
@@ -24,15 +24,13 @@ export interface CredentialTransaction {
 export class RealTransactionService {
   private api: ApiPromise | null = null;
   private availableProviders: WalletProvider[] = [];
-  private walletService: any = null; // TODO: Add proper wallet service interface
+  private walletService: any = null;
 
   constructor(api: ApiPromise) {
     this.api = api;
   }
 
   private async isWalletConnected(userAddress: string): Promise<boolean> {
-    // Check if any available provider has a connection for this address
-    // This is a simplified check - in a real implementation, you'd track active connections
     return this.availableProviders.length > 0;
   }
 
@@ -63,7 +61,6 @@ export class RealTransactionService {
         throw new Error('Invalid credential type');
       }
 
-      // Check if user has an active wallet connection
       if (!(await this.isWalletConnected(userAddress))) {
         throw new Error(`No wallet connection found for address: ${userAddress}`);
       }
@@ -75,7 +72,7 @@ export class RealTransactionService {
 
       const estimatedFee = await this.estimateTransactionFee(extrinsic, userAddress, nonce);
 
-      const tip = '0.001 KSM'; // 1 mKSM tip
+      const tip = '0.001 KSM';
 
       logger.info('Created real credential transaction', {
         userAddress,

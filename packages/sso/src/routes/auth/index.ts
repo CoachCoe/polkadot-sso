@@ -20,7 +20,6 @@ export const createAuthRouter = (
   const router = Router();
   const rateLimiters = createRateLimiters(auditService);
 
-  // Create handlers
   const loginHandler = createLoginHandler(
     tokenService,
     challengeService,
@@ -31,7 +30,6 @@ export const createAuthRouter = (
   const verifyHandler = createVerifyHandler(challengeService, auditService, clients, db);
   const tokenHandler = createTokenHandler(tokenService, auditService, db);
 
-  // Challenge page route
   router.get(
     '/challenge',
     rateLimiters.challenge,
@@ -70,13 +68,11 @@ export const createAuthRouter = (
     }
   );
 
-  // API documentation route
   router.get('/docs', (req, res) => {
     const html = generateApiDocsPage();
     res.send(html);
   });
 
-  // Login route (API)
   router.get(
     '/login',
     rateLimiters.login,
@@ -85,7 +81,6 @@ export const createAuthRouter = (
     loginHandler
   );
 
-  // Verify route
   router.post(
     '/verify',
     rateLimiters.verify,
@@ -94,7 +89,6 @@ export const createAuthRouter = (
     verifyHandler
   );
 
-  // Token exchange route
   router.post(
     '/token',
     rateLimiters.token,
@@ -103,7 +97,6 @@ export const createAuthRouter = (
     tokenHandler
   );
 
-  // Callback route
   router.get('/callback', (req, res) => {
     const { code, state, error } = req.query;
 
@@ -115,7 +108,6 @@ export const createAuthRouter = (
       return res.status(400).json({ error: 'Missing authorization code or state' });
     }
 
-    // In a real implementation, you would validate the state and exchange the code for tokens
     res.json({
       message: 'Authorization successful',
       code,
@@ -124,7 +116,6 @@ export const createAuthRouter = (
     });
   });
 
-  // Logout route
   router.post('/logout', rateLimiters.logout, sanitizeRequest(), async (req, res) => {
     try {
       const { access_token } = req.body;
@@ -133,7 +124,6 @@ export const createAuthRouter = (
         return res.status(400).json({ error: 'Access token required' });
       }
 
-      // Invalidate the session
       await tokenService.invalidateSession(access_token);
 
       await auditService.log({

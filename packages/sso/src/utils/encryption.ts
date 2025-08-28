@@ -1,11 +1,9 @@
 import * as crypto from 'crypto';
 
-// Use a more secure encryption algorithm
 const ALGORITHM = 'aes-256-gcm';
 const KEY_LENGTH = 32; // 256 bits
 const IV_LENGTH = 12; // 96 bits for GCM
 
-// Validate and derive encryption key
 function getEncryptionKey(): Buffer {
   const envKey = process.env.DATABASE_ENCRYPTION_KEY;
 
@@ -17,7 +15,6 @@ function getEncryptionKey(): Buffer {
     throw new Error('DATABASE_ENCRYPTION_KEY must be at least 32 characters long');
   }
 
-  // Use the first 32 bytes as the key
   return Buffer.from(envKey).subarray(0, KEY_LENGTH);
 }
 
@@ -34,7 +31,6 @@ export const encryptField = (text: string): string => {
 
     const tag = cipher.getAuthTag();
 
-    // Return format: iv:tag:encrypted
     return `${iv.toString('hex')}:${tag.toString('hex')}:${encrypted}`;
   } catch (error) {
     throw new Error(
@@ -71,18 +67,15 @@ export const decryptField = (encryptedText: string): string => {
   }
 };
 
-// Generate a secure random key for environment variables
 export const generateSecureKey = (length: number = 64): string => {
   return crypto.randomBytes(length).toString('base64');
 };
 
-// Validate secret strength
 export const validateSecret = (secret: string, minLength: number = 32): boolean => {
   if (!secret || secret.length < minLength) {
     return false;
   }
 
-  // Check for sufficient entropy (basic check)
   const uniqueChars = new Set(secret).size;
   return uniqueChars >= minLength / 2;
 };

@@ -19,7 +19,6 @@ export const createTokenRouter = (
       try {
         const { refresh_token } = req.body;
 
-        // Type guard for refresh_token
         if (!refresh_token || typeof refresh_token !== 'string') {
           res.status(400).json({ error: 'Invalid refresh token' });
           return;

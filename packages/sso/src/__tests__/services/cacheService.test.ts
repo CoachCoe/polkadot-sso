@@ -1,6 +1,5 @@
 import { CacheService, CacheStrategies } from '../../services/cacheService';
 
-// Mock Redis client
 const mockRedisClient = {
   get: jest.fn(),
   set: jest.fn(),

@@ -1,6 +1,5 @@
 import { AuditService } from '../../services/auditService';
 
-// Mock the database
 jest.mock('../../config/db');
 
 describe('AuditService', () => {

@@ -17,7 +17,6 @@ export const createClientRouter = () => {
       const clientSecret = crypto.randomBytes(32).toString('hex');
 
       // TODO: Create a ClientService to handle this operation
-      // For now, we'll return a mock response
       res.json({
         client_id: clientId,
         client_secret: clientSecret,

@@ -4,9 +4,9 @@ import { createLogger } from '../utils/logger';
 const logger = createLogger('cache-service');
 
 export interface CacheOptions {
-  ttl?: number; // Time to live in seconds
-  prefix?: string; // Key prefix for namespacing
-  compress?: boolean; // Whether to compress large values
+  ttl?: number;
+  prefix?: string;
+  compress?: boolean;
 }
 
 export interface CacheStats {

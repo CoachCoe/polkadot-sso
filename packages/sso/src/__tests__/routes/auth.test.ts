@@ -5,7 +5,6 @@ import { AuditService } from '../../services/auditService';
 import { ChallengeService } from '../../services/challengeService';
 import { TokenService } from '../../services/token';
 
-// Mock services
 jest.mock('../../services/token');
 jest.mock('../../services/challengeService');
 jest.mock('../../services/auditService');
@@ -16,17 +15,24 @@ const mockTokenService = {
   verifyToken: jest.fn(),
   createSession: jest.fn(),
   invalidateSession: jest.fn(),
-} as jest.Mocked<TokenService>;
+  refreshSession: jest.fn(),
+  getSessionStats: jest.fn(),
+} as unknown as jest.Mocked<TokenService>;
 
 const mockChallengeService = {
   generateChallenge: jest.fn(),
   getChallenge: jest.fn(),
   markChallengeUsed: jest.fn(),
-} as jest.Mocked<ChallengeService>;
+  cleanupExpiredChallenges: jest.fn(),
+  getChallengeStats: jest.fn(),
+} as unknown as jest.Mocked<ChallengeService>;
 
 const mockAuditService = {
-  logEvent: jest.fn(),
-} as jest.Mocked<AuditService>;
+  log: jest.fn(),
+  getAuditLogs: jest.fn(),
+  getAuditStats: jest.fn(),
+  cleanupOldAuditLogs: jest.fn(),
+} as unknown as jest.Mocked<AuditService>;
 
 (TokenService as jest.Mock).mockImplementation(() => mockTokenService);
 (ChallengeService as jest.Mock).mockImplementation(() => mockChallengeService);
@@ -43,7 +49,7 @@ describe('Auth Routes', () => {
       mockTokenService,
       mockChallengeService,
       mockAuditService,
-      []
+      new Map()
     );
     app.use('/auth', authRouter);
 
@@ -55,11 +61,16 @@ describe('Auth Routes', () => {
       const mockChallenge = {
         id: 'test-challenge-id',
         client_id: 'test-client',
-        user_address: null,
-        challenge: 'test-challenge-string',
+        message: 'test-message',
+        nonce: 'test-nonce',
+        issued_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 300000).toISOString(),
-        is_used: false,
-        created_at: new Date().toISOString(),
+        created_at: Date.now(),
+        expires_at_timestamp: Date.now() + 300000,
+        used: false,
+        code_verifier: 'test-verifier',
+        code_challenge: 'test-challenge',
+        state: 'test-state',
       };
 
       mockChallengeService.generateChallenge.mockResolvedValue(mockChallenge);
@@ -80,11 +91,16 @@ describe('Auth Routes', () => {
       const mockChallenge = {
         id: 'test-challenge-id',
         client_id: 'test-client',
-        user_address: 'test-address',
-        challenge: 'test-challenge-string',
+        message: 'test-message',
+        nonce: 'test-nonce',
+        issued_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 300000).toISOString(),
-        is_used: false,
-        created_at: new Date().toISOString(),
+        created_at: Date.now(),
+        expires_at_timestamp: Date.now() + 300000,
+        used: false,
+        code_verifier: 'test-verifier',
+        code_challenge: 'test-challenge',
+        state: 'test-state',
       };
 
       mockChallengeService.generateChallenge.mockResolvedValue(mockChallenge);
@@ -123,16 +139,23 @@ describe('Auth Routes', () => {
         accessToken: 'test-access-token',
         refreshToken: 'test-refresh-token',
         fingerprint: 'test-fingerprint',
+        accessJwtid: 'test-access-jwtid',
+        refreshJwtid: 'test-refresh-jwtid',
       };
 
       const mockChallenge = {
         id: 'test-challenge-id',
         client_id: 'test-client',
-        user_address: 'test-address',
-        challenge: 'test-challenge-string',
+        message: 'test-message',
+        nonce: 'test-nonce',
+        issued_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 300000).toISOString(),
-        is_used: false,
-        created_at: new Date().toISOString(),
+        created_at: Date.now(),
+        expires_at_timestamp: Date.now() + 300000,
+        used: false,
+        code_verifier: 'test-verifier',
+        code_challenge: 'test-challenge',
+        state: 'test-state',
       };
 
       const mockSession = {
@@ -141,16 +164,21 @@ describe('Auth Routes', () => {
         client_id: 'test-client',
         access_token: mockTokens.accessToken,
         refresh_token: mockTokens.refreshToken,
+        access_token_id: mockTokens.accessJwtid,
+        refresh_token_id: mockTokens.refreshJwtid,
+        fingerprint: mockTokens.fingerprint,
+        access_token_expires_at: Date.now() + 3600000,
+        refresh_token_expires_at: Date.now() + 86400000,
+        created_at: Date.now(),
+        last_used_at: Date.now(),
         is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       };
 
       mockChallengeService.getChallenge.mockResolvedValue(mockChallenge);
       mockTokenService.generateTokens.mockReturnValue(mockTokens);
       mockTokenService.createSession.mockResolvedValue(mockSession);
       mockChallengeService.markChallengeUsed.mockResolvedValue(true);
-      mockAuditService.logEvent.mockResolvedValue({} as any);
+      mockAuditService.log.mockResolvedValue();
 
       const response = await request(app)
         .post('/auth/verify')
@@ -169,14 +197,9 @@ describe('Auth Routes', () => {
 
       expect(mockChallengeService.getChallenge).toHaveBeenCalledWith('test-challenge-id');
       expect(mockTokenService.generateTokens).toHaveBeenCalledWith('test-address', 'test-client');
-      expect(mockTokenService.createSession).toHaveBeenCalledWith(
-        'test-address',
-        'test-client',
-        mockTokens.accessToken,
-        mockTokens.refreshToken
-      );
+      expect(mockTokenService.createSession).toHaveBeenCalledWith('test-address', 'test-client');
       expect(mockChallengeService.markChallengeUsed).toHaveBeenCalledWith('test-challenge-id');
-      expect(mockAuditService.logEvent).toHaveBeenCalled();
+      expect(mockAuditService.log).toHaveBeenCalled();
     });
 
     it('should return 400 for missing challenge_id', async () => {
@@ -246,11 +269,16 @@ describe('Auth Routes', () => {
       const mockChallenge = {
         id: 'test-challenge-id',
         client_id: 'test-client',
-        user_address: 'test-address',
-        challenge: 'test-challenge-string',
+        message: 'test-message',
+        nonce: 'test-nonce',
+        issued_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 300000).toISOString(),
-        is_used: true, // Already used
-        created_at: new Date().toISOString(),
+        created_at: Date.now(),
+        expires_at_timestamp: Date.now() + 300000,
+        used: true,
+        code_verifier: 'test-verifier',
+        code_challenge: 'test-challenge',
+        state: 'test-state',
       };
 
       mockChallengeService.getChallenge.mockResolvedValue(mockChallenge);
@@ -274,7 +302,7 @@ describe('Auth Routes', () => {
   describe('POST /auth/signout', () => {
     it('should sign out a user', async () => {
       mockTokenService.invalidateSession.mockResolvedValue(true);
-      mockAuditService.logEvent.mockResolvedValue({} as any);
+      mockAuditService.log.mockResolvedValue();
 
       const response = await request(app)
         .post('/auth/signout')
@@ -289,11 +317,8 @@ describe('Auth Routes', () => {
         message: 'Successfully signed out',
       });
 
-      expect(mockTokenService.invalidateSession).toHaveBeenCalledWith(
-        'test-address',
-        'test-client'
-      );
-      expect(mockAuditService.logEvent).toHaveBeenCalled();
+      expect(mockTokenService.invalidateSession).toHaveBeenCalledWith('test-access-token');
+      expect(mockAuditService.log).toHaveBeenCalled();
     });
 
     it('should return 400 for missing address', async () => {
