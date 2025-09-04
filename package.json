@@ -40,6 +40,7 @@
   "author": "Polkadot Auth Team",
   "license": "MIT",
   "dependencies": {
+    "@polkadot-api/descriptors": "file:.papi/descriptors",
     "@polkadot-auth/sso": "file:packages/sso"
   },
   "devDependencies": {
