@@ -76,5 +76,13 @@ module.exports = {
       },
     },
   ],
-  ignorePatterns: ['dist/', 'node_modules/', 'public/js/', 'src/client/', 'src/__tests__/', '*.js'],
+  ignorePatterns: [
+    'dist/',
+    'node_modules/',
+    'public/js/',
+    'src/client/',
+    'src/__tests__/',
+    '*.js',
+    'examples/**/*',
+  ],
 };

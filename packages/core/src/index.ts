@@ -142,4 +142,6 @@ export {
 
 export { SIWEAuthService } from './auth/siwe';
 
+export { createPapiClient, PapiClientService } from './services/papiClient';
+
 export default createPolkadotAuth;

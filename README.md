@@ -82,12 +82,21 @@ npm install @polkadot-auth/core
 ```
 
 ```typescript
-import { createPolkadotAuth } from '@polkadot-auth/core';
+import { createPolkadotAuth, createPapiClient } from '@polkadot-auth/core';
 
 const auth = createPolkadotAuth({
   defaultChain: 'kusama',
   providers: ['polkadot-js', 'talisman', 'subwallet'],
 });
+
+// PAPI client for direct blockchain interaction
+const papiClient = createPapiClient({
+  chain: 'kusama',
+  endpoint: 'wss://kusama-rpc.polkadot.io',
+});
+
+await papiClient.connect();
+const latestBlock = await papiClient.getLatestBlock();
 ```
 
 ## ✨ Features
@@ -131,6 +140,14 @@ const auth = createPolkadotAuth({
 - **Rate Limiting**: Built-in protection
 - **CORS Support**: Cross-origin security
 - **TypeScript**: Full type safety
+
+### ⚡ Modern Blockchain Integration
+
+- **PAPI Integration**: Powered by Polkadot API for optimal performance
+- **Type-Safe Blockchain Calls**: Generated type descriptors for Polkadot/Kusama
+- **Light Client Support**: Smoldot integration for browser compatibility
+- **WebSocket Providers**: High-performance blockchain connections
+- **Real-time Updates**: Live blockchain data subscriptions
 
 ## 📦 Packages
 
@@ -566,6 +583,7 @@ Resources:
 - [x] SIWE-style authentication
 - [x] Multi-wallet support
 - [x] Multi-chain support
+- [x] PAPI integration for optimal performance
 
 ### Phase 2: Framework Support 🚧
 
