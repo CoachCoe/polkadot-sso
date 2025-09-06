@@ -2,16 +2,27 @@
   "name": "@polkadot-auth/core",
   "version": "0.1.0",
   "description": "Framework-agnostic core for Polkadot authentication",
+  "type": "module",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "browser": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:esm && npm run build:cjs",
+    "build:esm": "tsc --module ESNext --outDir dist",
+    "build:cjs": "tsc --module CommonJS --outDir dist-cjs && cp dist-cjs/index.js dist/index.cjs.js && cp dist-cjs/*.d.ts dist/",
     "dev": "tsc --watch",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist dist-cjs",
     "test": "jest",
     "format": "prettier --write src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts",
