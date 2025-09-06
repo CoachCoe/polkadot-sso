@@ -157,6 +157,14 @@ const latestBlock = await papiClient.getLatestBlock();
 - **TypeScript First**: Full type safety across all environments
 - **Zero Config**: Works out of the box with sensible defaults
 
+### 📦 Module System Support
+
+- **ES Modules**: Native ES module support for modern bundlers (Vite, Webpack 5+)
+- **CommonJS**: Full CommonJS support for Node.js and legacy bundlers
+- **Dual Build**: Both module formats built automatically
+- **Tree Shaking**: Optimized for modern bundlers with tree shaking support
+- **TypeScript**: Full type definitions for both module systems
+
 ## 📦 Packages
 
 | Package                  | Description             | Status   |
@@ -494,6 +502,36 @@ function App() {
 }
 
 export default App;
+```
+
+### Module System Usage
+
+#### ES Modules (Recommended for Vite, Webpack 5+)
+
+```typescript
+// ES module import
+import { createPolkadotAuth } from '@polkadot-auth/core';
+import { PolkadotAuthProvider } from '@polkadot-auth/ui';
+
+// Vite will automatically use the ES module version
+const auth = createPolkadotAuth({
+  defaultChain: 'kusama',
+  providers: ['polkadot-js', 'talisman'],
+});
+```
+
+#### CommonJS (Node.js, Webpack 4)
+
+```typescript
+// CommonJS require
+const { createPolkadotAuth } = require('@polkadot-auth/core');
+const { PolkadotAuthProvider } = require('@polkadot-auth/ui');
+
+// Node.js will automatically use the CommonJS version
+const auth = createPolkadotAuth({
+  defaultChain: 'kusama',
+  providers: ['polkadot-js', 'talisman'],
+});
 ```
 
 ## 🔧 Configuration
