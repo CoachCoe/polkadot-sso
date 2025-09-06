@@ -1,8 +1,8 @@
-import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { JWT_CONFIG } from '../config/auth';
 import { getDatabaseConnection, releaseDatabaseConnection } from '../config/db';
 import { Session, TokenPayload } from '../types/auth';
+import { randomBytes } from '../utils/crypto';
 import { createLogger } from '../utils/logger';
 import { getCacheStrategies } from './cacheService';
 
@@ -17,9 +17,15 @@ export class TokenService {
       throw new Error('JWT_SECRET environment variable is required');
     }
 
-    const accessJwtid = crypto.randomBytes(32).toString('hex');
-    const refreshJwtid = crypto.randomBytes(32).toString('hex');
-    const fingerprint = crypto.randomBytes(16).toString('hex');
+    const accessJwtid = Array.from(randomBytes(32))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    const refreshJwtid = Array.from(randomBytes(32))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    const fingerprint = Array.from(randomBytes(16))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
 
     const accessToken = jwt.sign(
       {

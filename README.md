@@ -149,15 +149,23 @@ const latestBlock = await papiClient.getLatestBlock();
 - **WebSocket Providers**: High-performance blockchain connections
 - **Real-time Updates**: Live blockchain data subscriptions
 
+### 🌐 Browser Compatibility
+
+- **Universal Crypto**: Works in both Node.js and browser environments
+- **Web Crypto API**: Modern browser crypto support with fallbacks
+- **React Components**: Ready-to-use UI components for React applications
+- **TypeScript First**: Full type safety across all environments
+- **Zero Config**: Works out of the box with sensible defaults
+
 ## 📦 Packages
 
-| Package                  | Description             | Status         |
-| ------------------------ | ----------------------- | -------------- |
-| `@polkadot-auth/core`    | Framework-agnostic core | ✅ Ready       |
-| `@polkadot-auth/express` | Express.js adapter      | ✅ Ready       |
-| `@polkadot-auth/next`    | Next.js adapter         | ✅ Ready       |
-| `@polkadot-auth/remix`   | Remix adapter           | ✅ Ready       |
-| `@polkadot-auth/ui`      | React UI components     | 🚧 In Progress |
+| Package                  | Description             | Status   |
+| ------------------------ | ----------------------- | -------- |
+| `@polkadot-auth/core`    | Framework-agnostic core | ✅ Ready |
+| `@polkadot-auth/express` | Express.js adapter      | ✅ Ready |
+| `@polkadot-auth/next`    | Next.js adapter         | ✅ Ready |
+| `@polkadot-auth/remix`   | Remix adapter           | ✅ Ready |
+| `@polkadot-auth/ui`      | React UI components     | ✅ Ready |
 
 ## 🎯 Examples
 
@@ -439,17 +447,53 @@ export default function ProtectedPage() {
 ### React Components
 
 ```tsx
-import { PolkadotSignInButton, WalletSelector, PolkadotProfile } from '@polkadot-auth/ui';
+import React from 'react';
+import {
+  PolkadotAuthProvider,
+  PolkadotSignInButton,
+  WalletSelector,
+  PolkadotProfile,
+  usePolkadotAuth,
+} from '@polkadot-auth/ui';
 
-function App() {
+function AuthComponent() {
+  const { isConnected, address, connect, disconnect } = usePolkadotAuth();
+
+  if (isConnected) {
+    return (
+      <div>
+        <h2>Welcome, {address}!</h2>
+        <PolkadotProfile address={address} onDisconnect={disconnect} />
+      </div>
+    );
+  }
+
   return (
     <div>
-      <PolkadotSignInButton />
-      <WalletSelector providers={['polkadot-js', 'talisman']} onSelect={handleWalletSelect} />
-      <PolkadotProfile />
+      <PolkadotSignInButton
+        onSignIn={(address, session) => console.log('Signed in:', address)}
+        onError={error => console.error('Auth error:', error)}
+      />
+      <WalletSelector providers={['polkadot-js', 'talisman']} onSelect={connect} />
     </div>
   );
 }
+
+function App() {
+  return (
+    <PolkadotAuthProvider
+      config={{
+        defaultChain: 'kusama',
+        providers: ['polkadot-js', 'talisman'],
+        autoConnect: true,
+      }}
+    >
+      <AuthComponent />
+    </PolkadotAuthProvider>
+  );
+}
+
+export default App;
 ```
 
 ## 🔧 Configuration
@@ -592,9 +636,9 @@ Resources:
 - [ ] Fastify adapter
 - [ ] Koa adapter
 
-### Phase 3: UI Components 🚧
+### Phase 3: UI Components ✅
 
-- [ ] React components
+- [x] React components
 - [ ] Vue components
 - [ ] Vanilla JS components
 - [ ] Styling themes

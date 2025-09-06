@@ -1,0 +1,207 @@
+/* Polkadot Auth UI Components */
+
+.polkadot-auth-signin-button {
+  background: linear-gradient(135deg, #E6007A, #FF6B35);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+}
+
+.polkadot-auth-signin-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(230, 0, 122, 0.3);
+}
+
+.polkadot-auth-signin-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.polkadot-auth-connected {
+  background: #f0f9ff;
+  border: 2px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.polkadot-auth-address {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  color: #1e40af;
+  font-weight: 500;
+}
+
+.polkadot-auth-wallet-selector {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.polkadot-auth-wallet-selector h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.polkadot-auth-wallet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.polkadot-auth-wallet-option {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.polkadot-auth-wallet-option:hover:not(.disabled) {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.polkadot-auth-wallet-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.polkadot-auth-wallet-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.polkadot-auth-wallet-name {
+  font-weight: 600;
+  color: #111827;
+  font-size: 16px;
+}
+
+.polkadot-auth-wallet-description {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.polkadot-auth-profile {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.polkadot-auth-profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.polkadot-auth-profile-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.polkadot-auth-disconnect-button {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.polkadot-auth-disconnect-button:hover {
+  background: #dc2626;
+}
+
+.polkadot-auth-profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.polkadot-auth-address-section,
+.polkadot-auth-session-item,
+.polkadot-auth-balance-section,
+.polkadot-auth-chain-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.polkadot-auth-address-section label,
+.polkadot-auth-session-item label,
+.polkadot-auth-balance-section label,
+.polkadot-auth-chain-section label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.polkadot-auth-session-info {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.polkadot-auth-session-item span.active {
+  color: #059669;
+  font-weight: 500;
+}
+
+.polkadot-auth-session-item span.inactive {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .polkadot-auth-wallet-selector,
+  .polkadot-auth-profile {
+    padding: 16px;
+  }
+
+  .polkadot-auth-profile-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .polkadot-auth-disconnect-button {
+    width: 100%;
+  }
+}

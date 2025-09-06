@@ -1,6 +1,6 @@
-import crypto from 'crypto';
 import { getDatabaseConnection, releaseDatabaseConnection } from '../config/db';
 import { Challenge } from '../types/auth';
+import { createHash, randomBytes, randomUUID } from '../utils/crypto';
 import { createLogger } from '../utils/logger';
 import { getCacheStrategies } from './cacheService';
 
@@ -10,17 +10,19 @@ export class ChallengeService {
   constructor() {}
 
   private generateCodeVerifier(): string {
-    return crypto.randomBytes(32).toString('base64url');
+    return Buffer.from(randomBytes(32)).toString('base64url');
   }
 
   private async generateCodeChallenge(verifier: string): Promise<string> {
-    const hash = crypto.createHash('sha256');
+    const hash = createHash('sha256');
     hash.update(verifier);
     return hash.digest('base64url');
   }
 
   private generateNonce(): string {
-    return crypto.randomBytes(32).toString('hex');
+    return Array.from(randomBytes(32))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
   }
 
   private formatSIWEStyleMessage(params: {
@@ -92,7 +94,9 @@ export class ChallengeService {
     try {
       const code_verifier = this.generateCodeVerifier();
       const code_challenge = await this.generateCodeChallenge(code_verifier);
-      const state = crypto.randomBytes(16).toString('hex');
+      const state = Array.from(randomBytes(16))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
       const nonce = this.generateNonce();
       const issuedAt = new Date().toISOString();
       const expirationTime = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes
@@ -107,12 +111,14 @@ export class ChallengeService {
         nonce,
         issuedAt,
         expirationTime,
-        requestId: crypto.randomBytes(16).toString('hex'),
+        requestId: Array.from(randomBytes(16))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join(''),
         resources: ['https://polkadot-sso.localhost'],
       });
 
       const challenge: Challenge = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         message,
         client_id,
         created_at: Date.now(),
