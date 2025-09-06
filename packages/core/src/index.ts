@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import { SIWEAuthService } from './auth/siwe';
 import { DEFAULT_CHAINS } from './chains';
 import { getProviderById } from './providers';
@@ -13,6 +12,7 @@ import {
   SIWESignature,
   WalletProvider,
 } from './types';
+import { randomBytes, randomUUID } from './utils/crypto';
 
 export function createPolkadotAuth(config: PolkadotAuthConfig = {}): PolkadotAuthInstance {
   const finalConfig: PolkadotAuthConfig = {
@@ -71,10 +71,16 @@ export function createPolkadotAuth(config: PolkadotAuthConfig = {}): PolkadotAut
       clientId: string,
       parsedMessage: SIWEMessage
     ): Promise<Session> {
-      const sessionId = crypto.randomUUID();
-      const accessToken = crypto.randomBytes(32).toString('hex');
-      const refreshToken = crypto.randomBytes(32).toString('hex');
-      const fingerprint = crypto.randomBytes(16).toString('hex');
+      const sessionId = randomUUID();
+      const accessToken = Array.from(randomBytes(32))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+      const refreshToken = Array.from(randomBytes(32))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+      const fingerprint = Array.from(randomBytes(16))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
 
       const now = Date.now();
       const accessTokenExpiresAt = now + 15 * 60 * 1000; // 15 minutes
@@ -86,8 +92,8 @@ export function createPolkadotAuth(config: PolkadotAuthConfig = {}): PolkadotAut
         clientId,
         accessToken,
         refreshToken,
-        accessTokenId: crypto.randomUUID(),
-        refreshTokenId: crypto.randomUUID(),
+        accessTokenId: randomUUID(),
+        refreshTokenId: randomUUID(),
         fingerprint,
         accessTokenExpiresAt,
         refreshTokenExpiresAt,

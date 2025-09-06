@@ -1,4 +1,3 @@
-import crypto, { createHash } from 'crypto';
 import { RequestHandler, Router } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -9,6 +8,7 @@ import { AuditService } from '../services/auditService';
 import { ChallengeService } from '../services/challengeService';
 import { TokenService } from '../services/token';
 import { Client } from '../types/auth';
+import { createHash, randomBytes } from '../utils/crypto';
 import { createLogger, logError, logRequest } from '../utils/logger';
 import { escapeHtml } from '../utils/sanitization';
 import { validateAuthRequest, validateClientCredentials } from '../utils/validation';
@@ -485,7 +485,9 @@ export const createAuthRouter = (
 
       await challengeService.markChallengeUsed(challenge_id as string);
 
-      const authCode = crypto.randomBytes(32).toString('hex');
+      const authCode = Array.from(randomBytes(32))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
       // TODO: Create an AuthCodeService to handle this operation
       // For now, we'll use a simple approach
       const authCodeData = {

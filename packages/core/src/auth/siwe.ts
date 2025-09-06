@@ -1,6 +1,6 @@
-import crypto from 'crypto';
 import { getChainById } from '../chains';
 import { AuthResult, ChainConfig, Challenge, SIWEMessage, SIWESignature } from '../types';
+import { randomBytes, randomUUID } from '../utils/crypto';
 
 export class SIWEAuthService {
   private defaultChain: ChainConfig;
@@ -156,7 +156,9 @@ export class SIWEAuthService {
   }
 
   generateNonce(): string {
-    return crypto.randomBytes(32).toString('hex');
+    return Array.from(randomBytes(32))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
   }
 
   async verifySIWESignature(signature: SIWESignature, challenge: Challenge): Promise<AuthResult> {
@@ -254,7 +256,7 @@ export class SIWEAuthService {
       nonce,
       issuedAt,
       expirationTime,
-      requestId: crypto.randomUUID(),
+      requestId: randomUUID(),
       resources: [
         'https://polkadot-auth.localhost/credentials',
         'https://polkadot-auth.localhost/profile',
@@ -262,7 +264,7 @@ export class SIWEAuthService {
     });
 
     return {
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       message,
       clientId,
       nonce,
