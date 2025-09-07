@@ -2,7 +2,11 @@ import { config } from 'dotenv';
 
 config({ path: '.env.test' });
 
-process.env.NODE_ENV = 'test';
+// Set test environment
+Object.defineProperty(process.env, 'NODE_ENV', {
+  value: 'test',
+  writable: true,
+});
 process.env.JWT_SECRET = 'test-secret-key-for-testing-only';
 process.env.SESSION_SECRET = 'test-session-secret';
 process.env.REDIS_URL = 'redis://localhost:6379';

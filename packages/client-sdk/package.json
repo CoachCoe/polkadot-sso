@@ -1,0 +1,54 @@
+{
+  "name": "@polkadot-auth/client-sdk",
+  "version": "0.1.0",
+  "description": "Client SDK for easy integration with Polkadot SSO",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "browser": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "browser": "./dist/index.js",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run build:esm && npm run build:cjs",
+    "build:esm": "tsc --module ESNext --outDir dist",
+    "build:cjs": "tsc --module CommonJS --outDir dist-cjs && cp dist-cjs/index.js dist/index.cjs.js && cp dist-cjs/*.d.ts dist/",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist dist-cjs"
+  },
+  "keywords": [
+    "polkadot",
+    "sso",
+    "authentication",
+    "oauth",
+    "wallet",
+    "blockchain"
+  ],
+  "author": "Polkadot SSO Team",
+  "license": "MIT",
+  "dependencies": {
+    "@polkadot-auth/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "browser": {
+    "crypto": false,
+    "stream": false,
+    "util": false,
+    "process": false,
+    "tweetnacl": false,
+    "tweetnacl/nacl-fast": false,
+    "@polkadot/util-crypto": false
+  }
+}
