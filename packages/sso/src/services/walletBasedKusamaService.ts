@@ -2,7 +2,7 @@ import { WalletConnection, WalletProvider } from '@polkadot-auth/core';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import type { SubmittableExtrinsic } from '@polkadot/api/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import * as crypto from 'crypto';
+import crypto from 'crypto';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('wallet-based-kusama');

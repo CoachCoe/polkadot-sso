@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import crypto from 'crypto';
 import { Database } from 'sqlite';
 import { Challenge, Session } from '../types/auth';
 

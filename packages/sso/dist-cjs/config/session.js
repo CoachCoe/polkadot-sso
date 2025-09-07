@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sessionConfig = void 0;
-const redis_1 = require("redis");
 const connect_redis_1 = __importDefault(require("connect-redis"));
 const crypto_1 = require("crypto");
+const redis_1 = require("redis");
 const logger_1 = require("../utils/logger");
 const logger = (0, logger_1.createLogger)('session-config');
 logger.info('Session configuration loaded', {
@@ -46,6 +46,6 @@ exports.sessionConfig = {
     resave: false,
     saveUninitialized: false,
     rolling: true,
-    genid: () => Array.from((0, crypto_1.randomBytes)(32)).map(b => b.toString(16).padStart(2, '0')).join(''),
+    genid: () => (0, crypto_1.randomBytes)(32).toString('hex'),
 };
 //# sourceMappingURL=session.js.map

@@ -5,21 +5,23 @@
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
-  "browser": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
   "browser": {
     "crypto": false,
     "stream": false,
     "util": false,
     "process": false,
-    "tweetnacl": false
+    "tweetnacl": false,
+    "tweetnacl/nacl-fast": false,
+    "@polkadot/util-crypto": false
+  },
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "browser": "./dist/index.js",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs.js",
+      "types": "./dist/index.d.ts"
+    }
   },
   "files": [
     "dist"
@@ -46,10 +48,11 @@
   "author": "Polkadot Auth Team",
   "license": "MIT",
   "dependencies": {
+    "@noble/hashes": "^2.0.0",
     "@polkadot/api": "^10.0.0",
     "@polkadot/extension-dapp": "^0.45.0",
     "@polkadot/util": "^12.0.0",
-    "@polkadot/util-crypto": "^12.0.0",
+    "@polkadot/util-crypto": "^12.6.2",
     "@types/crypto-js": "^4.2.2",
     "crypto-js": "^4.2.0",
     "polkadot-api": "^1.16.4"
@@ -65,7 +68,6 @@
   "peerDependencies": {
     "@polkadot/api": "^10.0.0",
     "@polkadot/extension-dapp": "^0.45.0",
-    "@polkadot/util": "^12.0.0",
-    "@polkadot/util-crypto": "^12.0.0"
+    "@polkadot/util": "^12.0.0"
   }
 }
