@@ -4,11 +4,10 @@ import { Database } from 'sqlite';
 import { AuditService } from '../../services/auditService';
 import { ChallengeService } from '../../services/challengeService';
 import { TokenService } from '../../services/token';
-import { Challenge, Client } from '../../types/auth';
+import { Client } from '../../types/auth';
 import { secureQueries } from '../../utils/db';
 import { createLogger, logError, logRequest } from '../../utils/logger';
 import { validateAuthRequest, validateClientCredentials } from '../../utils/validation';
-import { schemas } from '../../utils/schemas';
 
 const logger = createLogger('auth-handlers');
 

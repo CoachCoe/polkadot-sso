@@ -1,6 +1,6 @@
-import { createClient } from 'redis';
 import RedisStore from 'connect-redis';
 import { randomBytes } from 'crypto';
+import { createClient } from 'redis';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('session-config');
@@ -45,8 +45,5 @@ export const sessionConfig = {
   resave: false,
   saveUninitialized: false,
   rolling: true,
-  genid: () =>
-    Array.from(randomBytes(32))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join(''),
+  genid: () => randomBytes(32).toString('hex'),
 };

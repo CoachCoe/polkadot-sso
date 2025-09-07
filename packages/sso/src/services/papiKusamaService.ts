@@ -1,5 +1,5 @@
 import { WalletConnection, WalletProvider } from '@polkadot-auth/core';
-import * as crypto from 'crypto';
+import crypto from 'crypto';
 import { createLogger } from '../utils/logger';
 import { createPapiService, PapiService } from './papiService';
 

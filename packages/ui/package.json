@@ -9,6 +9,7 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "browser": "./dist/index.js",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs.js",
       "types": "./dist/index.d.ts"
@@ -19,7 +20,9 @@
     "stream": false,
     "util": false,
     "process": false,
-    "tweetnacl": false
+    "tweetnacl": false,
+    "tweetnacl/nacl-fast": false,
+    "@polkadot/util-crypto": false
   },
   "files": [
     "dist"
