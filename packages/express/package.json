@@ -13,6 +13,13 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "browser": {
+    "crypto": false,
+    "stream": false,
+    "util": false,
+    "process": false,
+    "tweetnacl": false
+  },
   "files": [
     "dist"
   ],

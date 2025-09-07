@@ -45,5 +45,8 @@ export const sessionConfig = {
   resave: false,
   saveUninitialized: false,
   rolling: true,
-  genid: () => randomBytes(32).toString('hex'),
+  genid: () =>
+    Array.from(randomBytes(32))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join(''),
 };

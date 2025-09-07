@@ -1,10 +1,7 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createClientRouter = void 0;
-const crypto_1 = __importDefault(require("crypto"));
+const crypto_1 = require("crypto");
 const express_1 = require("express");
 const createClientRouter = () => {
     const router = (0, express_1.Router)();
@@ -15,8 +12,8 @@ const createClientRouter = () => {
                 res.status(400).json({ error: 'Missing required fields' });
                 return;
             }
-            const clientId = crypto_1.default.randomUUID();
-            const clientSecret = crypto_1.default.randomBytes(32).toString('hex');
+            const clientId = (0, crypto_1.randomUUID)();
+            const clientSecret = (0, crypto_1.randomBytes)(32).toString('hex');
             // TODO: Create a ClientService to handle this operation
             res.json({
                 client_id: clientId,
