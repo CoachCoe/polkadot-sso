@@ -46,6 +46,6 @@ exports.sessionConfig = {
     resave: false,
     saveUninitialized: false,
     rolling: true,
-    genid: () => (0, crypto_1.randomBytes)(32).toString('hex'),
+    genid: () => Array.from((0, crypto_1.randomBytes)(32)).map(b => b.toString(16).padStart(2, '0')).join(''),
 };
 //# sourceMappingURL=session.js.map

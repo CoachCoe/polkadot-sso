@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import { randomBytes, randomUUID } from 'crypto';
 import { NextFunction, Request, Response, Router } from 'express';
 
 export const createClientRouter = () => {
@@ -13,8 +13,8 @@ export const createClientRouter = () => {
         return;
       }
 
-      const clientId = crypto.randomUUID();
-      const clientSecret = crypto.randomBytes(32).toString('hex');
+      const clientId = randomUUID();
+      const clientSecret = randomBytes(32).toString('hex');
 
       // TODO: Create a ClientService to handle this operation
       res.json({

@@ -32,14 +32,11 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WalletBasedKusamaService = void 0;
 const api_1 = require("@polkadot/api");
 const util_crypto_1 = require("@polkadot/util-crypto");
-const crypto_1 = __importDefault(require("crypto"));
+const crypto = __importStar(require("crypto"));
 const logger_1 = require("../utils/logger");
 const logger = (0, logger_1.createLogger)('wallet-based-kusama');
 class WalletBasedKusamaService {
@@ -76,7 +73,7 @@ class WalletBasedKusamaService {
                 credentialType,
                 hasSignature: !!userSignature,
             });
-            const credentialId = `cred_${Date.now()}_${crypto_1.default.randomBytes(8).toString('hex')}`;
+            const credentialId = `cred_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
             const storageResult = await this.storeInKusamaRemarks(userAddress, credentialData, credentialType, userSignature, userMessage);
             const result = {
                 success: storageResult.success,
@@ -129,7 +126,7 @@ class WalletBasedKusamaService {
             });
             const mockCredentials = [
                 {
-                    credentialId: `cred_${Date.now() - 86400000}_${crypto_1.default.randomBytes(8).toString('hex')}`,
+                    credentialId: `cred_${Date.now() - 86400000}_${crypto.randomBytes(8).toString('hex')}`,
                     userAddress,
                     credentialData: { type: 'kusama_stored_degree', institution: 'University of Example' },
                     credentialType: 'kusama_credential',
@@ -138,7 +135,7 @@ class WalletBasedKusamaService {
                     dataHash: 'kusama_hash',
                 },
                 {
-                    credentialId: `cred_${Date.now() - 172800000}_${crypto_1.default.randomBytes(8).toString('hex')}`,
+                    credentialId: `cred_${Date.now() - 172800000}_${crypto.randomBytes(8).toString('hex')}`,
                     userAddress,
                     credentialData: {
                         type: 'kusama_stored_certification',
@@ -246,7 +243,7 @@ class WalletBasedKusamaService {
             });
             const result = {
                 success: true,
-                remarkHash: `0x${crypto_1.default.randomBytes(32).toString('hex')}`,
+                remarkHash: `0x${crypto.randomBytes(32).toString('hex')}`,
                 blockHash: blockHash.toString(),
             };
             logger.info('✅ Credential stored in Kusama remarks', result);
@@ -367,8 +364,8 @@ class WalletBasedKusamaService {
             logger.info('Submitting signed transaction to Kusama', { userAddress });
             const result = {
                 success: true,
-                blockHash: `0x${crypto_1.default.randomBytes(32).toString('hex')}`,
-                txHash: `0x${crypto_1.default.randomBytes(32).toString('hex')}`,
+                blockHash: `0x${crypto.randomBytes(32).toString('hex')}`,
+                txHash: `0x${crypto.randomBytes(32).toString('hex')}`,
             };
             logger.info('✅ Transaction submitted successfully', result);
             return result;

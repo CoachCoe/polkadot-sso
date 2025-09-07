@@ -1,5 +1,5 @@
-import crypto from 'crypto';
+import { randomBytes } from 'crypto';
 
 export function generateNonce(): string {
-  return crypto.randomBytes(16).toString('base64');
+  return randomBytes(16).toString('base64');
 }

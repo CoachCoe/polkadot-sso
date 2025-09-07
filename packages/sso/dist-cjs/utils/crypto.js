@@ -135,12 +135,28 @@ class BrowserCryptoUtils {
 }
 class NodeCryptoUtils {
     constructor() {
-        this.crypto = require('crypto');
+        this.crypto = null;
+        // Dynamic import for Node.js crypto
+        if (typeof window === 'undefined') {
+            try {
+                this.crypto = require('crypto');
+            }
+            catch (error) {
+                console.warn('Node.js crypto not available, falling back to browser crypto');
+                this.crypto = null;
+            }
+        }
     }
     randomBytes(size) {
+        if (!this.crypto) {
+            throw new Error('Node.js crypto not available');
+        }
         return this.crypto.randomBytes(size);
     }
     createHash(algorithm) {
+        if (!this.crypto) {
+            throw new Error('Node.js crypto not available');
+        }
         const hash = this.crypto.createHash(algorithm);
         return {
             update: (data) => {
@@ -153,9 +169,15 @@ class NodeCryptoUtils {
         };
     }
     randomUUID() {
+        if (!this.crypto) {
+            throw new Error('Node.js crypto not available');
+        }
         return this.crypto.randomUUID();
     }
     createHmac(algorithm, key) {
+        if (!this.crypto) {
+            throw new Error('Node.js crypto not available');
+        }
         const hmac = this.crypto.createHmac(algorithm, key);
         return {
             update: (data) => {
