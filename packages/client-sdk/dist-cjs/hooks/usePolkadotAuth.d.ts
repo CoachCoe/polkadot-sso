@@ -1,4 +1,4 @@
-import { UserSession, PolkadotAuthConfig } from '../types';
+import { PolkadotAuthConfig, UserSession } from '../types';
 export interface UsePolkadotAuthReturn {
     isAuthenticated: boolean;
     isLoading: boolean;

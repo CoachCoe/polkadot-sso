@@ -1,4 +1,4 @@
-import { WalletSigner, PolkadotWalletAdapter } from './types';
+import { PolkadotWalletAdapter, WalletSigner } from './types';
 export declare class PolkadotJsAdapter implements PolkadotWalletAdapter {
     name: string;
     isAvailable(): boolean;

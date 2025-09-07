@@ -1,5 +1,5 @@
-export { PolkadotAuthClient, createPolkadotAuthClient } from './PolkadotAuthClient';
-export { PolkadotJsAdapter, TalismanAdapter, SubWalletAdapter, defaultWalletAdapters, getAvailableWallets, getWalletAdapter } from './walletAdapters';
 export { usePolkadotAuth } from './hooks/usePolkadotAuth';
-export type { PolkadotAuthConfig, AuthChallenge, AuthTokens, UserSession, WalletSigner, PolkadotAuthClient as IPolkadotAuthClient, AuthError, PolkadotWalletAdapter, UsePolkadotAuthReturn } from './types';
+export { PolkadotAuthClient, createPolkadotAuthClient } from './PolkadotAuthClient';
+export { PolkadotJsAdapter, SubWalletAdapter, TalismanAdapter, defaultWalletAdapters, getAvailableWallets, getWalletAdapter, } from './walletAdapters';
+export type { AuthChallenge, AuthError, AuthTokens, PolkadotAuthClient as IPolkadotAuthClient, PolkadotAuthConfig, PolkadotWalletAdapter, UsePolkadotAuthReturn, UserSession, WalletSigner, } from './types';
 //# sourceMappingURL=index.d.ts.map

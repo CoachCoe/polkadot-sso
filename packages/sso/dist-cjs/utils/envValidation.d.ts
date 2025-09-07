@@ -40,6 +40,7 @@ declare const envSchema: z.ZodObject<{
     DB_POOL_IDLE_TIMEOUT: number;
     DB_POOL_REAP_INTERVAL: number;
     SESSION_SECRET: string;
+    JWT_ISSUER: string;
     NODE_ENV: "development" | "production" | "test";
     PORT: number;
     DATABASE_PATH: string;
@@ -47,7 +48,6 @@ declare const envSchema: z.ZodObject<{
     REDIS_CONNECT_TIMEOUT: number;
     REDIS_PING_INTERVAL: number;
     COOKIE_SECURE: boolean;
-    JWT_ISSUER: string;
     JWT_ACCESS_TOKEN_EXPIRY: number;
     JWT_REFRESH_TOKEN_EXPIRY: number;
     RATE_LIMIT_WINDOW_MS: number;
@@ -75,6 +75,7 @@ declare const envSchema: z.ZodObject<{
     DB_POOL_REAP_INTERVAL?: string | undefined;
     REDIS_URL?: string | undefined;
     COOKIE_DOMAIN?: string | undefined;
+    JWT_ISSUER?: string | undefined;
     NODE_ENV?: "development" | "production" | "test" | undefined;
     PORT?: string | undefined;
     DATABASE_URL?: string | undefined;
@@ -84,7 +85,6 @@ declare const envSchema: z.ZodObject<{
     REDIS_PING_INTERVAL?: string | undefined;
     COOKIE_SECURE?: string | undefined;
     JWT_SECRET?: string | undefined;
-    JWT_ISSUER?: string | undefined;
     JWT_ACCESS_TOKEN_EXPIRY?: string | undefined;
     JWT_REFRESH_TOKEN_EXPIRY?: string | undefined;
     RATE_LIMIT_WINDOW_MS?: string | undefined;
@@ -116,6 +116,7 @@ export declare const env: {
     DB_POOL_IDLE_TIMEOUT: number;
     DB_POOL_REAP_INTERVAL: number;
     SESSION_SECRET: string;
+    JWT_ISSUER: string;
     NODE_ENV: "development" | "production" | "test";
     PORT: number;
     DATABASE_PATH: string;
@@ -123,7 +124,6 @@ export declare const env: {
     REDIS_CONNECT_TIMEOUT: number;
     REDIS_PING_INTERVAL: number;
     COOKIE_SECURE: boolean;
-    JWT_ISSUER: string;
     JWT_ACCESS_TOKEN_EXPIRY: number;
     JWT_REFRESH_TOKEN_EXPIRY: number;
     RATE_LIMIT_WINDOW_MS: number;

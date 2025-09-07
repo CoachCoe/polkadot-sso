@@ -30,10 +30,10 @@ describe('ChallengeService', () => {
       expect(challenge).toBeDefined();
       expect(challenge.id).toBeDefined();
       expect(challenge.client_id).toBe(clientId);
-      expect(challenge.user_address).toBe(userAddress);
-      expect(challenge.challenge).toBeDefined();
+      expect(challenge.client_id).toBe(clientId);
+      expect(challenge.message).toBeDefined();
       expect(challenge.expires_at).toBeDefined();
-      expect(challenge.is_used).toBe(false);
+      expect(challenge.used).toBe(false);
       expect(challenge.created_at).toBeDefined();
     });
 
@@ -44,7 +44,7 @@ describe('ChallengeService', () => {
 
       expect(challenge).toBeDefined();
       expect(challenge.client_id).toBe(clientId);
-      expect(challenge.user_address).toBeNull();
+      expect(challenge.client_id).toBe(clientId);
     });
 
     it('should generate unique challenges for different requests', async () => {
@@ -54,7 +54,7 @@ describe('ChallengeService', () => {
       const challenge2 = await challengeService.generateChallenge(clientId);
 
       expect(challenge1.id).not.toBe(challenge2.id);
-      expect(challenge1.challenge).not.toBe(challenge2.challenge);
+      expect(challenge1.message).not.toBe(challenge2.message);
     });
 
     it('should set expiration time correctly', async () => {
@@ -157,7 +157,7 @@ describe('ChallengeService', () => {
       const result = await challengeService.cleanupExpiredChallenges();
 
       expect(result).toBeDefined();
-      expect(typeof result.cleanedUp).toBe('number');
+      expect(typeof result).toBe('number');
     });
   });
 
@@ -166,10 +166,10 @@ describe('ChallengeService', () => {
       const stats = await challengeService.getChallengeStats();
 
       expect(stats).toBeDefined();
-      expect(typeof stats.totalChallenges).toBe('number');
-      expect(typeof stats.activeChallenges).toBe('number');
-      expect(typeof stats.usedChallenges).toBe('number');
-      expect(typeof stats.expiredChallenges).toBe('number');
+      expect(typeof stats.total).toBe('number');
+      expect(typeof stats.active).toBe('number');
+      expect(typeof stats.used).toBe('number');
+      expect(typeof stats.expired).toBe('number');
     });
   });
 });

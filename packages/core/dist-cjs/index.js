@@ -14,7 +14,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PapiClientService = exports.createPapiClient = exports.SIWEAuthService = exports.getTestnetChains = exports.getMainnetChains = exports.getDefaultChain = exports.getChainById = exports.DEFAULT_CHAINS = exports.talismanProvider = exports.subWalletProvider = exports.polkadotJsProvider = exports.novaWalletProvider = exports.getProviderById = exports.getAvailableProviders = exports.DEFAULT_PROVIDERS = exports.createCustomProvider = void 0;
+exports.ErrorService = exports.authService = exports.AuthService = exports.walletProviderService = exports.WalletProviderService = exports.PapiClientService = exports.createPapiClient = exports.SIWEAuthService = exports.getTestnetChains = exports.getMainnetChains = exports.getDefaultChain = exports.getChainById = exports.DEFAULT_CHAINS = exports.talismanProvider = exports.subWalletProvider = exports.polkadotJsProvider = exports.novaWalletProvider = exports.getProviderById = exports.getAvailableProviders = exports.DEFAULT_PROVIDERS = exports.createCustomProvider = void 0;
 exports.createPolkadotAuth = createPolkadotAuth;
 const siwe_1 = require("./auth/siwe");
 const chains_1 = require("./chains");
@@ -130,5 +130,13 @@ Object.defineProperty(exports, "SIWEAuthService", { enumerable: true, get: funct
 var papiClient_1 = require("./services/papiClient");
 Object.defineProperty(exports, "createPapiClient", { enumerable: true, get: function () { return papiClient_1.createPapiClient; } });
 Object.defineProperty(exports, "PapiClientService", { enumerable: true, get: function () { return papiClient_1.PapiClientService; } });
+var walletProviderService_1 = require("./services/walletProviderService");
+Object.defineProperty(exports, "WalletProviderService", { enumerable: true, get: function () { return walletProviderService_1.WalletProviderService; } });
+Object.defineProperty(exports, "walletProviderService", { enumerable: true, get: function () { return walletProviderService_1.walletProviderService; } });
+var authService_1 = require("./services/authService");
+Object.defineProperty(exports, "AuthService", { enumerable: true, get: function () { return authService_1.AuthService; } });
+Object.defineProperty(exports, "authService", { enumerable: true, get: function () { return authService_1.authService; } });
+var errorService_1 = require("./services/errorService");
+Object.defineProperty(exports, "ErrorService", { enumerable: true, get: function () { return errorService_1.ErrorService; } });
 exports.default = createPolkadotAuth;
 //# sourceMappingURL=index.js.map

@@ -1,4 +1,4 @@
-import { PolkadotAuthConfig, AuthChallenge, AuthTokens, UserSession, WalletSigner, PolkadotAuthClient as IPolkadotAuthClient } from './types';
+import { AuthChallenge, AuthTokens, PolkadotAuthClient as IPolkadotAuthClient, PolkadotAuthConfig, UserSession, WalletSigner } from './types';
 export declare class PolkadotAuthClient implements IPolkadotAuthClient {
     private config;
     private session;

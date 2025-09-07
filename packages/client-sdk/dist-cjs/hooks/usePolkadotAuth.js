@@ -34,9 +34,7 @@ function usePolkadotAuth(config) {
                 throw new Error('No Polkadot wallets available. Please install a wallet extension.');
             }
             // Select wallet
-            const selectedWallet = walletName
-                ? (0, walletAdapters_1.getWalletAdapter)(walletName)
-                : wallets[0]; // Use first available wallet
+            const selectedWallet = walletName ? (0, walletAdapters_1.getWalletAdapter)(walletName) : wallets[0]; // Use first available wallet
             if (!selectedWallet) {
                 throw new Error(`Wallet "${walletName}" not available`);
             }

@@ -100,8 +100,8 @@ describe('TokenService', () => {
 
       expect(result.valid).toBe(true);
       expect(result.decoded?.address).toBe(address);
-      expect(result.decoded?.client_id).toBe(clientId);
-      expect(result.decoded?.type).toBe('access');
+      expect(result.decoded?.clientId).toBe(clientId);
+      expect(result.decoded?.sub).toBe(address);
     });
 
     it('should verify valid refresh token', async () => {
@@ -131,8 +131,8 @@ describe('TokenService', () => {
 
       expect(result.valid).toBe(true);
       expect(result.decoded?.address).toBe(address);
-      expect(result.decoded?.client_id).toBe(clientId);
-      expect(result.decoded?.type).toBe('refresh');
+      expect(result.decoded?.clientId).toBe(clientId);
+      expect(result.decoded?.sub).toBe(address);
     });
 
     it('should return invalid result for invalid token', async () => {

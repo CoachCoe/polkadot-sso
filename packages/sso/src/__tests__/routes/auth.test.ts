@@ -141,6 +141,8 @@ describe('Auth Routes', () => {
         fingerprint: 'test-fingerprint',
         accessJwtid: 'test-access-jwtid',
         refreshJwtid: 'test-refresh-jwtid',
+        accessTokenExpiresAt: Date.now() + 3600000,
+        refreshTokenExpiresAt: Date.now() + 86400000,
       };
 
       const mockChallenge = {
