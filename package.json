@@ -20,6 +20,8 @@
     "example:next:build": "cd examples/next-simple && npm run build",
     "example:remix": "cd examples/remix-simple && npm run dev",
     "example:remix:build": "cd examples/remix-simple && npm run build",
+    "example:trex": "cd examples/trex-integration && npm run dev",
+    "example:trex:build": "cd examples/trex-integration && npm run build",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "sso:build": "cd packages/sso && npm run build",
     "sso:start": "cd packages/sso && npm start",

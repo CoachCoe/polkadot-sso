@@ -167,13 +167,14 @@ const latestBlock = await papiClient.getLatestBlock();
 
 ## 📦 Packages
 
-| Package                  | Description             | Status   |
-| ------------------------ | ----------------------- | -------- |
-| `@polkadot-auth/core`    | Framework-agnostic core | ✅ Ready |
-| `@polkadot-auth/express` | Express.js adapter      | ✅ Ready |
-| `@polkadot-auth/next`    | Next.js adapter         | ✅ Ready |
-| `@polkadot-auth/remix`   | Remix adapter           | ✅ Ready |
-| `@polkadot-auth/ui`      | React UI components     | ✅ Ready |
+| Package                     | Description                | Status   |
+| --------------------------- | -------------------------- | -------- |
+| `@polkadot-auth/core`       | Framework-agnostic core    | ✅ Ready |
+| `@polkadot-auth/express`    | Express.js adapter         | ✅ Ready |
+| `@polkadot-auth/next`       | Next.js adapter            | ✅ Ready |
+| `@polkadot-auth/remix`      | Remix adapter              | ✅ Ready |
+| `@polkadot-auth/ui`         | React UI components        | ✅ Ready |
+| `@polkadot-auth/client-sdk` | Client SDK for integration | ✅ Ready |
 
 ## 🎯 Examples
 
@@ -532,6 +533,54 @@ const auth = createPolkadotAuth({
   defaultChain: 'kusama',
   providers: ['polkadot-js', 'talisman'],
 });
+```
+
+### Client SDK Example
+
+```tsx
+// Using the client SDK for any React app
+import { usePolkadotAuth } from '@polkadot-auth/client-sdk';
+
+function App() {
+  const { isAuthenticated, session, connect, disconnect } = usePolkadotAuth({
+    ssoEndpoint: 'http://localhost:3001',
+    clientId: 'your-app-id',
+    clientSecret: 'your-secret-key',
+  });
+
+  if (isAuthenticated) {
+    return (
+      <div>
+        <h1>Welcome, {session?.address}!</h1>
+        <button onClick={disconnect}>Disconnect</button>
+      </div>
+    );
+  }
+
+  return <button onClick={() => connect()}>Connect Wallet & Authenticate</button>;
+}
+```
+
+### T-REX Demo dApp Integration
+
+Perfect for integrating with [T-REX Demo dApp](https://github.com/corey-hathaway/trex-demo-dapp) or any Polkadot-based application:
+
+```tsx
+// T-REX dApp integration example
+import { PolkadotSignInButton } from '@polkadot-auth/ui';
+
+function TrixApp() {
+  const handleSignIn = (address: string, session: any) => {
+    console.log('User authenticated:', address);
+    // Proceed with token deployment
+  };
+
+  return (
+    <PolkadotSignInButton onSignIn={handleSignIn} className='trex-signin-button'>
+      Connect Wallet to Deploy Tokens
+    </PolkadotSignInButton>
+  );
+}
 ```
 
 ## 🔧 Configuration
