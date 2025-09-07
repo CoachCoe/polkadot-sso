@@ -16,6 +16,14 @@ export interface ChainConfig {
     decimals?: number;
     symbol?: string;
     isTestnet?: boolean;
+    backupRpcUrls?: string[];
+    security?: ChainSecurityConfig;
+}
+export interface ChainSecurityConfig {
+    minConfirmationBlocks: number;
+    maxRetries: number;
+    timeout: number;
+    enableStrictValidation: boolean;
 }
 export interface WalletProvider {
     id: string;

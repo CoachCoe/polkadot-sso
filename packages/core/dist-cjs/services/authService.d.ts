@@ -1,4 +1,4 @@
-import type { Challenge, Session, AuthResult, SIWEMessage, SIWESignature } from '../types/index.js';
+import type { AuthResult, Challenge, Session, SIWEMessage, SIWESignature } from '../types/index.js';
 export interface AuthServiceConfig {
     challengeExpiration?: number;
     sessionExpiration?: number;

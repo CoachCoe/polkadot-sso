@@ -13,14 +13,18 @@ class TokenService {
     generateTokens(address, client_id) {
         // Create a temporary session object for token generation
         const tempSession = {
-            id: Array.from((0, crypto_1.randomBytes)(16)).map(b => b.toString(16).padStart(2, '0')).join(''),
+            id: Array.from((0, crypto_1.randomBytes)(16))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join(''),
             address,
             client_id: client_id,
             access_token: '',
             refresh_token: '',
             access_token_id: '',
             refresh_token_id: '',
-            fingerprint: Array.from((0, crypto_1.randomBytes)(16)).map(b => b.toString(16).padStart(2, '0')).join(''),
+            fingerprint: Array.from((0, crypto_1.randomBytes)(16))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join(''),
             access_token_expires_at: 0,
             refresh_token_expires_at: 0,
             created_at: Date.now(),

@@ -4,6 +4,29 @@
 
 A plug-and-play authentication solution for Polkadot ecosystem, inspired by [Better Auth](https://www.better-auth.com/). Zero configuration, multiple framework support, and enterprise-grade security.
 
+## ✨ **Production-Ready Features**
+
+### 🔐 **Real Wallet Integration**
+- **Polkadot.js Extension** - Full integration with the official Polkadot wallet
+- **Talisman Wallet** - Support for the popular Talisman browser extension
+- **SubWallet** - Integration with SubWallet for enhanced user experience
+- **Nova Wallet** - Mobile wallet support for on-the-go authentication
+- **Automatic Detection** - Smart wallet detection and connection management
+
+### 🛡️ **Enterprise-Grade Security**
+- **JWT Token Management** - Secure access and refresh token handling
+- **Challenge-Response Authentication** - Cryptographic proof of ownership
+- **Rate Limiting** - Built-in protection against brute force attacks
+- **Audit Logging** - Comprehensive security event tracking
+- **Session Management** - Secure session lifecycle management
+
+### 🌐 **Multi-Chain Support**
+- **Polkadot Mainnet** - Production-ready mainnet integration
+- **Kusama Network** - Canary network support
+- **Westend Testnet** - Development and testing environment
+- **Rococo Testnet** - Parachain testing support
+- **Custom RPC Endpoints** - Configurable RPC endpoints for redundancy
+
 ## 🎯 Inspiration & Vision
 
 This project was inspired by several key developments in the authentication space:
@@ -62,6 +85,106 @@ app.listen(3000);
 ```bash
 npm install @polkadot-auth/next
 ```
+
+```typescript
+// app/api/auth/[...auth]/route.ts
+import { polkadotAuth } from '@polkadot-auth/next';
+
+export const { GET, POST } = polkadotAuth();
+```
+
+### Remix
+
+```bash
+npm install @polkadot-auth/remix
+```
+
+```typescript
+// app/routes/api.auth.$.ts
+import { polkadotAuth } from '@polkadot-auth/remix';
+
+export const loader = polkadotAuth.loader;
+export const action = polkadotAuth.action;
+```
+
+## 🔧 **Real Wallet Integration Example**
+
+### Client-Side Integration
+
+```typescript
+import { usePolkadotAuth } from '@polkadot-auth/client-sdk';
+
+function LoginButton() {
+  const { signIn, signOut, user, isLoading } = usePolkadotAuth();
+
+  const handleSignIn = async () => {
+    try {
+      await signIn({
+        clientId: 'your-app-id',
+        redirectUrl: 'http://localhost:3000/callback'
+      });
+    } catch (error) {
+      console.error('Sign in failed:', error);
+    }
+  };
+
+  if (isLoading) return <div>Connecting to wallet...</div>;
+  
+  if (user) {
+    return (
+      <div>
+        <p>Welcome, {user.address}!</p>
+        <button onClick={signOut}>Sign Out</button>
+      </div>
+    );
+  }
+
+  return <button onClick={handleSignIn}>Sign in with Polkadot</button>;
+}
+```
+
+### Server-Side Verification
+
+```typescript
+import { verifyToken } from '@polkadot-auth/sso';
+
+app.get('/protected', async (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  try {
+    const payload = await verifyToken(token);
+    res.json({ user: payload, message: 'Access granted!' });
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+```
+
+## 🛡️ **Security Features**
+
+### **Challenge-Response Authentication**
+- **Cryptographic Proof** - Users sign a challenge message to prove wallet ownership
+- **Nonce Protection** - Each challenge includes a unique nonce to prevent replay attacks
+- **Domain Binding** - Challenges are bound to your application domain
+- **Time-based Expiration** - Challenges expire after a configurable time period
+
+### **JWT Token Management**
+- **Access Tokens** - Short-lived tokens for API access (default: 15 minutes)
+- **Refresh Tokens** - Long-lived tokens for token renewal (default: 7 days)
+- **Token Blacklisting** - Secure token invalidation and logout
+- **Automatic Renewal** - Seamless token refresh without user interaction
+
+### **Rate Limiting & Protection**
+- **Challenge Rate Limiting** - Prevents spam challenge generation
+- **Verification Rate Limiting** - Protects against brute force attacks
+- **IP-based Limits** - Configurable per-IP rate limits
+- **Audit Logging** - Comprehensive security event tracking
+
+## 🚀 **Advanced Configuration**
 
 ```typescript
 // pages/api/auth/[...polkadot].ts

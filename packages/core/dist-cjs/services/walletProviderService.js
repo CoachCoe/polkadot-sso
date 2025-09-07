@@ -45,7 +45,7 @@ class WalletProviderService {
                 isAvailable: false,
             },
         ];
-        this.availableWallets = walletConfigs.map((config) => ({
+        this.availableWallets = walletConfigs.map(config => ({
             ...config,
             isAvailable: !!(window.injectedWeb3 && window.injectedWeb3[config.extensionName]),
         }));
@@ -54,7 +54,7 @@ class WalletProviderService {
      * Get all available wallet extensions
      */
     getAvailableWallets() {
-        return this.availableWallets.filter((wallet) => wallet.isAvailable);
+        return this.availableWallets.filter(wallet => wallet.isAvailable);
     }
     /**
      * Get all wallet configurations (available and unavailable)
@@ -66,7 +66,7 @@ class WalletProviderService {
      * Check if a specific wallet is available
      */
     isWalletAvailable(walletName) {
-        const wallet = this.availableWallets.find((w) => w.name === walletName);
+        const wallet = this.availableWallets.find(w => w.name === walletName);
         return wallet?.isAvailable || false;
     }
     /**
@@ -76,7 +76,7 @@ class WalletProviderService {
         if (typeof window === 'undefined' || !window.injectedWeb3) {
             throw errorService_js_1.ErrorService.createError('ENVIRONMENT_ERROR', 'Wallet extensions not available in this environment');
         }
-        const walletConfig = this.availableWallets.find((w) => w.name === walletName);
+        const walletConfig = this.availableWallets.find(w => w.name === walletName);
         if (!walletConfig) {
             throw errorService_js_1.ErrorService.createError('WALLET_NOT_FOUND', `Wallet ${walletName} not found`, { walletName }, walletName);
         }

@@ -266,19 +266,25 @@ Expiration Time: ${message.expirationTime}`;
      * Generate a unique ID
      */
     generateId() {
-        return Array.from((0, crypto_js_1.randomBytes)(16)).map(b => b.toString(16).padStart(2, '0')).join('');
+        return Array.from((0, crypto_js_1.randomBytes)(16))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
     }
     /**
      * Generate a cryptographic nonce
      */
     generateNonce() {
-        return Array.from((0, crypto_js_1.randomBytes)(32)).map(b => b.toString(16).padStart(2, '0')).join('');
+        return Array.from((0, crypto_js_1.randomBytes)(32))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
     }
     /**
      * Generate a secure token
      */
     generateToken() {
-        return Array.from((0, crypto_js_1.randomBytes)(32)).map(b => b.toString(16).padStart(2, '0')).join('');
+        return Array.from((0, crypto_js_1.randomBytes)(32))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
     }
     /**
      * Generate a fingerprint for the session

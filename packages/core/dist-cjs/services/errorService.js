@@ -57,13 +57,18 @@ class ErrorService {
         return this.createError('NETWORK_ERROR', 'Network request failed', { originalError });
     }
     static serverError(statusCode, message) {
-        return this.createError('SERVER_ERROR', message || `Server error: ${statusCode}`, { statusCode });
+        return this.createError('SERVER_ERROR', message || `Server error: ${statusCode}`, {
+            statusCode,
+        });
     }
     /**
      * Configuration errors
      */
     static invalidConfiguration(property, value) {
-        return this.createError('INVALID_CONFIGURATION', `Invalid configuration: ${property}`, { property, value });
+        return this.createError('INVALID_CONFIGURATION', `Invalid configuration: ${property}`, {
+            property,
+            value,
+        });
     }
     static missingConfiguration(property) {
         return this.createError('MISSING_CONFIGURATION', `Missing required configuration: ${property}`, { property });
