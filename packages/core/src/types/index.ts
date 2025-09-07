@@ -17,6 +17,17 @@ export interface ChainConfig {
   decimals?: number;
   symbol?: string;
   isTestnet?: boolean;
+  // Security: Backup RPC endpoints for redundancy and failover
+  backupRpcUrls?: string[];
+  // Security: Chain-specific security settings
+  security?: ChainSecurityConfig;
+}
+
+export interface ChainSecurityConfig {
+  minConfirmationBlocks: number;
+  maxRetries: number;
+  timeout: number;
+  enableStrictValidation: boolean;
 }
 
 export interface WalletProvider {

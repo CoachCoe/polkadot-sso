@@ -2,15 +2,15 @@ import { SIWEAuthService } from './auth/siwe';
 import { DEFAULT_CHAINS } from './chains';
 import { getProviderById } from './providers';
 import {
-  AuthResult,
-  ChainConfig,
-  Challenge,
-  PolkadotAuthConfig,
-  PolkadotAuthInstance,
-  Session,
-  SIWEMessage,
-  SIWESignature,
-  WalletProvider,
+    AuthResult,
+    ChainConfig,
+    Challenge,
+    PolkadotAuthConfig,
+    PolkadotAuthInstance,
+    Session,
+    SIWEMessage,
+    SIWESignature,
+    WalletProvider,
 } from './types';
 import { randomBytes, randomUUID } from './utils/crypto';
 
@@ -128,26 +128,28 @@ export function createPolkadotAuth(config: PolkadotAuthConfig = {}): PolkadotAut
 export * from './types';
 
 export {
-  createCustomProvider,
-  DEFAULT_PROVIDERS,
-  getAvailableProviders,
-  getProviderById,
-  novaWalletProvider,
-  polkadotJsProvider,
-  subWalletProvider,
-  talismanProvider,
+    createCustomProvider,
+    DEFAULT_PROVIDERS,
+    getAvailableProviders,
+    getProviderById,
+    novaWalletProvider,
+    polkadotJsProvider,
+    subWalletProvider,
+    talismanProvider
 } from './providers';
 
 export {
-  DEFAULT_CHAINS,
-  getChainById,
-  getDefaultChain,
-  getMainnetChains,
-  getTestnetChains,
+    DEFAULT_CHAINS, getAllRpcUrls, getChainById,
+    getDefaultChain,
+    getMainnetChains, getSecureChainConfig, getTestnetChains,
+    validateChainConfig
 } from './chains';
 
 export { SIWEAuthService } from './auth/siwe';
 
+export { AuthService, authService } from './services/authService';
+export { ErrorService } from './services/errorService';
 export { createPapiClient, PapiClientService } from './services/papiClient';
+export { WalletProviderService, walletProviderService } from './services/walletProviderService';
 
 export default createPolkadotAuth;

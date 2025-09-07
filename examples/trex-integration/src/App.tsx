@@ -1,24 +1,7 @@
 // Note: These imports will work once the packages are published
-// import { usePolkadotAuth } from '@polkadot-auth/client-sdk';
-// import { PolkadotSignInButton } from '@polkadot-auth/ui';
-
-// Mock implementations for the example
-const usePolkadotAuth = (_config: any) => ({
-  isAuthenticated: false,
-  isLoading: false,
-  error: null,
-  session: null as any,
-  availableWallets: ['polkadot-js', 'talisman', 'subwallet'],
-  connect: async (_wallet?: string) => {},
-  disconnect: () => {},
-  clearError: () => {},
-});
-
-const PolkadotSignInButton = ({ children, onSignIn, className, disabled }: any) => (
-  <button className={className} disabled={disabled} onClick={() => onSignIn?.('mock-address', {})}>
-    {children}
-  </button>
-);
+// For now, we'll use relative imports to the built packages
+import { usePolkadotAuth } from '../../../packages/client-sdk/src/hooks/usePolkadotAuth';
+import { PolkadotSignInButton } from '../../../packages/ui/src/components/PolkadotSignInButton';
 import './App.css';
 
 function App() {

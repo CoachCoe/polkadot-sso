@@ -1,4 +1,4 @@
-import { Session, TokenPayload } from '../types/auth';
+import { Session } from '../types/auth';
 export declare class TokenService {
     constructor();
     generateTokens(address: string, client_id: string): {
@@ -7,10 +7,12 @@ export declare class TokenService {
         fingerprint: string;
         accessJwtid: string;
         refreshJwtid: string;
+        accessTokenExpiresAt: number;
+        refreshTokenExpiresAt: number;
     };
     verifyToken(token: string, type: 'access' | 'refresh'): Promise<{
         valid: boolean;
-        decoded: TokenPayload;
+        decoded: import("./jwtService").JWTPayload;
         session: Session;
         error?: undefined;
     } | {

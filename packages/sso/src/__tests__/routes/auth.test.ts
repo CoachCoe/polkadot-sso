@@ -77,14 +77,16 @@ describe('Auth Routes', () => {
 
       const response = await request(app)
         .get('/auth/challenge')
-        .query({ client_id: 'test-client' })
+        .query({
+          client_id: 'test-client',
+          address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
+        })
         .expect(200);
 
-      expect(response.body).toEqual({
-        success: true,
-        challenge: mockChallenge,
-      });
-      expect(mockChallengeService.generateChallenge).toHaveBeenCalledWith('test-client', undefined);
+      // The challenge endpoint returns HTML, not JSON
+      expect(response.text).toContain('Sign Message');
+      expect(response.text).toContain('window.CHALLENGE_DATA');
+      expect(mockChallengeService.generateChallenge).toHaveBeenCalledWith('test-client');
     });
 
     it('should generate a challenge with user address', async () => {
@@ -109,27 +111,21 @@ describe('Auth Routes', () => {
         .get('/auth/challenge')
         .query({
           client_id: 'test-client',
-          user_address: 'test-address',
+          address: 'test-address',
         })
         .expect(200);
 
-      expect(response.body).toEqual({
-        success: true,
-        challenge: mockChallenge,
-      });
-      expect(mockChallengeService.generateChallenge).toHaveBeenCalledWith(
-        'test-client',
-        'test-address'
-      );
+      // The challenge endpoint returns HTML, not JSON
+      expect(response.text).toContain('Sign Message');
+      expect(response.text).toContain('window.CHALLENGE_DATA');
+      expect(mockChallengeService.generateChallenge).toHaveBeenCalledWith('test-client');
     });
 
     it('should return 400 for missing client_id', async () => {
       const response = await request(app).get('/auth/challenge').expect(400);
 
-      expect(response.body).toEqual({
-        success: false,
-        error: 'client_id is required',
-      });
+      expect(response.body.error).toBe('Validation failed');
+      expect(response.body.details).toBeDefined();
     });
   });
 
@@ -141,6 +137,8 @@ describe('Auth Routes', () => {
         fingerprint: 'test-fingerprint',
         accessJwtid: 'test-access-jwtid',
         refreshJwtid: 'test-refresh-jwtid',
+        accessTokenExpiresAt: Date.now() + 3600000,
+        refreshTokenExpiresAt: Date.now() + 86400000,
       };
 
       const mockChallenge = {
@@ -181,88 +179,76 @@ describe('Auth Routes', () => {
       mockAuditService.log.mockResolvedValue();
 
       const response = await request(app)
-        .post('/auth/verify')
-        .send({
+        .get('/verify')
+        .query({
           challenge_id: 'test-challenge-id',
           signature: 'test-signature',
-          public_key: 'test-public-key',
+          address: 'test-address',
+          code_verifier: 'test-verifier',
+          state: 'test-state',
         })
-        .expect(200);
+        .expect(302); // Redirect response
 
-      expect(response.body).toEqual({
-        success: true,
-        session: mockSession,
-        tokens: mockTokens,
-      });
-
+      // Verify endpoint returns a redirect, not JSON
+      expect(response.headers.location).toContain('code=');
       expect(mockChallengeService.getChallenge).toHaveBeenCalledWith('test-challenge-id');
-      expect(mockTokenService.generateTokens).toHaveBeenCalledWith('test-address', 'test-client');
-      expect(mockTokenService.createSession).toHaveBeenCalledWith('test-address', 'test-client');
       expect(mockChallengeService.markChallengeUsed).toHaveBeenCalledWith('test-challenge-id');
-      expect(mockAuditService.log).toHaveBeenCalled();
     });
 
     it('should return 400 for missing challenge_id', async () => {
       const response = await request(app)
-        .post('/auth/verify')
-        .send({
+        .get('/verify')
+        .query({
           signature: 'test-signature',
-          public_key: 'test-public-key',
+          address: 'test-address',
         })
         .expect(400);
 
-      expect(response.body).toEqual({
-        success: false,
-        error: 'challenge_id, signature, and public_key are required',
-      });
+      expect(response.body.error).toBe('Validation failed');
+      expect(response.body.details).toBeDefined();
     });
 
     it('should return 400 for missing signature', async () => {
       const response = await request(app)
-        .post('/auth/verify')
-        .send({
+        .get('/verify')
+        .query({
           challenge_id: 'test-challenge-id',
-          public_key: 'test-public-key',
+          address: 'test-address',
         })
         .expect(400);
 
-      expect(response.body).toEqual({
-        success: false,
-        error: 'challenge_id, signature, and public_key are required',
-      });
+      expect(response.body.error).toBe('Validation failed');
+      expect(response.body.details).toBeDefined();
     });
 
-    it('should return 400 for missing public_key', async () => {
+    it('should return 400 for missing address', async () => {
       const response = await request(app)
-        .post('/auth/verify')
-        .send({
+        .get('/verify')
+        .query({
           challenge_id: 'test-challenge-id',
           signature: 'test-signature',
         })
         .expect(400);
 
-      expect(response.body).toEqual({
-        success: false,
-        error: 'challenge_id, signature, and public_key are required',
-      });
+      expect(response.body.error).toBe('Validation failed');
+      expect(response.body.details).toBeDefined();
     });
 
     it('should return 400 for invalid challenge', async () => {
       mockChallengeService.getChallenge.mockResolvedValue(null);
 
       const response = await request(app)
-        .post('/auth/verify')
-        .send({
+        .get('/verify')
+        .query({
           challenge_id: 'invalid-challenge-id',
           signature: 'test-signature',
-          public_key: 'test-public-key',
+          address: 'test-address',
+          code_verifier: 'test-verifier',
+          state: 'test-state',
         })
         .expect(400);
 
-      expect(response.body).toEqual({
-        success: false,
-        error: 'Invalid or expired challenge',
-      });
+      expect(response.text).toBe('Invalid challenge or state mismatch');
     });
 
     it('should return 400 for used challenge', async () => {

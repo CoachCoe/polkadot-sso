@@ -36,7 +36,11 @@
   "author": "Polkadot SSO Team",
   "license": "MIT",
   "dependencies": {
-    "@polkadot-auth/core": "workspace:*"
+    "@polkadot-auth/core": "workspace:*",
+    "@polkadot/extension-dapp": "^0.45.0",
+    "@polkadot/util": "^12.0.0",
+    "@polkadot/util-crypto": "^12.6.2",
+    "jose": "^5.1.3"
   },
   "devDependencies": {
     "typescript": "^5.0.0",

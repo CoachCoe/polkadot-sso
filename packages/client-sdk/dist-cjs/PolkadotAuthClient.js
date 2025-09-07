@@ -25,7 +25,7 @@ class PolkadotAuthClient {
             const response = await fetch(`${this.config.ssoEndpoint}/login?${params}`, {
                 method: 'GET',
                 headers: {
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                 },
             });
             if (!response.ok) {
@@ -102,7 +102,7 @@ class PolkadotAuthClient {
                 throw new Error(`Token exchange failed: ${response.status} ${errorText}`);
             }
             const data = await response.json();
-            const expiresAt = Date.now() + (data.expires_in * 1000);
+            const expiresAt = Date.now() + data.expires_in * 1000;
             return {
                 accessToken: data.access_token,
                 refreshToken: data.refresh_token,
@@ -159,7 +159,7 @@ class PolkadotAuthClient {
                 throw new Error(`Token refresh failed: ${response.status} ${errorText}`);
             }
             const data = await response.json();
-            const expiresAt = Date.now() + (data.expires_in * 1000);
+            const expiresAt = Date.now() + data.expires_in * 1000;
             const tokens = {
                 accessToken: data.access_token,
                 refreshToken: data.refresh_token,
