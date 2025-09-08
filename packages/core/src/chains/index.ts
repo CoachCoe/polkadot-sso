@@ -52,10 +52,7 @@ export const DEFAULT_CHAINS: ChainConfig[] = [
     decimals: 12,
     symbol: 'WND',
     isTestnet: true,
-    backupRpcUrls: [
-      'wss://westend.api.onfinality.io/public-ws',
-      'wss://westend-rpc.dwellir.com',
-    ],
+    backupRpcUrls: ['wss://westend.api.onfinality.io/public-ws', 'wss://westend-rpc.dwellir.com'],
     security: {
       minConfirmationBlocks: 1,
       maxRetries: 3,
@@ -71,9 +68,7 @@ export const DEFAULT_CHAINS: ChainConfig[] = [
     decimals: 12,
     symbol: 'ROC',
     isTestnet: true,
-    backupRpcUrls: [
-      'wss://rococo.api.onfinality.io/public-ws',
-    ],
+    backupRpcUrls: ['wss://rococo.api.onfinality.io/public-ws'],
     security: {
       minConfirmationBlocks: 1,
       maxRetries: 3,
@@ -117,9 +112,11 @@ export function validateChainConfig(chain: ChainConfig): boolean {
 
   // Security: Validate security configuration
   if (chain.security) {
-    if (chain.security.minConfirmationBlocks < 0 ||
-        chain.security.maxRetries < 0 ||
-        chain.security.timeout < 1000) {
+    if (
+      chain.security.minConfirmationBlocks < 0 ||
+      chain.security.maxRetries < 0 ||
+      chain.security.timeout < 1000
+    ) {
       return false;
     }
   }

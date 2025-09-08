@@ -1,4 +1,4 @@
-import { Session } from '@polkadot-auth/core';
+import { Session, WalletProviderService, AuthService } from '@polkadot-auth/core';
 import { useCallback, useContext, useState } from 'react';
 import { PolkadotAuthContext } from '../context/PolkadotAuthContext';
 import { UsePolkadotAuthReturn } from '../types';
@@ -20,13 +20,24 @@ export function usePolkadotAuthState() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Initialize real wallet and auth services
+  const walletService = new WalletProviderService();
+  const authService = new AuthService({
+    challengeExpiration: 300, // 5 minutes
+    sessionExpiration: 86400, // 24 hours
+    enableNonce: true,
+    enableDomainBinding: true,
+    allowedDomains: [],
+  });
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
-  const connect = useCallback(async (providerId: string) => {
-    setIsLoading(true);
-    setError(null);
+  const connect = useCallback(
+    async (providerId: string) => {
+      setIsLoading(true);
+      setError(null);
 
     try {
       // Use real wallet connection instead of mock data
@@ -83,6 +94,11 @@ export function usePolkadotAuthState() {
     setError(null);
 
     try {
+      // Disconnect from the wallet service
+      if (session?.accessTokenId) {
+        await walletService.disconnectWallet('polkadot-js'); // Default wallet type
+      }
+
       setAddress(null);
       setSession(null);
       setIsConnected(false);
@@ -91,7 +107,7 @@ export function usePolkadotAuthState() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [session, walletService]);
 
   const signMessage = useCallback(
     async (message: string): Promise<string> => {
@@ -103,10 +119,16 @@ export function usePolkadotAuthState() {
       setError(null);
 
       try {
-        // This would be implemented based on the actual wallet provider
-        // For now, we'll simulate a signature
-        const mockSignature = `0x${Math.random().toString(16).substr(2, 64)}`;
-        return mockSignature;
+        // Use the real wallet service to sign the message
+        const connection = await walletService.connectWallet('polkadot-js'); // Default wallet type
+        const account = connection.accounts.find(acc => acc.address === address);
+
+        if (!account) {
+          throw new Error('Account not found');
+        }
+
+        const signature = await connection.signMessage(message);
+        return signature;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to sign message';
         setError(errorMessage);
@@ -115,7 +137,7 @@ export function usePolkadotAuthState() {
         setIsLoading(false);
       }
     },
-    [isConnected, address]
+    [isConnected, address, walletService]
   );
 
   return {
