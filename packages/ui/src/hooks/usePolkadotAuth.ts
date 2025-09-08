@@ -34,15 +34,14 @@ export function usePolkadotAuthState() {
     setError(null);
   }, []);
 
-  const connect = useCallback(
-    async (providerId: string) => {
-      setIsLoading(true);
-      setError(null);
+  const connect = useCallback(async (providerId: string) => {
+    setIsLoading(true);
+    setError(null);
 
     try {
       // Use real wallet connection instead of mock data
       const { web3Enable, web3Accounts } = await import('@polkadot/extension-dapp');
-      
+
       const extensions = await web3Enable('T-REX Demo dApp');
       if (extensions.length === 0) {
         throw new Error('No Polkadot.js Extension found');
@@ -57,15 +56,17 @@ export function usePolkadotAuthState() {
       // TODO: Implement account selection UI
       const account = accounts[0];
       const realAddress = account.address;
-      
-      console.log('Available accounts:', accounts.map(acc => ({ 
-        address: acc.address, 
-        name: acc.meta.name 
-      })));
+
+      console.log(
+        'Available accounts:',
+        accounts.map(acc => ({
+          address: acc.address,
+          name: acc.meta.name,
+        }))
+      );
       const realSession: Session = {
         id: Math.random().toString(36).substr(2, 9),
         address: realAddress,
-        accountName: account.meta.name || `Account ${realAddress.slice(0, 6)}...${realAddress.slice(-4)}`,
         clientId: 'real-client',
         accessToken: 'real-access-token',
         refreshToken: 'real-refresh-token',

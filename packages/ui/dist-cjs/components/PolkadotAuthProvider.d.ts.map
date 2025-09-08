@@ -1,1 +1,1 @@
-{"version":3,"file":"PolkadotAuthProvider.d.ts","sourceRoot":"","sources":["../../src/components/PolkadotAuthProvider.tsx"],"names":[],"mappings":"AAGA,OAAO,EAA2B,yBAAyB,EAAE,MAAM,UAAU,CAAC;AAE9E,wBAAgB,oBAAoB,CAAC,EAAE,QAAQ,EAAE,MAAW,EAAE,EAAE,yBAAyB,2CAqKxF"}
+{"version":3,"file":"PolkadotAuthProvider.d.ts","sourceRoot":"","sources":["../../src/components/PolkadotAuthProvider.tsx"],"names":[],"mappings":"AAGA,OAAO,EAA2B,yBAAyB,EAAE,MAAM,UAAU,CAAC;AAE9E,wBAAgB,oBAAoB,CAAC,EAAE,QAAQ,EAAE,MAAW,EAAE,EAAE,yBAAyB,2CAwKxF"}

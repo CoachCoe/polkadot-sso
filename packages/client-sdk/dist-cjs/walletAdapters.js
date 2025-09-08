@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.defaultWalletAdapters = exports.SubWalletAdapter = exports.TalismanAdapter = exports.PolkadotJsAdapter = void 0;
+exports.defaultWalletAdapters = exports.NovaWalletAdapter = exports.SubWalletAdapter = exports.TalismanAdapter = exports.PolkadotJsAdapter = void 0;
 exports.getAvailableWallets = getAvailableWallets;
 exports.getWalletAdapter = getWalletAdapter;
 const core_1 = require("@polkadot-auth/core");
@@ -135,10 +135,55 @@ class SubWalletAdapter {
     }
 }
 exports.SubWalletAdapter = SubWalletAdapter;
+class NovaWalletAdapter {
+    constructor() {
+        this.name = 'nova-wallet';
+    }
+    isAvailable() {
+        return typeof window !== 'undefined' && !!window.injectedWeb3?.['nova-wallet'];
+    }
+    async connect() {
+        if (!this.isAvailable()) {
+            throw core_1.ErrorService.walletNotAvailable('nova-wallet');
+        }
+        try {
+            // Nova Wallet uses the standard Polkadot extension API
+            const extensions = await window.polkadotExtensionDapp.web3Enable('Polkadot SSO');
+            if (extensions.length === 0) {
+                throw core_1.ErrorService.createError('NO_EXTENSIONS_FOUND', 'No Nova Wallet extension found');
+            }
+            const accounts = await window.polkadotExtensionDapp.web3Accounts();
+            if (accounts.length === 0) {
+                throw core_1.ErrorService.noAccountsFound('nova-wallet');
+            }
+            const account = accounts[0];
+            const injector = await window.polkadotExtensionDapp.web3FromAddress(account.address);
+            if (!injector?.signer?.signRaw) {
+                throw core_1.ErrorService.createError('SIGNING_NOT_SUPPORTED', 'Nova Wallet does not support message signing');
+            }
+            return {
+                getAddress: () => account.address,
+                signMessage: async (message) => {
+                    const { signature } = await injector.signer.signRaw({
+                        address: account.address,
+                        data: message,
+                        type: 'bytes',
+                    });
+                    return signature;
+                },
+            };
+        }
+        catch (error) {
+            throw core_1.ErrorService.walletConnectionFailed('nova-wallet', error);
+        }
+    }
+}
+exports.NovaWalletAdapter = NovaWalletAdapter;
 exports.defaultWalletAdapters = [
     new PolkadotJsAdapter(),
     new TalismanAdapter(),
     new SubWalletAdapter(),
+    new NovaWalletAdapter(),
 ];
 function getAvailableWallets() {
     return exports.defaultWalletAdapters.filter(adapter => adapter.isAvailable());

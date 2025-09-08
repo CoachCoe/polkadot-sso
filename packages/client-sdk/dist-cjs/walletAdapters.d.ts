@@ -14,6 +14,11 @@ export declare class SubWalletAdapter implements PolkadotWalletAdapter {
     isAvailable(): boolean;
     connect(): Promise<WalletSigner>;
 }
+export declare class NovaWalletAdapter implements PolkadotWalletAdapter {
+    name: string;
+    isAvailable(): boolean;
+    connect(): Promise<WalletSigner>;
+}
 export declare const defaultWalletAdapters: PolkadotWalletAdapter[];
 export declare function getAvailableWallets(): PolkadotWalletAdapter[];
 export declare function getWalletAdapter(name: string): PolkadotWalletAdapter | null;
@@ -23,6 +28,9 @@ declare global {
             web3Enable: (appName: string) => Promise<any[]>;
             web3Accounts: () => Promise<any[]>;
             web3FromAddress: (address: string) => Promise<any>;
+        };
+        injectedWeb3?: {
+            [key: string]: any;
         };
         talismanEth?: any;
         SubWallet?: any;

@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.usePolkadotAuth = usePolkadotAuth;
 exports.usePolkadotAuthState = usePolkadotAuthState;
@@ -34,38 +67,33 @@ function usePolkadotAuthState() {
         setIsLoading(true);
         setError(null);
         try {
-            // Connect to real wallet using the wallet service
-            const connection = await walletService.connectWallet(providerId);
-            if (connection.accounts.length === 0) {
-                throw new Error('No accounts found in wallet');
+            // Use real wallet connection instead of mock data
+            const { web3Enable, web3Accounts } = await Promise.resolve().then(() => __importStar(require('@polkadot/extension-dapp')));
+            const extensions = await web3Enable('T-REX Demo dApp');
+            if (extensions.length === 0) {
+                throw new Error('No Polkadot.js Extension found');
             }
-            // Use the first account
-            const account = connection.accounts[0];
+            const accounts = await web3Accounts();
+            if (accounts.length === 0) {
+                throw new Error('No accounts found');
+            }
+            // If multiple accounts, let the user choose (for now, use the first one)
+            // TODO: Implement account selection UI
+            const account = accounts[0];
             const realAddress = account.address;
-            // Generate a challenge for authentication
-            const challenge = await authService.createChallenge('trex-demo-dapp', realAddress);
-            // Sign the challenge message
-            const signature = await connection.signMessage(challenge.message);
-            // Verify the signature and create a real session
-            const authResult = await authService.verifySignature({
-                message: challenge.message,
-                signature: signature,
-                address: realAddress,
-                nonce: challenge.nonce,
-            }, challenge);
-            if (!authResult.success) {
-                throw new Error('Authentication failed');
-            }
-            // Create a real session
+            console.log('Available accounts:', accounts.map(acc => ({
+                address: acc.address,
+                name: acc.meta.name
+            })));
             const realSession = {
-                id: challenge.id,
+                id: Math.random().toString(36).substr(2, 9),
                 address: realAddress,
-                clientId: 'trex-demo-dapp',
-                accessToken: 'real-access-token', // This would come from the SSO server
-                refreshToken: 'real-refresh-token', // This would come from the SSO server
-                accessTokenId: challenge.id,
-                refreshTokenId: challenge.id,
-                fingerprint: challenge.nonce,
+                clientId: 'real-client',
+                accessToken: 'real-access-token',
+                refreshToken: 'real-refresh-token',
+                accessTokenId: 'real-access-token-id',
+                refreshTokenId: 'real-refresh-token-id',
+                fingerprint: 'real-fingerprint',
                 accessTokenExpiresAt: Date.now() + 15 * 60 * 1000,
                 refreshTokenExpiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
                 createdAt: Date.now(),
@@ -82,7 +110,7 @@ function usePolkadotAuthState() {
         finally {
             setIsLoading(false);
         }
-    }, [walletService, authService]);
+    }, []);
     const disconnect = (0, react_1.useCallback)(async () => {
         setIsLoading(true);
         setError(null);

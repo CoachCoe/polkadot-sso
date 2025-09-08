@@ -13,8 +13,8 @@
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@polkadot-auth/client-sdk": "workspace:*",
-    "@polkadot-auth/ui": "workspace:*"
+    "@polkadot-auth/client-sdk": "file:../../packages/client-sdk",
+    "@polkadot-auth/ui": "file:../../packages/ui"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
