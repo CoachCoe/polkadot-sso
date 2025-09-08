@@ -1,5 +1,6 @@
 import { ErrorService } from '@polkadot-auth/core';
 import { PolkadotWalletAdapter, WalletSigner } from './types';
+import { NovaQrAuthService, NovaQrAuthData } from './novaQrAuth';
 
 export class PolkadotJsAdapter implements PolkadotWalletAdapter {
   name = 'polkadot-js';
@@ -155,14 +156,60 @@ export class SubWalletAdapter implements PolkadotWalletAdapter {
 
 export class NovaWalletAdapter implements PolkadotWalletAdapter {
   name = 'nova-wallet';
+  private qrAuthService?: NovaQrAuthService;
 
   isAvailable(): boolean {
-    return typeof window !== 'undefined' && !!window.injectedWeb3?.['nova-wallet'];
+    // Nova Wallet is mobile-only, so we always return true for QR code support
+    return typeof window !== 'undefined';
   }
 
+  /**
+   * Set up QR authentication service
+   */
+  setQrAuthService(qrAuthService: NovaQrAuthService): void {
+    this.qrAuthService = qrAuthService;
+  }
+
+  /**
+   * Connect using QR code authentication (mobile)
+   */
+  async connectWithQr(
+    challengeId: string,
+    message: string,
+    address: string
+  ): Promise<{ qrData: NovaQrAuthData; waitForCompletion: () => Promise<void> }> {
+    if (!this.qrAuthService) {
+      throw ErrorService.createError(
+        'QR_SERVICE_NOT_CONFIGURED',
+        'QR authentication service not configured for Nova Wallet'
+      );
+    }
+
+    try {
+      const qrData = await this.qrAuthService.generateQrAuth(challengeId, message, address);
+      
+      return {
+        qrData,
+        waitForCompletion: () => this.qrAuthService!.waitForCompletion(challengeId),
+      };
+    } catch (error) {
+      throw ErrorService.walletConnectionFailed('nova-wallet', error);
+    }
+  }
+
+  /**
+   * Connect using browser extension (if available)
+   */
   async connect(): Promise<WalletSigner> {
-    if (!this.isAvailable()) {
-      throw ErrorService.walletNotAvailable('nova-wallet');
+    // Check if Nova Wallet browser extension is available
+    const hasExtension = typeof window !== 'undefined' && !!window.injectedWeb3?.['nova-wallet'];
+    
+    if (!hasExtension) {
+      // If no extension, throw error suggesting QR code method
+      throw ErrorService.createError(
+        'EXTENSION_NOT_AVAILABLE',
+        'Nova Wallet browser extension not found. Use connectWithQr() for mobile authentication.'
+      );
     }
 
     try {

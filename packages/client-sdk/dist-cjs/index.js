@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getWalletAdapter = exports.getAvailableWallets = exports.defaultWalletAdapters = exports.TalismanAdapter = exports.SubWalletAdapter = exports.PolkadotJsAdapter = exports.createPolkadotAuthClient = exports.PolkadotAuthClient = exports.usePolkadotAuth = void 0;
+exports.createNovaQrAuthService = exports.NovaQrAuthService = exports.getWalletAdapter = exports.getAvailableWallets = exports.defaultWalletAdapters = exports.NovaWalletAdapter = exports.TalismanAdapter = exports.SubWalletAdapter = exports.PolkadotJsAdapter = exports.createPolkadotAuthClient = exports.PolkadotAuthClient = exports.usePolkadotAuth = void 0;
 var usePolkadotAuth_1 = require("./hooks/usePolkadotAuth");
 Object.defineProperty(exports, "usePolkadotAuth", { enumerable: true, get: function () { return usePolkadotAuth_1.usePolkadotAuth; } });
 var PolkadotAuthClient_1 = require("./PolkadotAuthClient");
@@ -10,7 +10,11 @@ var walletAdapters_1 = require("./walletAdapters");
 Object.defineProperty(exports, "PolkadotJsAdapter", { enumerable: true, get: function () { return walletAdapters_1.PolkadotJsAdapter; } });
 Object.defineProperty(exports, "SubWalletAdapter", { enumerable: true, get: function () { return walletAdapters_1.SubWalletAdapter; } });
 Object.defineProperty(exports, "TalismanAdapter", { enumerable: true, get: function () { return walletAdapters_1.TalismanAdapter; } });
+Object.defineProperty(exports, "NovaWalletAdapter", { enumerable: true, get: function () { return walletAdapters_1.NovaWalletAdapter; } });
 Object.defineProperty(exports, "defaultWalletAdapters", { enumerable: true, get: function () { return walletAdapters_1.defaultWalletAdapters; } });
 Object.defineProperty(exports, "getAvailableWallets", { enumerable: true, get: function () { return walletAdapters_1.getAvailableWallets; } });
 Object.defineProperty(exports, "getWalletAdapter", { enumerable: true, get: function () { return walletAdapters_1.getWalletAdapter; } });
+var novaQrAuth_1 = require("./novaQrAuth");
+Object.defineProperty(exports, "NovaQrAuthService", { enumerable: true, get: function () { return novaQrAuth_1.NovaQrAuthService; } });
+Object.defineProperty(exports, "createNovaQrAuthService", { enumerable: true, get: function () { return novaQrAuth_1.createNovaQrAuthService; } });
 //# sourceMappingURL=index.js.map
