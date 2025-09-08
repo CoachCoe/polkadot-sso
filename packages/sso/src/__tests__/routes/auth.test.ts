@@ -79,7 +79,7 @@ describe('Auth Routes', () => {
         .get('/auth/challenge')
         .query({
           client_id: 'test-client',
-          address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
+          address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
         })
         .expect(200);
 

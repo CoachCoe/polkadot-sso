@@ -1,8 +1,8 @@
 import { PolkadotAuthConfig, PolkadotAuthInstance } from './types';
 export declare function createPolkadotAuth(config?: PolkadotAuthConfig): PolkadotAuthInstance;
 export * from './types';
-export { createCustomProvider, DEFAULT_PROVIDERS, getAvailableProviders, getProviderById, novaWalletProvider, polkadotJsProvider, subWalletProvider, talismanProvider } from './providers';
-export { DEFAULT_CHAINS, getAllRpcUrls, getChainById, getDefaultChain, getMainnetChains, getSecureChainConfig, getTestnetChains, validateChainConfig } from './chains';
+export { createCustomProvider, DEFAULT_PROVIDERS, getAvailableProviders, getProviderById, novaWalletProvider, polkadotJsProvider, subWalletProvider, talismanProvider, } from './providers';
+export { DEFAULT_CHAINS, getAllRpcUrls, getChainById, getDefaultChain, getMainnetChains, getSecureChainConfig, getTestnetChains, validateChainConfig, } from './chains';
 export { SIWEAuthService } from './auth/siwe';
 export { AuthService, authService } from './services/authService';
 export { ErrorService } from './services/errorService';

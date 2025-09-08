@@ -153,10 +153,62 @@ export class SubWalletAdapter implements PolkadotWalletAdapter {
   }
 }
 
+export class NovaWalletAdapter implements PolkadotWalletAdapter {
+  name = 'nova-wallet';
+
+  isAvailable(): boolean {
+    return typeof window !== 'undefined' && !!window.injectedWeb3?.['nova-wallet'];
+  }
+
+  async connect(): Promise<WalletSigner> {
+    if (!this.isAvailable()) {
+      throw ErrorService.walletNotAvailable('nova-wallet');
+    }
+
+    try {
+      // Nova Wallet uses the standard Polkadot extension API
+      const extensions = await window.polkadotExtensionDapp.web3Enable('Polkadot SSO');
+      if (extensions.length === 0) {
+        throw ErrorService.createError('NO_EXTENSIONS_FOUND', 'No Nova Wallet extension found');
+      }
+
+      const accounts = await window.polkadotExtensionDapp.web3Accounts();
+      if (accounts.length === 0) {
+        throw ErrorService.noAccountsFound('nova-wallet');
+      }
+
+      const account = accounts[0];
+      const injector = await window.polkadotExtensionDapp.web3FromAddress(account.address);
+
+      if (!injector?.signer?.signRaw) {
+        throw ErrorService.createError(
+          'SIGNING_NOT_SUPPORTED',
+          'Nova Wallet does not support message signing'
+        );
+      }
+
+      return {
+        getAddress: () => account.address,
+        signMessage: async (message: string) => {
+          const { signature } = await injector.signer.signRaw({
+            address: account.address,
+            data: message,
+            type: 'bytes',
+          });
+          return signature;
+        },
+      };
+    } catch (error) {
+      throw ErrorService.walletConnectionFailed('nova-wallet', error);
+    }
+  }
+}
+
 export const defaultWalletAdapters: PolkadotWalletAdapter[] = [
   new PolkadotJsAdapter(),
   new TalismanAdapter(),
   new SubWalletAdapter(),
+  new NovaWalletAdapter(),
 ];
 
 export function getAvailableWallets(): PolkadotWalletAdapter[] {
@@ -174,6 +226,9 @@ declare global {
       web3Enable: (appName: string) => Promise<any[]>;
       web3Accounts: () => Promise<any[]>;
       web3FromAddress: (address: string) => Promise<any>;
+    };
+    injectedWeb3?: {
+      [key: string]: any;
     };
     talismanEth?: any;
     SubWallet?: any;

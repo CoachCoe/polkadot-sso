@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@polkadot-auth/core": "file:../core",
-    "@polkadot-auth/client-sdk": "workspace:*",
+    "@polkadot-auth/client-sdk": "file:../client-sdk",
     "@polkadot/extension-dapp": "^0.45.0",
     "@polkadot/util": "^12.0.0",
     "@polkadot/util-crypto": "^12.6.2",

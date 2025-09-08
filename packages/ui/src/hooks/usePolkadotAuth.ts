@@ -1,4 +1,4 @@
-import { Session } from '@polkadot-auth/core';
+import { Session, WalletProviderService, AuthService } from '@polkadot-auth/core';
 import { useCallback, useContext, useState } from 'react';
 import { PolkadotAuthContext } from '../context/PolkadotAuthContext';
 import { UsePolkadotAuthReturn } from '../types';
@@ -20,6 +20,16 @@ export function usePolkadotAuthState() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Initialize real wallet and auth services
+  const walletService = new WalletProviderService();
+  const authService = new AuthService({
+    challengeExpiration: 300, // 5 minutes
+    sessionExpiration: 86400, // 24 hours
+    enableNonce: true,
+    enableDomainBinding: true,
+    allowedDomains: [],
+  });
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
@@ -31,7 +41,7 @@ export function usePolkadotAuthState() {
     try {
       // Use real wallet connection instead of mock data
       const { web3Enable, web3Accounts } = await import('@polkadot/extension-dapp');
-      
+
       const extensions = await web3Enable('T-REX Demo dApp');
       if (extensions.length === 0) {
         throw new Error('No Polkadot.js Extension found');
@@ -46,15 +56,17 @@ export function usePolkadotAuthState() {
       // TODO: Implement account selection UI
       const account = accounts[0];
       const realAddress = account.address;
-      
-      console.log('Available accounts:', accounts.map(acc => ({ 
-        address: acc.address, 
-        name: acc.meta.name 
-      })));
+
+      console.log(
+        'Available accounts:',
+        accounts.map(acc => ({
+          address: acc.address,
+          name: acc.meta.name,
+        }))
+      );
       const realSession: Session = {
         id: Math.random().toString(36).substr(2, 9),
         address: realAddress,
-        accountName: account.meta.name || `Account ${realAddress.slice(0, 6)}...${realAddress.slice(-4)}`,
         clientId: 'real-client',
         accessToken: 'real-access-token',
         refreshToken: 'real-refresh-token',
@@ -83,6 +95,11 @@ export function usePolkadotAuthState() {
     setError(null);
 
     try {
+      // Disconnect from the wallet service
+      if (session?.accessTokenId) {
+        await walletService.disconnectWallet('polkadot-js'); // Default wallet type
+      }
+
       setAddress(null);
       setSession(null);
       setIsConnected(false);
@@ -91,7 +108,7 @@ export function usePolkadotAuthState() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [session, walletService]);
 
   const signMessage = useCallback(
     async (message: string): Promise<string> => {
@@ -103,10 +120,16 @@ export function usePolkadotAuthState() {
       setError(null);
 
       try {
-        // This would be implemented based on the actual wallet provider
-        // For now, we'll simulate a signature
-        const mockSignature = `0x${Math.random().toString(16).substr(2, 64)}`;
-        return mockSignature;
+        // Use the real wallet service to sign the message
+        const connection = await walletService.connectWallet('polkadot-js'); // Default wallet type
+        const account = connection.accounts.find(acc => acc.address === address);
+
+        if (!account) {
+          throw new Error('Account not found');
+        }
+
+        const signature = await connection.signMessage(message);
+        return signature;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to sign message';
         setError(errorMessage);
@@ -115,7 +138,7 @@ export function usePolkadotAuthState() {
         setIsLoading(false);
       }
     },
-    [isConnected, address]
+    [isConnected, address, walletService]
   );
 
   return {
