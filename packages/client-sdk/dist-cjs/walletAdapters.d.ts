@@ -1,4 +1,5 @@
 import { PolkadotWalletAdapter, WalletSigner } from './types';
+import { NovaQrAuthService, NovaQrAuthData } from './novaQrAuth';
 export declare class PolkadotJsAdapter implements PolkadotWalletAdapter {
     name: string;
     isAvailable(): boolean;
@@ -16,7 +17,22 @@ export declare class SubWalletAdapter implements PolkadotWalletAdapter {
 }
 export declare class NovaWalletAdapter implements PolkadotWalletAdapter {
     name: string;
+    private qrAuthService?;
     isAvailable(): boolean;
+    /**
+     * Set up QR authentication service
+     */
+    setQrAuthService(qrAuthService: NovaQrAuthService): void;
+    /**
+     * Connect using QR code authentication (mobile)
+     */
+    connectWithQr(challengeId: string, message: string, address: string): Promise<{
+        qrData: NovaQrAuthData;
+        waitForCompletion: () => Promise<void>;
+    }>;
+    /**
+     * Connect using browser extension (if available)
+     */
     connect(): Promise<WalletSigner>;
 }
 export declare const defaultWalletAdapters: PolkadotWalletAdapter[];

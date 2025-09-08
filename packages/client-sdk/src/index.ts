@@ -4,10 +4,15 @@ export {
   PolkadotJsAdapter,
   SubWalletAdapter,
   TalismanAdapter,
+  NovaWalletAdapter,
   defaultWalletAdapters,
   getAvailableWallets,
   getWalletAdapter,
 } from './walletAdapters';
+export { 
+  NovaQrAuthService, 
+  createNovaQrAuthService 
+} from './novaQrAuth';
 
 export type {
   AuthChallenge,
@@ -20,3 +25,7 @@ export type {
   UserSession,
   WalletSigner,
 } from './types';
+export type { 
+  NovaQrAuthData, 
+  NovaQrAuthConfig 
+} from './novaQrAuth';

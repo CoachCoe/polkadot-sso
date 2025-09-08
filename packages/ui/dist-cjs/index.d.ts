@@ -1,6 +1,8 @@
 export { PolkadotAuthProvider } from './components/PolkadotAuthProvider';
 export { PolkadotProfile } from './components/PolkadotProfile';
 export { PolkadotSignInButton } from './components/PolkadotSignInButton';
+export { NovaQrAuth } from './components/NovaQrAuth';
+export { NovaWalletSignInButton } from './components/NovaWalletSignInButton';
 export { WalletSelector } from './components/WalletSelector';
 import './styles/polkadot-auth.css';
 export { usePolkadotAuth } from './hooks/usePolkadotAuth';

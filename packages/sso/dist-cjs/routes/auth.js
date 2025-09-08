@@ -44,6 +44,7 @@ const crypto_1 = require("../utils/crypto");
 const logger_1 = require("../utils/logger");
 const sanitization_1 = require("../utils/sanitization");
 const validation_2 = require("../utils/validation");
+const qrAuth_1 = require("./auth/qrAuth");
 /**
  * @swagger
  * components:
@@ -2188,6 +2189,11 @@ const createAuthRouter = (tokenService, challengeService, auditService, clients)
     `);
     });
     router.post('/token', rateLimiters.token, (0, validation_1.sanitizeRequest)(), (0, validation_1.validateBody)(tokenSchema), tokenHandler);
+    // QR Authentication routes for Nova Wallet
+    router.post('/qr/generate', rateLimiters.challenge, qrAuth_1.generateQrAuth);
+    router.get('/qr/status', rateLimiters.challenge, qrAuth_1.checkQrAuthStatus);
+    router.post('/qr/callback', rateLimiters.verify, qrAuth_1.handleQrCallback);
+    router.get('/qr/result', rateLimiters.challenge, qrAuth_1.getQrAuthResult);
     return router;
 };
 exports.createAuthRouter = createAuthRouter;

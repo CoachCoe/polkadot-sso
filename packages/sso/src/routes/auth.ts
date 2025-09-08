@@ -12,6 +12,12 @@ import { createHash, randomBytes } from '../utils/crypto';
 import { createLogger, logError, logRequest } from '../utils/logger';
 import { escapeHtml } from '../utils/sanitization';
 import { validateAuthRequest, validateClientCredentials } from '../utils/validation';
+import { 
+  generateQrAuth, 
+  checkQrAuthStatus, 
+  handleQrCallback, 
+  getQrAuthResult 
+} from './auth/qrAuth';
 
 /**
  * @swagger
@@ -2245,6 +2251,12 @@ export const createAuthRouter = (
     validateBody(tokenSchema),
     tokenHandler
   );
+
+  // QR Authentication routes for Nova Wallet
+  router.post('/qr/generate', rateLimiters.challenge, generateQrAuth);
+  router.get('/qr/status', rateLimiters.challenge, checkQrAuthStatus);
+  router.post('/qr/callback', rateLimiters.verify, handleQrCallback);
+  router.get('/qr/result', rateLimiters.challenge, getQrAuthResult);
 
   return router;
 };

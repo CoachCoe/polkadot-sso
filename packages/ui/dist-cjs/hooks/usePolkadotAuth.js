@@ -83,7 +83,7 @@ function usePolkadotAuthState() {
             const realAddress = account.address;
             console.log('Available accounts:', accounts.map(acc => ({
                 address: acc.address,
-                name: acc.meta.name
+                name: acc.meta.name,
             })));
             const realSession = {
                 id: Math.random().toString(36).substr(2, 9),
