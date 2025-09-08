@@ -39,67 +39,55 @@ export function usePolkadotAuthState() {
       setIsLoading(true);
       setError(null);
 
-      try {
-        // Connect to real wallet using the wallet service
-        const connection = await walletService.connectWallet(providerId);
-
-        if (connection.accounts.length === 0) {
-          throw new Error('No accounts found in wallet');
-        }
-
-        // Use the first account
-        const account = connection.accounts[0];
-        const realAddress = account.address;
-
-        // Generate a challenge for authentication
-        const challenge = await authService.createChallenge('trex-demo-dapp', realAddress);
-
-        // Sign the challenge message
-        const signature = await connection.signMessage(challenge.message);
-
-        // Verify the signature and create a real session
-        const authResult = await authService.verifySignature(
-          {
-            message: challenge.message,
-            signature: signature,
-            address: realAddress,
-            nonce: challenge.nonce,
-          },
-          challenge
-        );
-
-        if (!authResult.success) {
-          throw new Error('Authentication failed');
-        }
-
-        // Create a real session
-        const realSession: Session = {
-          id: challenge.id,
-          address: realAddress,
-          clientId: 'trex-demo-dapp',
-          accessToken: 'real-access-token', // This would come from the SSO server
-          refreshToken: 'real-refresh-token', // This would come from the SSO server
-          accessTokenId: challenge.id,
-          refreshTokenId: challenge.id,
-          fingerprint: challenge.nonce,
-          accessTokenExpiresAt: Date.now() + 15 * 60 * 1000,
-          refreshTokenExpiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
-          createdAt: Date.now(),
-          lastUsedAt: Date.now(),
-          isActive: true,
-        };
-
-        setAddress(realAddress);
-        setSession(realSession);
-        setIsConnected(true);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to connect wallet');
-      } finally {
-        setIsLoading(false);
+    try {
+      // Use real wallet connection instead of mock data
+      const { web3Enable, web3Accounts } = await import('@polkadot/extension-dapp');
+      
+      const extensions = await web3Enable('T-REX Demo dApp');
+      if (extensions.length === 0) {
+        throw new Error('No Polkadot.js Extension found');
       }
-    },
-    [walletService, authService]
-  );
+
+      const accounts = await web3Accounts();
+      if (accounts.length === 0) {
+        throw new Error('No accounts found');
+      }
+
+      // If multiple accounts, let the user choose (for now, use the first one)
+      // TODO: Implement account selection UI
+      const account = accounts[0];
+      const realAddress = account.address;
+      
+      console.log('Available accounts:', accounts.map(acc => ({ 
+        address: acc.address, 
+        name: acc.meta.name 
+      })));
+      const realSession: Session = {
+        id: Math.random().toString(36).substr(2, 9),
+        address: realAddress,
+        accountName: account.meta.name || `Account ${realAddress.slice(0, 6)}...${realAddress.slice(-4)}`,
+        clientId: 'real-client',
+        accessToken: 'real-access-token',
+        refreshToken: 'real-refresh-token',
+        accessTokenId: 'real-access-token-id',
+        refreshTokenId: 'real-refresh-token-id',
+        fingerprint: 'real-fingerprint',
+        accessTokenExpiresAt: Date.now() + 15 * 60 * 1000,
+        refreshTokenExpiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        createdAt: Date.now(),
+        lastUsedAt: Date.now(),
+        isActive: true,
+      };
+
+      setAddress(realAddress);
+      setSession(realSession);
+      setIsConnected(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to connect wallet');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const disconnect = useCallback(async () => {
     setIsLoading(true);
