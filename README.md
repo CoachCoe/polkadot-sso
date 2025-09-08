@@ -7,6 +7,7 @@ A plug-and-play authentication solution for Polkadot ecosystem, inspired by [Bet
 ## ✨ **Production-Ready Features**
 
 ### 🔐 **Real Wallet Integration**
+
 - **Polkadot.js Extension** - Full integration with the official Polkadot wallet
 - **Talisman Wallet** - Support for the popular Talisman browser extension
 - **SubWallet** - Integration with SubWallet for enhanced user experience
@@ -14,6 +15,7 @@ A plug-and-play authentication solution for Polkadot ecosystem, inspired by [Bet
 - **Automatic Detection** - Smart wallet detection and connection management
 
 ### 🛡️ **Enterprise-Grade Security**
+
 - **JWT Token Management** - Secure access and refresh token handling
 - **Challenge-Response Authentication** - Cryptographic proof of ownership
 - **Rate Limiting** - Built-in protection against brute force attacks
@@ -21,6 +23,7 @@ A plug-and-play authentication solution for Polkadot ecosystem, inspired by [Bet
 - **Session Management** - Secure session lifecycle management
 
 ### 🌐 **Multi-Chain Support**
+
 - **Polkadot Mainnet** - Production-ready mainnet integration
 - **Kusama Network** - Canary network support
 - **Westend Testnet** - Development and testing environment
@@ -129,7 +132,7 @@ function LoginButton() {
   };
 
   if (isLoading) return <div>Connecting to wallet...</div>;
-  
+
   if (user) {
     return (
       <div>
@@ -150,7 +153,7 @@ import { verifyToken } from '@polkadot-auth/sso';
 
 app.get('/protected', async (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
-  
+
   if (!token) {
     return res.status(401).json({ error: 'No token provided' });
   }
@@ -167,18 +170,21 @@ app.get('/protected', async (req, res) => {
 ## 🛡️ **Security Features**
 
 ### **Challenge-Response Authentication**
+
 - **Cryptographic Proof** - Users sign a challenge message to prove wallet ownership
 - **Nonce Protection** - Each challenge includes a unique nonce to prevent replay attacks
 - **Domain Binding** - Challenges are bound to your application domain
 - **Time-based Expiration** - Challenges expire after a configurable time period
 
 ### **JWT Token Management**
+
 - **Access Tokens** - Short-lived tokens for API access (default: 15 minutes)
 - **Refresh Tokens** - Long-lived tokens for token renewal (default: 7 days)
 - **Token Blacklisting** - Secure token invalidation and logout
 - **Automatic Renewal** - Seamless token refresh without user interaction
 
 ### **Rate Limiting & Protection**
+
 - **Challenge Rate Limiting** - Prevents spam challenge generation
 - **Verification Rate Limiting** - Protects against brute force attacks
 - **IP-based Limits** - Configurable per-IP rate limits
