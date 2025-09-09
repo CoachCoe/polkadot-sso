@@ -99,7 +99,7 @@ function NovaWalletSignInButton({ onSuccess, onError, baseUrl, className = '', c
     if (showQrAuth && qrData && waitForCompletion) {
         return ((0, jsx_runtime_1.jsx)(NovaQrAuth_1.NovaQrAuth, { qrData: qrData, onSuccess: handleQrSuccess, onError: handleQrError, onCancel: handleQrCancel, waitForCompletion: waitForCompletion, className: className }));
     }
-    return ((0, jsx_runtime_1.jsxs)("button", { onClick: handleConnect, disabled: isConnecting, className: `nova-wallet-signin-btn ${className}`, children: [isConnecting ? ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)("span", { className: "nova-wallet-signin-btn__spinner" }), "Connecting..."] })) : ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)("span", { className: "nova-wallet-signin-btn__icon", children: "\uD83D\uDFE0" }), children || 'Connect Nova Wallet'] })), (0, jsx_runtime_1.jsx)("style", { children: `
+    return ((0, jsx_runtime_1.jsxs)("button", { onClick: handleConnect, disabled: isConnecting, className: `nova-wallet-signin-btn ${className}`, children: [isConnecting ? ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)("span", { className: 'nova-wallet-signin-btn__spinner' }), "Connecting..."] })) : ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)("span", { className: 'nova-wallet-signin-btn__icon', children: "\uD83D\uDFE0" }), children || 'Connect Nova Wallet'] })), (0, jsx_runtime_1.jsx)("style", { children: `
         .nova-wallet-signin-btn {
           display: inline-flex;
           align-items: center;

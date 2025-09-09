@@ -187,7 +187,7 @@ export class NovaWalletAdapter implements PolkadotWalletAdapter {
 
     try {
       const qrData = await this.qrAuthService.generateQrAuth(challengeId, message, address);
-      
+
       return {
         qrData,
         waitForCompletion: () => this.qrAuthService!.waitForCompletion(challengeId),
@@ -203,7 +203,7 @@ export class NovaWalletAdapter implements PolkadotWalletAdapter {
   async connect(): Promise<WalletSigner> {
     // Check if Nova Wallet browser extension is available
     const hasExtension = typeof window !== 'undefined' && !!window.injectedWeb3?.['nova-wallet'];
-    
+
     if (!hasExtension) {
       // If no extension, throw error suggesting QR code method
       throw ErrorService.createError(

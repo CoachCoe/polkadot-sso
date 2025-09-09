@@ -20,9 +20,16 @@ import { sanitizeRequestParams } from './middleware/validation';
 import { createAuthRouter } from './routes/auth';
 import { createClientRouter } from './routes/clients';
 import { createCredentialRouter } from './routes/credentials';
+import remittanceRouter from './routes/remittance';
 import { createTokenRouter } from './routes/tokens';
 import { AuditService } from './services/auditService';
 import { getCacheService, shutdownCacheService } from './services/cacheService';
+import {
+  generalRateLimiter,
+  authRateLimiter,
+  challengeRateLimiter,
+  remittanceRateLimiter,
+} from './middleware/rateLimiter';
 import { ChallengeService } from './services/challengeService';
 import { CredentialService } from './services/credentialService';
 import { TokenService } from './services/token';
@@ -241,10 +248,20 @@ async function initializeApp() {
     });
   });
 
-  app.use('/', createAuthRouter(tokenService, challengeService, auditService, clients));
-  app.use('/api/tokens', createTokenRouter(tokenService, auditService));
+  // Apply specific rate limiting to different route groups
+  app.use(
+    '/',
+    challengeRateLimiter.middleware(),
+    createAuthRouter(tokenService, challengeService, auditService, clients)
+  );
+  app.use(
+    '/api/tokens',
+    authRateLimiter.middleware(),
+    createTokenRouter(tokenService, auditService)
+  );
   app.use('/api/clients', createClientRouter());
   app.use('/api/credentials', createCredentialRouter(credentialService, auditService));
+  app.use('/api/remittance', remittanceRateLimiter.middleware(), remittanceRouter);
 
   app.use(bruteForceMiddleware);
   app.use(sanitizeRequestParams());

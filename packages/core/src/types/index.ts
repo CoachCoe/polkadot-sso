@@ -169,3 +169,31 @@ export interface PolkadotAuthInstance {
   getProviders: () => WalletProvider[];
   getChains: () => ChainConfig[];
 }
+
+// User and Session types for remittance
+export interface PolkadotUser {
+  id: string;
+  address: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  createdAt: Date;
+  lastLogin: Date;
+  isActive: boolean;
+}
+
+export interface PolkadotSession {
+  id: string;
+  userId: string;
+  address: string;
+  clientId: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: Date;
+  createdAt: Date;
+  lastUsedAt: Date;
+  isActive: boolean;
+}
+
+// Export remittance types
+export * from './remittance';

@@ -12,11 +12,11 @@ import { createHash, randomBytes } from '../utils/crypto';
 import { createLogger, logError, logRequest } from '../utils/logger';
 import { escapeHtml } from '../utils/sanitization';
 import { validateAuthRequest, validateClientCredentials } from '../utils/validation';
-import { 
-  generateQrAuth, 
-  checkQrAuthStatus, 
-  handleQrCallback, 
-  getQrAuthResult 
+import {
+  generateQrAuth,
+  checkQrAuthStatus,
+  handleQrCallback,
+  getQrAuthResult,
 } from './auth/qrAuth';
 
 /**

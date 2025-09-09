@@ -8,11 +8,18 @@ const crypto_1 = __importDefault(require("crypto"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 class JWTService {
     constructor() {
-        this.accessTokenSecret = process.env.JWT_ACCESS_SECRET || 'default-access-secret';
-        this.refreshTokenSecret = process.env.JWT_REFRESH_SECRET || 'default-refresh-secret';
+        // Require strong secrets in production
+        this.accessTokenSecret = process.env.JWT_ACCESS_SECRET || crypto_1.default.randomBytes(64).toString('hex');
+        this.refreshTokenSecret = process.env.JWT_REFRESH_SECRET || crypto_1.default.randomBytes(64).toString('hex');
         this.issuer = process.env.JWT_ISSUER || 'polkadot-sso';
         this.accessTokenExpiry = parseInt(process.env.JWT_ACCESS_EXPIRY || '900'); // 15 minutes
         this.refreshTokenExpiry = parseInt(process.env.JWT_REFRESH_EXPIRY || '604800'); // 7 days
+        // Warn if using default secrets in production
+        if (process.env.NODE_ENV === 'production' &&
+            (this.accessTokenSecret === 'default-access-secret' ||
+                this.refreshTokenSecret === 'default-refresh-secret')) {
+            console.warn('⚠️  WARNING: Using default JWT secrets in production! Set JWT_ACCESS_SECRET and JWT_REFRESH_SECRET environment variables.');
+        }
     }
     /**
      * Generate a new token pair for a session

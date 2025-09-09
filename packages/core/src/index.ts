@@ -156,4 +156,9 @@ export { ErrorService } from './services/errorService';
 export { createPapiClient, PapiClientService } from './services/papiClient';
 export { WalletProviderService, walletProviderService } from './services/walletProviderService';
 
+// Remittance services
+export { ComplianceService } from './services/complianceService';
+export { RemittanceAuthService } from './services/remittanceAuthService';
+export { RemittanceService } from './services/remittanceService';
+
 export default createPolkadotAuth;

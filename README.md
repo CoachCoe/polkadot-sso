@@ -1,8 +1,8 @@
 # Polkadot Auth
 
-**Framework-agnostic Polkadot authentication with SIWE-style messages**
+**Framework-agnostic Polkadot authentication with SIWE-style messages and progressive custody remittance services**
 
-A plug-and-play authentication solution for Polkadot ecosystem, inspired by [Better Auth](https://www.better-auth.com/). Zero configuration, multiple framework support, and enterprise-grade security.
+A plug-and-play authentication solution for Polkadot ecosystem, inspired by [Better Auth](https://www.better-auth.com/). Zero configuration, multiple framework support, enterprise-grade security, and now featuring a complete remittance platform with progressive custody levels.
 
 ## ✨ **Production-Ready Features**
 
@@ -29,6 +29,17 @@ A plug-and-play authentication solution for Polkadot ecosystem, inspired by [Bet
 - **Westend Testnet** - Development and testing environment
 - **Rococo Testnet** - Parachain testing support
 - **Custom RPC Endpoints** - Configurable RPC endpoints for redundancy
+
+### 💸 **Progressive Custody Remittance Platform**
+
+- **Level 0**: SMS/Email authentication with platform custody ($500 daily limit)
+- **Level 1**: Enhanced security with 2FA and shared custody ($2,000 daily limit)
+- **Level 2**: Wallet-assisted with 2-of-3 multisig ($10,000 daily limit)
+- **Level 3**: Full self-custody with no limits
+- **US→Argentina/Brazil** corridors with competitive fees (2% base, discounts for higher levels)
+- **Real-time exchange rates** and transaction monitoring
+- **KYC/AML compliance** with risk assessment
+- **Multi-sig treasury management** for secure fund handling
 
 ## 🎯 Inspiration & Vision
 
@@ -81,6 +92,27 @@ const app = express();
 app.use('/auth', polkadotAuth());
 
 app.listen(3000);
+```
+
+### Remittance Platform (New!)
+
+```bash
+npm install @polkadot-auth/core @polkadot-auth/ui
+```
+
+```tsx
+import { RemittanceDashboard } from '@polkadot-auth/ui';
+
+function App() {
+  return (
+    <RemittanceDashboard
+      baseUrl='https://your-sso-server.com'
+      onTransactionCreated={transaction => {
+        console.log('Remittance sent:', transaction);
+      }}
+    />
+  );
+}
 ```
 
 ### Next.js
@@ -304,6 +336,7 @@ const latestBlock = await papiClient.getLatestBlock();
 | `@polkadot-auth/remix`      | Remix adapter              | ✅ Ready |
 | `@polkadot-auth/ui`         | React UI components        | ✅ Ready |
 | `@polkadot-auth/client-sdk` | Client SDK for integration | ✅ Ready |
+| `@polkadot-auth/sso`        | SSO server with remittance | ✅ Ready |
 
 ## 🎯 Examples
 
@@ -712,6 +745,148 @@ function TrixApp() {
 }
 ```
 
+### Remittance Platform Integration
+
+```tsx
+// Complete remittance platform integration
+import { RemittanceDashboard, CustodyLevelIndicator, SendMoneyForm } from '@polkadot-auth/ui';
+
+function RemittanceApp() {
+  return (
+    <RemittanceDashboard
+      baseUrl='https://your-sso-server.com'
+      onTransactionCreated={transaction => {
+        console.log('Remittance sent:', transaction);
+        // Handle successful transaction
+      }}
+      onError={error => {
+        console.error('Remittance error:', error);
+        // Handle errors
+      }}
+    />
+  );
+}
+
+// Or use individual components
+function CustomRemittanceApp() {
+  const { session } = usePolkadotAuth();
+
+  return (
+    <div>
+      <CustodyLevelIndicator
+        currentLevel={session?.custodyLevel || 0}
+        onUpgrade={level => upgradeCustody(level)}
+      />
+
+      <SendMoneyForm
+        onSend={handleSendMoney}
+        onGetQuote={handleGetQuote}
+        limits={session?.limits}
+        custodyLevel={session?.custodyLevel || 0}
+      />
+    </div>
+  );
+}
+```
+
+## 💸 **Remittance Platform**
+
+### **Progressive Custody Model**
+
+The remittance platform features a unique progressive custody system that allows users to start with familiar Web2 authentication and gradually transition to full Web3 self-custody:
+
+#### **Level 0: Basic Custody**
+
+- **Authentication**: SMS/Email verification
+- **Custody**: Platform holds funds
+- **Limits**: $500 daily, $2,000 monthly
+- **Fees**: 2% base fee
+- **Use Case**: First-time users, small transactions
+
+#### **Level 1: Enhanced Security**
+
+- **Authentication**: SMS/Email + 2FA
+- **Custody**: Shared custody with platform
+- **Limits**: $2,000 daily, $10,000 monthly
+- **Fees**: 1.5% (0.5% discount)
+- **Use Case**: Regular users, medium transactions
+
+#### **Level 2: Wallet Assisted**
+
+- **Authentication**: Wallet signature + backup methods
+- **Custody**: 2-of-3 multisig (user + platform + recovery)
+- **Limits**: $10,000 daily, $50,000 monthly
+- **Fees**: 1% (1% discount)
+- **Use Case**: Power users, large transactions
+
+#### **Level 3: Full Self-Custody**
+
+- **Authentication**: Wallet signature only
+- **Custody**: User controls all funds
+- **Limits**: Unlimited
+- **Fees**: 0.5% (1.5% discount)
+- **Use Case**: Advanced users, institutional
+
+### **Supported Corridors**
+
+- **US → Argentina**: Competitive rates for ARS conversion
+- **US → Brazil**: BRL support with local cash-out partners
+- **US → USD**: For users who want to maintain USD holdings
+
+### **Key Features**
+
+- **Real-time Exchange Rates**: Live market rates with transparent pricing
+- **KYC/AML Compliance**: Built-in compliance with risk assessment
+- **Multi-sig Treasury**: Secure fund management with multiple signatures
+- **Transaction Monitoring**: Real-time fraud detection and risk scoring
+- **Audit Trail**: Complete transaction history and compliance logging
+- **Mobile Support**: QR code authentication for Nova Wallet users
+
+### **API Endpoints**
+
+```http
+# Send money
+POST /api/remittance/send
+{
+  "recipient": "+1234567890",
+  "amount": 100,
+  "targetCurrency": "ARS"
+}
+
+# Get transaction history
+GET /api/remittance/history?page=1&limit=20
+
+# Upgrade custody level
+POST /api/remittance/upgrade-custody
+{
+  "targetLevel": 2,
+  "additionalAuth": { "walletSignature": "..." }
+}
+
+# Get quote
+GET /api/remittance/quote?amount=100&targetCurrency=ARS
+```
+
+### **Integration Example**
+
+```tsx
+import { RemittanceDashboard } from '@polkadot-auth/ui';
+
+function MyRemittanceApp() {
+  return (
+    <RemittanceDashboard
+      baseUrl='https://your-sso-server.com'
+      onTransactionCreated={transaction => {
+        console.log('Remittance sent:', transaction);
+      }}
+      onError={error => {
+        console.error('Error:', error);
+      }}
+    />
+  );
+}
+```
+
 ## 🔧 Configuration
 
 ### Environment Variables
@@ -721,6 +896,14 @@ function TrixApp() {
 POLKADOT_AUTH_SECRET=your-secret
 POLKADOT_AUTH_URL=http://localhost:3000
 POLKADOT_DEFAULT_CHAIN=kusama
+
+# Remittance Platform Configuration
+REMITANCE_ENABLED=true
+REMITANCE_DEFAULT_CURRENCY=USD
+REMITANCE_SUPPORTED_CURRENCIES=USD,ARS,BRL
+REMITANCE_TREASURY_ADDRESS=your-treasury-address
+REMITANCE_MIN_DEPOSIT=100
+REMITANCE_MAX_WITHDRAWAL=100000
 ```
 
 ### Advanced Configuration
@@ -845,7 +1028,7 @@ Resources:
 - [x] Multi-chain support
 - [x] PAPI integration for optimal performance
 
-### Phase 2: Framework Support 🚧
+### Phase 2: Framework Support ✅
 
 - [x] Next.js adapter
 - [x] Remix adapter
@@ -859,12 +1042,25 @@ Resources:
 - [ ] Vanilla JS components
 - [ ] Styling themes
 
-### Phase 4: Enterprise Features 📋
+### Phase 4: Remittance Platform ✅
+
+- [x] Progressive custody levels (0-3)
+- [x] Multi-sig treasury management
+- [x] KYC/AML compliance integration
+- [x] Real-time exchange rates
+- [x] Transaction monitoring
+- [x] US→Argentina/Brazil corridors
+- [x] React UI components
+- [x] Complete API endpoints
+
+### Phase 5: Enterprise Features 📋
 
 - [ ] OpenID Connect provider
 - [ ] Advanced audit trails
 - [ ] Rate limiting
 - [ ] Professional support
+- [ ] Additional remittance corridors
+- [ ] Mobile app support
 
 ## 🤝 Contributing
 
