@@ -39,7 +39,7 @@ export class NovaQrAuthService {
     try {
       // Create deep link for Nova Wallet
       const deepLink = this.createNovaDeepLink(challengeId, message, address);
-      
+
       // Generate QR code as data URL
       const qrCodeDataUrl = await QRCode.toDataURL(deepLink, {
         width: 256,
@@ -82,18 +82,12 @@ export class NovaQrAuthService {
   async pollForCompletion(challengeId: string): Promise<boolean> {
     const authData = this.activeAuth.get(challengeId);
     if (!authData) {
-      throw ErrorService.createError(
-        'AUTH_NOT_FOUND',
-        'Authentication session not found'
-      );
+      throw ErrorService.createError('AUTH_NOT_FOUND', 'Authentication session not found');
     }
 
     if (Date.now() > authData.expiresAt) {
       this.activeAuth.delete(challengeId);
-      throw ErrorService.createError(
-        'AUTH_EXPIRED',
-        'Authentication session has expired'
-      );
+      throw ErrorService.createError('AUTH_EXPIRED', 'Authentication session has expired');
     }
 
     try {
@@ -127,10 +121,7 @@ export class NovaQrAuthService {
   async waitForCompletion(challengeId: string): Promise<void> {
     const authData = this.activeAuth.get(challengeId);
     if (!authData) {
-      throw ErrorService.createError(
-        'AUTH_NOT_FOUND',
-        'Authentication session not found'
-      );
+      throw ErrorService.createError('AUTH_NOT_FOUND', 'Authentication session not found');
     }
 
     const startTime = Date.now();
@@ -142,12 +133,7 @@ export class NovaQrAuthService {
           // Check if expired
           if (Date.now() > authData.expiresAt) {
             this.activeAuth.delete(challengeId);
-            reject(
-              ErrorService.createError(
-                'AUTH_EXPIRED',
-                'Authentication session has expired'
-              )
-            );
+            reject(ErrorService.createError('AUTH_EXPIRED', 'Authentication session has expired'));
             return;
           }
 
@@ -162,12 +148,7 @@ export class NovaQrAuthService {
           // Check timeout
           if (Date.now() - startTime > timeout) {
             this.activeAuth.delete(challengeId);
-            reject(
-              ErrorService.createError(
-                'AUTH_TIMEOUT',
-                'Authentication timed out'
-              )
-            );
+            reject(ErrorService.createError('AUTH_TIMEOUT', 'Authentication timed out'));
             return;
           }
 
@@ -185,11 +166,7 @@ export class NovaQrAuthService {
   /**
    * Create Nova Wallet deep link
    */
-  private createNovaDeepLink(
-    challengeId: string,
-    message: string,
-    address: string
-  ): string {
+  private createNovaDeepLink(challengeId: string, message: string, address: string): string {
     // Nova Wallet deep link format
     // This is a custom protocol that Nova Wallet should support
     const params = new URLSearchParams({

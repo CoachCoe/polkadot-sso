@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { 
-  NovaWalletAdapter, 
-  NovaQrAuthService, 
+import {
+  NovaWalletAdapter,
+  NovaQrAuthService,
   createNovaQrAuthService,
-  NovaQrAuthData 
+  NovaQrAuthData,
 } from '@polkadot-auth/client-sdk';
 import { NovaQrAuth } from './NovaQrAuth';
 
@@ -32,12 +32,12 @@ export function NovaWalletSignInButton({
 
     try {
       const adapter = new NovaWalletAdapter();
-      
+
       // Try browser extension first
       try {
         const signer = await adapter.connect();
         const address = signer.getAddress();
-        
+
         // For now, create a mock session - in real implementation, this would come from SSO server
         const session = {
           id: `session_${Date.now()}`,
@@ -92,7 +92,7 @@ export function NovaWalletSignInButton({
     setShowQrAuth(false);
     setQrData(null);
     setWaitForCompletion(null);
-    
+
     // In real implementation, this would come from the SSO server after QR authentication
     const mockAddress = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
     const mockSession = {
@@ -149,16 +149,16 @@ export function NovaWalletSignInButton({
     >
       {isConnecting ? (
         <>
-          <span className="nova-wallet-signin-btn__spinner"></span>
+          <span className='nova-wallet-signin-btn__spinner'></span>
           Connecting...
         </>
       ) : (
         <>
-          <span className="nova-wallet-signin-btn__icon">🟠</span>
+          <span className='nova-wallet-signin-btn__icon'>🟠</span>
           {children || 'Connect Nova Wallet'}
         </>
       )}
-      
+
       <style>{`
         .nova-wallet-signin-btn {
           display: inline-flex;

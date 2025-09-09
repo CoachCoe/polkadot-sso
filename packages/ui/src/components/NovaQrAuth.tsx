@@ -27,7 +27,7 @@ export function NovaQrAuth({
     const updateTimeRemaining = () => {
       const remaining = Math.max(0, Math.floor((qrData.expiresAt - Date.now()) / 1000));
       setTimeRemaining(remaining);
-      
+
       if (remaining === 0) {
         setError('QR code has expired. Please try again.');
         setIsWaiting(false);
@@ -64,41 +64,39 @@ export function NovaQrAuth({
 
   return (
     <div className={`nova-qr-auth ${className}`}>
-      <div className="nova-qr-auth__container">
+      <div className='nova-qr-auth__container'>
         {/* Header */}
-        <div className="nova-qr-auth__header">
-          <div className="nova-qr-auth__logo">
-            <span className="nova-qr-auth__logo-icon">🟠</span>
-            <span className="nova-qr-auth__logo-text">Nova Wallet</span>
+        <div className='nova-qr-auth__header'>
+          <div className='nova-qr-auth__logo'>
+            <span className='nova-qr-auth__logo-icon'>🟠</span>
+            <span className='nova-qr-auth__logo-text'>Nova Wallet</span>
           </div>
-          <h3 className="nova-qr-auth__title">Scan QR Code</h3>
-          <p className="nova-qr-auth__subtitle">
+          <h3 className='nova-qr-auth__title'>Scan QR Code</h3>
+          <p className='nova-qr-auth__subtitle'>
             Open Nova Wallet on your mobile device and scan this QR code to authenticate
           </p>
         </div>
 
         {/* QR Code */}
-        <div className="nova-qr-auth__qr-container">
+        <div className='nova-qr-auth__qr-container'>
           <img
             src={qrData.qrCodeDataUrl}
-            alt="Nova Wallet QR Code"
-            className="nova-qr-auth__qr-code"
+            alt='Nova Wallet QR Code'
+            className='nova-qr-auth__qr-code'
           />
-          <div className="nova-qr-auth__qr-overlay">
-            <div className="nova-qr-auth__qr-icon">📱</div>
+          <div className='nova-qr-auth__qr-overlay'>
+            <div className='nova-qr-auth__qr-icon'>📱</div>
           </div>
         </div>
 
         {/* Timer */}
-        <div className="nova-qr-auth__timer">
-          <div className="nova-qr-auth__timer-icon">⏱️</div>
-          <span className="nova-qr-auth__timer-text">
-            Expires in {formatTime(timeRemaining)}
-          </span>
+        <div className='nova-qr-auth__timer'>
+          <div className='nova-qr-auth__timer-icon'>⏱️</div>
+          <span className='nova-qr-auth__timer-text'>Expires in {formatTime(timeRemaining)}</span>
         </div>
 
         {/* Instructions */}
-        <div className="nova-qr-auth__instructions">
+        <div className='nova-qr-auth__instructions'>
           <h4>How to authenticate:</h4>
           <ol>
             <li>Open Nova Wallet on your mobile device</li>
@@ -110,50 +108,45 @@ export function NovaQrAuth({
 
         {/* Error Message */}
         {error && (
-          <div className="nova-qr-auth__error">
-            <div className="nova-qr-auth__error-icon">❌</div>
-            <span className="nova-qr-auth__error-text">{error}</span>
+          <div className='nova-qr-auth__error'>
+            <div className='nova-qr-auth__error-icon'>❌</div>
+            <span className='nova-qr-auth__error-text'>{error}</span>
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="nova-qr-auth__actions">
+        <div className='nova-qr-auth__actions'>
           {!isWaiting ? (
             <>
               <button
                 onClick={handleStartWaiting}
                 disabled={timeRemaining === 0}
-                className="nova-qr-auth__btn nova-qr-auth__btn--primary"
+                className='nova-qr-auth__btn nova-qr-auth__btn--primary'
               >
-                <span className="nova-qr-auth__btn-icon">🔍</span>
+                <span className='nova-qr-auth__btn-icon'>🔍</span>
                 Start Waiting for Authentication
               </button>
-              <button
-                onClick={onCancel}
-                className="nova-qr-auth__btn nova-qr-auth__btn--secondary"
-              >
+              <button onClick={onCancel} className='nova-qr-auth__btn nova-qr-auth__btn--secondary'>
                 Cancel
               </button>
             </>
           ) : (
-            <div className="nova-qr-auth__waiting">
-              <div className="nova-qr-auth__spinner"></div>
-              <span className="nova-qr-auth__waiting-text">
-                Waiting for authentication...
-              </span>
+            <div className='nova-qr-auth__waiting'>
+              <div className='nova-qr-auth__spinner'></div>
+              <span className='nova-qr-auth__waiting-text'>Waiting for authentication...</span>
             </div>
           )}
         </div>
 
         {/* Deep Link Fallback */}
-        <div className="nova-qr-auth__fallback">
-          <p className="nova-qr-auth__fallback-text">
-            Having trouble scanning? 
-            <a 
-              href={qrData.deepLink} 
-              className="nova-qr-auth__fallback-link"
-              target="_blank"
-              rel="noopener noreferrer"
+        <div className='nova-qr-auth__fallback'>
+          <p className='nova-qr-auth__fallback-text'>
+            Having trouble scanning?
+            <a
+              href={qrData.deepLink}
+              className='nova-qr-auth__fallback-link'
+              target='_blank'
+              rel='noopener noreferrer'
             >
               Open in Nova Wallet
             </a>

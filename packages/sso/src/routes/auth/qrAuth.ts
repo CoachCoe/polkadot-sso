@@ -7,25 +7,31 @@ import { TokenService } from '../../services/token';
 
 // In-memory store for QR authentication sessions
 // In production, this should be stored in Redis or a database
-const qrAuthSessions = new Map<string, {
-  challengeId: string;
-  address: string;
-  message: string;
-  createdAt: number;
-  expiresAt: number;
-  completed: boolean;
-  signature?: string;
-}>();
+const qrAuthSessions = new Map<
+  string,
+  {
+    challengeId: string;
+    address: string;
+    message: string;
+    createdAt: number;
+    expiresAt: number;
+    completed: boolean;
+    signature?: string;
+  }
+>();
 
 // Cleanup expired sessions every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [challengeId, session] of qrAuthSessions.entries()) {
-    if (now > session.expiresAt) {
-      qrAuthSessions.delete(challengeId);
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [challengeId, session] of qrAuthSessions.entries()) {
+      if (now > session.expiresAt) {
+        qrAuthSessions.delete(challengeId);
+      }
     }
-  }
-}, 5 * 60 * 1000);
+  },
+  5 * 60 * 1000
+);
 
 const qrAuthRequestSchema = z.object({
   address: z.string().min(1, 'Address is required'),

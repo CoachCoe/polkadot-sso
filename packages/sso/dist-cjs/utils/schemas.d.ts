@@ -404,12 +404,12 @@ export declare const kusamaResponseSchema: z.ZodObject<{
         currency: z.ZodString;
         storage_method: z.ZodString;
     }, "strip", z.ZodTypeAny, {
-        currency: string;
         amount: string;
+        currency: string;
         storage_method: string;
     }, {
-        currency: string;
         amount: string;
+        currency: string;
         storage_method: string;
     }>>;
 }, "strip", z.ZodTypeAny, {
@@ -418,8 +418,8 @@ export declare const kusamaResponseSchema: z.ZodObject<{
     credential_data?: string | undefined;
     transaction_hash?: string | undefined;
     estimated_cost?: {
-        currency: string;
         amount: string;
+        currency: string;
         storage_method: string;
     } | undefined;
 }, {
@@ -428,8 +428,8 @@ export declare const kusamaResponseSchema: z.ZodObject<{
     credential_data?: string | undefined;
     transaction_hash?: string | undefined;
     estimated_cost?: {
-        currency: string;
         amount: string;
+        currency: string;
         storage_method: string;
     } | undefined;
 }>;
@@ -919,12 +919,12 @@ export declare const schemas: {
             currency: z.ZodString;
             storage_method: z.ZodString;
         }, "strip", z.ZodTypeAny, {
-            currency: string;
             amount: string;
+            currency: string;
             storage_method: string;
         }, {
-            currency: string;
             amount: string;
+            currency: string;
             storage_method: string;
         }>>;
     }, "strip", z.ZodTypeAny, {
@@ -933,8 +933,8 @@ export declare const schemas: {
         credential_data?: string | undefined;
         transaction_hash?: string | undefined;
         estimated_cost?: {
-            currency: string;
             amount: string;
+            currency: string;
             storage_method: string;
         } | undefined;
     }, {
@@ -943,8 +943,8 @@ export declare const schemas: {
         credential_data?: string | undefined;
         transaction_hash?: string | undefined;
         estimated_cost?: {
-            currency: string;
             amount: string;
+            currency: string;
             storage_method: string;
         } | undefined;
     }>;

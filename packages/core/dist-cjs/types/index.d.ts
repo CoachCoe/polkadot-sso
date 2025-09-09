@@ -147,4 +147,27 @@ export interface PolkadotAuthInstance {
     getProviders: () => WalletProvider[];
     getChains: () => ChainConfig[];
 }
+export interface PolkadotUser {
+    id: string;
+    address: string;
+    name?: string;
+    email?: string;
+    phone?: string;
+    createdAt: Date;
+    lastLogin: Date;
+    isActive: boolean;
+}
+export interface PolkadotSession {
+    id: string;
+    userId: string;
+    address: string;
+    clientId: string;
+    accessToken: string;
+    refreshToken: string;
+    expiresAt: Date;
+    createdAt: Date;
+    lastUsedAt: Date;
+    isActive: boolean;
+}
+export * from './remittance';
 //# sourceMappingURL=index.d.ts.map

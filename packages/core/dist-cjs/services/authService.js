@@ -234,28 +234,38 @@ Expiration Time: ${message.expirationTime}`;
     }
     /**
      * Verify signature cryptographically
+     *
+     * SECURITY NOTE: This is a placeholder implementation.
+     * In production, you MUST implement proper cryptographic verification
+     * using the Polkadot address and signature validation.
      */
     async verifySignatureCryptographically(signature, challenge) {
         try {
-            // This is a simplified verification - in a real implementation,
-            // you would use proper cryptographic verification with the Polkadot address
-            // For now, we'll do basic validation
+            // Basic validation
             if (!signature.signature || !signature.address || !signature.message) {
+                console.warn('⚠️  SECURITY: Missing signature components');
                 return false;
             }
             // Check if the message matches the challenge
             if (signature.message !== challenge.message) {
+                console.warn('⚠️  SECURITY: Message mismatch in signature verification');
                 return false;
             }
             // Check if the nonce matches
             if (signature.nonce !== challenge.nonce) {
+                console.warn('⚠️  SECURITY: Nonce mismatch in signature verification');
                 return false;
             }
-            // In a real implementation, you would:
-            // 1. Decode the signature
-            // 2. Verify it against the message hash
-            // 3. Check that the signature was created by the claimed address
-            return true;
+            // TODO: Implement proper cryptographic verification
+            // This should include:
+            // 1. Decode the signature using Polkadot's signature format
+            // 2. Verify it against the message hash using the claimed address
+            // 3. Ensure the signature was created by the claimed address
+            // 4. Validate the signature format and encoding
+            console.warn('⚠️  SECURITY WARNING: Using mock signature verification. Implement proper cryptographic verification for production!');
+            // For now, return true for development/testing
+            // In production, this MUST be replaced with real cryptographic verification
+            return process.env.NODE_ENV !== 'production';
         }
         catch (error) {
             console.error('Signature verification error:', error);

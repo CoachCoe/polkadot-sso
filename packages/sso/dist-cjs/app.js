@@ -24,9 +24,11 @@ const validation_1 = require("./middleware/validation");
 const auth_1 = require("./routes/auth");
 const clients_1 = require("./routes/clients");
 const credentials_1 = require("./routes/credentials");
+const remittance_1 = __importDefault(require("./routes/remittance"));
 const tokens_1 = require("./routes/tokens");
 const auditService_1 = require("./services/auditService");
 const cacheService_1 = require("./services/cacheService");
+const rateLimiter_1 = require("./middleware/rateLimiter");
 const challengeService_1 = require("./services/challengeService");
 const credentialService_1 = require("./services/credentialService");
 const token_1 = require("./services/token");
@@ -203,10 +205,12 @@ async function initializeApp() {
             version: '1.0.0',
         });
     });
-    app.use('/', (0, auth_1.createAuthRouter)(tokenService, challengeService, auditService, clients));
-    app.use('/api/tokens', (0, tokens_1.createTokenRouter)(tokenService, auditService));
+    // Apply specific rate limiting to different route groups
+    app.use('/', rateLimiter_1.challengeRateLimiter.middleware(), (0, auth_1.createAuthRouter)(tokenService, challengeService, auditService, clients));
+    app.use('/api/tokens', rateLimiter_1.authRateLimiter.middleware(), (0, tokens_1.createTokenRouter)(tokenService, auditService));
     app.use('/api/clients', (0, clients_1.createClientRouter)());
     app.use('/api/credentials', (0, credentials_1.createCredentialRouter)(credentialService, auditService));
+    app.use('/api/remittance', rateLimiter_1.remittanceRateLimiter.middleware(), remittance_1.default);
     app.use(bruteForceMiddleware);
     app.use((0, validation_1.sanitizeRequestParams)());
     app.use((err, req, res, next) => {
