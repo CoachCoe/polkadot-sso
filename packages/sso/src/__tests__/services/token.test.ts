@@ -52,8 +52,11 @@ describe('TokenService', () => {
       expect(result.accessJwtid).toBeDefined();
       expect(result.refreshJwtid).toBeDefined();
 
-      const decodedAccess = jwt.verify(result.accessToken, process.env.JWT_SECRET!) as any;
-      const decodedRefresh = jwt.verify(result.refreshToken, process.env.JWT_SECRET!) as any;
+      const decodedAccess = jwt.verify(result.accessToken, process.env.JWT_ACCESS_SECRET!) as any;
+      const decodedRefresh = jwt.verify(
+        result.refreshToken,
+        process.env.JWT_REFRESH_SECRET!
+      ) as any;
 
       expect(decodedAccess.address).toBe(address);
       expect(decodedAccess.client_id).toBe(clientId);

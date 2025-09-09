@@ -7,17 +7,24 @@ import {
   RemittanceUser,
 } from '../types/remittance';
 import { ErrorService } from './errorService';
+import {
+  createExchangeRateService,
+  DEFAULT_EXCHANGE_RATE_CONFIG,
+  ExchangeRateService,
+} from './exchangeRateService';
 import { RemittanceAuthService } from './remittanceAuthService';
 
 export class RemittanceService {
   private authService: RemittanceAuthService;
-  private exchangeRates: Map<string, ExchangeRate> = new Map();
+  private exchangeRateService: ExchangeRateService;
   private transactions: Map<string, RemittanceTransaction> = new Map();
   private claimLinks: Map<string, string> = new Map(); // claimLink -> transactionId
 
-  constructor(authService: RemittanceAuthService) {
+  constructor(authService: RemittanceAuthService, exchangeRateConfig?: any) {
     this.authService = authService;
-    this.initializeExchangeRates();
+    this.exchangeRateService = createExchangeRateService(
+      exchangeRateConfig || DEFAULT_EXCHANGE_RATE_CONFIG
+    );
   }
 
   /**
@@ -240,11 +247,22 @@ export class RemittanceService {
   }
 
   /**
-   * Get exchange rate between currencies
+   * Get exchange rate between currencies using real-time data
    */
   private async getExchangeRate(from: string, to: string): Promise<ExchangeRate | null> {
-    const key = `${from}-${to}`;
-    return this.exchangeRates.get(key) || null;
+    try {
+      const rate = await this.exchangeRateService.getRate(from, to);
+      return {
+        from,
+        to,
+        rate,
+        timestamp: new Date(),
+        source: 'coingecko',
+      };
+    } catch (error) {
+      console.error('Failed to get exchange rate:', error);
+      return null;
+    }
   }
 
   /**
@@ -347,32 +365,24 @@ export class RemittanceService {
   }
 
   /**
-   * Initialize exchange rates (mock data)
+   * Get multiple exchange rates at once
    */
-  private initializeExchangeRates(): void {
-    this.exchangeRates.set('USD-ARS', {
-      from: 'USD',
-      to: 'ARS',
-      rate: 850.0,
-      timestamp: new Date(),
-      source: 'mock',
-    });
+  async getExchangeRates(from: string, toCurrencies: string[]): Promise<Record<string, number>> {
+    return await this.exchangeRateService.getRates(from, toCurrencies);
+  }
 
-    this.exchangeRates.set('USD-BRL', {
-      from: 'USD',
-      to: 'BRL',
-      rate: 5.2,
-      timestamp: new Date(),
-      source: 'mock',
-    });
+  /**
+   * Clear exchange rate cache
+   */
+  clearExchangeRateCache(): void {
+    this.exchangeRateService.clearCache();
+  }
 
-    this.exchangeRates.set('USD-USD', {
-      from: 'USD',
-      to: 'USD',
-      rate: 1.0,
-      timestamp: new Date(),
-      source: 'mock',
-    });
+  /**
+   * Get exchange rate cache statistics
+   */
+  getExchangeRateCacheStats(): { size: number; entries: Array<{ key: string; age: number }> } {
+    return this.exchangeRateService.getCacheStats();
   }
 
   /**

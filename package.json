@@ -23,6 +23,7 @@
     "example:trex": "cd examples/trex-integration && npm run dev",
     "example:trex:build": "cd examples/trex-integration && npm run build",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "validate-env": "node scripts/validate-env.js",
     "sso:build": "cd packages/sso && npm run build",
     "sso:start": "cd packages/sso && npm start",
     "sso:dev": "cd packages/sso && npm run dev"

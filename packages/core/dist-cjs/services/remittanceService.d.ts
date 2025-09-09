@@ -2,10 +2,10 @@ import { ClaimResult, RemittanceTransaction } from '../types/remittance';
 import { RemittanceAuthService } from './remittanceAuthService';
 export declare class RemittanceService {
     private authService;
-    private exchangeRates;
+    private exchangeRateService;
     private transactions;
     private claimLinks;
-    constructor(authService: RemittanceAuthService);
+    constructor(authService: RemittanceAuthService, exchangeRateConfig?: any);
     /**
      * Create a new remittance transaction
      */
@@ -35,7 +35,7 @@ export declare class RemittanceService {
      */
     private calculateFees;
     /**
-     * Get exchange rate between currencies
+     * Get exchange rate between currencies using real-time data
      */
     private getExchangeRate;
     /**
@@ -63,9 +63,23 @@ export declare class RemittanceService {
      */
     private updateTransaction;
     /**
-     * Initialize exchange rates (mock data)
+     * Get multiple exchange rates at once
      */
-    private initializeExchangeRates;
+    getExchangeRates(from: string, toCurrencies: string[]): Promise<Record<string, number>>;
+    /**
+     * Clear exchange rate cache
+     */
+    clearExchangeRateCache(): void;
+    /**
+     * Get exchange rate cache statistics
+     */
+    getExchangeRateCacheStats(): {
+        size: number;
+        entries: Array<{
+            key: string;
+            age: number;
+        }>;
+    };
     /**
      * Generate unique transaction ID
      */

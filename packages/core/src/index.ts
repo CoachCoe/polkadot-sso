@@ -158,7 +158,29 @@ export { WalletProviderService, walletProviderService } from './services/walletP
 
 // Remittance services
 export { ComplianceService } from './services/complianceService';
+export {
+  createExchangeRateService,
+  DEFAULT_EXCHANGE_RATE_CONFIG,
+  ExchangeRateService,
+} from './services/exchangeRateService';
+export type { ExchangeRateConfig, ExchangeRateProvider } from './services/exchangeRateService';
 export { RemittanceAuthService } from './services/remittanceAuthService';
 export { RemittanceService } from './services/remittanceService';
+
+// Configuration
+export {
+  ProductionConfigManager,
+  configManager,
+  getConfig,
+  validateConfig,
+} from './config/productionConfig';
+export type {
+  ProductionConfig,
+  SecurityConfig,
+  DatabaseConfig,
+  RemittanceConfig,
+  ChainConfig,
+  LoggingConfig,
+} from './config/productionConfig';
 
 export default createPolkadotAuth;

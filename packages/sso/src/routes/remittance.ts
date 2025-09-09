@@ -1,7 +1,9 @@
-import { ComplianceService } from '@polkadot-auth/core';
-import { RemittanceAuthService } from '@polkadot-auth/core';
-import { RemittanceService } from '@polkadot-auth/core';
-import { RemittanceSession } from '@polkadot-auth/core';
+import {
+  ComplianceService,
+  RemittanceAuthService,
+  RemittanceService,
+  RemittanceSession,
+} from '@polkadot-auth/core';
 import { Request, Response, Router } from 'express';
 
 const router = Router();
@@ -278,16 +280,10 @@ router.get('/rates', async (req: Request, res: Response) => {
   try {
     const { from = 'USD', to } = req.query;
 
-    // Mock exchange rates - in production, this would fetch from a real API
-    const rates = {
-      'USD-ARS': 850.0,
-      'USD-BRL': 5.2,
-      'USD-USD': 1.0,
-    };
-
     if (to) {
-      const key = `${from}-${to}`;
-      const rate = rates[key];
+      // Get single exchange rate
+      const rates = await remittanceService.getExchangeRates('USD', [to as string]);
+      const rate = rates[to as string];
       if (!rate) {
         return res.status(400).json({
           error: 'Exchange rate not available',
@@ -296,23 +292,33 @@ router.get('/rates', async (req: Request, res: Response) => {
       }
       res.json({
         success: true,
-        from,
-        to,
-        rate,
-        timestamp: new Date(),
+        from: 'USD',
+        to: to,
+        rate: rate,
+        timestamp: new Date().toISOString(),
       });
     } else {
+      // Get all supported exchange rates
+      const supportedCurrencies = ['ARS', 'BRL', 'USD'];
+      const rates = await remittanceService.getExchangeRates('USD', supportedCurrencies);
+
       res.json({
         success: true,
-        rates,
-        timestamp: new Date(),
+        rates: Object.entries(rates).reduce(
+          (acc, [currency, rate]) => {
+            acc[`USD-${currency}`] = rate;
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
+        timestamp: new Date().toISOString(),
       });
     }
   } catch (error) {
-    console.error('Get rates error:', error);
+    console.error('Exchange rate fetch error:', error);
     res.status(500).json({
-      error: (error as any).message || 'Failed to get exchange rates',
-      code: 'RATES_FAILED',
+      error: (error as any).message || 'Failed to fetch exchange rates',
+      code: 'EXCHANGE_RATE_ERROR',
     });
   }
 });

@@ -2,13 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RemittanceService = void 0;
 const errorService_1 = require("./errorService");
+const exchangeRateService_1 = require("./exchangeRateService");
 class RemittanceService {
-    constructor(authService) {
-        this.exchangeRates = new Map();
+    constructor(authService, exchangeRateConfig) {
         this.transactions = new Map();
         this.claimLinks = new Map(); // claimLink -> transactionId
         this.authService = authService;
-        this.initializeExchangeRates();
+        this.exchangeRateService = (0, exchangeRateService_1.createExchangeRateService)(exchangeRateConfig || exchangeRateService_1.DEFAULT_EXCHANGE_RATE_CONFIG);
     }
     /**
      * Create a new remittance transaction
@@ -51,7 +51,7 @@ class RemittanceService {
                 fees,
                 exchangeRate: exchangeRate.rate,
                 createdAt: new Date(),
-                updatedAt: new Date()
+                updatedAt: new Date(),
             };
             // 7. Store transaction
             await this.storeTransaction(transaction);
@@ -176,15 +176,27 @@ class RemittanceService {
             platform: platformFee,
             network: networkFee,
             exchange: exchangeFee,
-            total
+            total,
         };
     }
     /**
-     * Get exchange rate between currencies
+     * Get exchange rate between currencies using real-time data
      */
     async getExchangeRate(from, to) {
-        const key = `${from}-${to}`;
-        return this.exchangeRates.get(key) || null;
+        try {
+            const rate = await this.exchangeRateService.getRate(from, to);
+            return {
+                from,
+                to,
+                rate,
+                timestamp: new Date(),
+                source: 'coingecko'
+            };
+        }
+        catch (error) {
+            console.error('Failed to get exchange rate:', error);
+            return null;
+        }
     }
     /**
      * Perform compliance check on transaction
@@ -214,7 +226,7 @@ class RemittanceService {
             passed,
             riskScore,
             flags,
-            requiredActions
+            requiredActions,
         };
     }
     /**
@@ -229,7 +241,7 @@ class RemittanceService {
             amount: claimAmount,
             currency: transaction.targetCurrency,
             method: 'cash', // or 'bank' or 'wallet'
-            reference: this.generateReference()
+            reference: this.generateReference(),
         };
     }
     /**
@@ -241,7 +253,7 @@ class RemittanceService {
         return {
             id: 'recipient-' + Date.now(),
             contact,
-            verified: true
+            verified: true,
         };
     }
     /**
@@ -266,30 +278,22 @@ class RemittanceService {
         this.transactions.set(transaction.id, transaction);
     }
     /**
-     * Initialize exchange rates (mock data)
+     * Get multiple exchange rates at once
      */
-    initializeExchangeRates() {
-        this.exchangeRates.set('USD-ARS', {
-            from: 'USD',
-            to: 'ARS',
-            rate: 850.0,
-            timestamp: new Date(),
-            source: 'mock'
-        });
-        this.exchangeRates.set('USD-BRL', {
-            from: 'USD',
-            to: 'BRL',
-            rate: 5.2,
-            timestamp: new Date(),
-            source: 'mock'
-        });
-        this.exchangeRates.set('USD-USD', {
-            from: 'USD',
-            to: 'USD',
-            rate: 1.0,
-            timestamp: new Date(),
-            source: 'mock'
-        });
+    async getExchangeRates(from, toCurrencies) {
+        return await this.exchangeRateService.getRates(from, toCurrencies);
+    }
+    /**
+     * Clear exchange rate cache
+     */
+    clearExchangeRateCache() {
+        this.exchangeRateService.clearCache();
+    }
+    /**
+     * Get exchange rate cache statistics
+     */
+    getExchangeRateCacheStats() {
+        return this.exchangeRateService.getCacheStats();
     }
     /**
      * Generate unique transaction ID
@@ -301,7 +305,10 @@ class RemittanceService {
      * Generate unique claim link
      */
     generateClaimLink() {
-        return 'claim_' + Math.random().toString(36).substring(2, 15) + '_' + Math.random().toString(36).substring(2, 15);
+        return ('claim_' +
+            Math.random().toString(36).substring(2, 15) +
+            '_' +
+            Math.random().toString(36).substring(2, 15));
     }
     /**
      * Generate reference number

@@ -10,26 +10,26 @@ class RemittanceAuthService extends authService_1.AuthService {
                 method: 'sms_email',
                 limits: { daily: 500, monthly: 2000, perTransaction: 500, currency: 'USD' },
                 requiredAuth: ['phone', 'email'],
-                description: 'Basic SMS/Email authentication with platform custody'
+                description: 'Basic SMS/Email authentication with platform custody',
             },
             1: {
                 method: 'enhanced_security',
                 limits: { daily: 2000, monthly: 10000, perTransaction: 2000, currency: 'USD' },
                 requiredAuth: ['phone', 'email', '2fa'],
-                description: 'Enhanced security with 2FA and shared custody'
+                description: 'Enhanced security with 2FA and shared custody',
             },
             2: {
                 method: 'wallet_assisted',
                 limits: { daily: 10000, monthly: 50000, perTransaction: 10000, currency: 'USD' },
                 requiredAuth: ['wallet_signature', 'backup_method'],
-                description: 'Wallet-assisted with 2-of-3 multisig'
+                description: 'Wallet-assisted with 2-of-3 multisig',
             },
             3: {
                 method: 'self_custody',
                 limits: null, // No limits for full self-custody
                 requiredAuth: ['wallet_signature'],
-                description: 'Full self-custody with complete wallet control'
-            }
+                description: 'Full self-custody with complete wallet control',
+            },
         };
         this.remittanceConfig = {
             custodyLevels: this.custodyLevels,
@@ -40,9 +40,9 @@ class RemittanceAuthService extends authService_1.AuthService {
                 baseFee: 0.02, // 2% base fee
                 custodyDiscount: 0.005, // 0.5% discount per level
                 minFee: 0.01, // Min 1%
-                networkFee: 0.50, // Fixed network fee
-                exchangeFee: 0.25 // Fixed exchange fee
-            }
+                networkFee: 0.5, // Fixed network fee
+                exchangeFee: 0.25, // Fixed exchange fee
+            },
         };
     }
     /**
@@ -59,7 +59,7 @@ class RemittanceAuthService extends authService_1.AuthService {
             version: '1',
             chainId: 'polkadot',
             nonce: this.generateRemittanceNonce(),
-            issuedAt: new Date().toISOString()
+            issuedAt: new Date().toISOString(),
         });
         if (!baseSession) {
             throw new Error('Failed to create base session');
@@ -75,7 +75,7 @@ class RemittanceAuthService extends authService_1.AuthService {
             recoveryMethods: user.recoveryMethods,
             expiresAt: new Date(baseSession.accessTokenExpiresAt),
             createdAt: new Date(baseSession.createdAt),
-            lastUsedAt: new Date()
+            lastUsedAt: new Date(),
         };
         return remittanceSession;
     }
@@ -161,7 +161,7 @@ class RemittanceAuthService extends authService_1.AuthService {
                 message: `Upgrade to custody level 2 for ${user.id}`,
                 signature: auth.walletSignature,
                 address: auth.walletAddress,
-                nonce: this.generateRemittanceNonce()
+                nonce: this.generateRemittanceNonce(),
             }, {
                 id: 'upgrade-challenge',
                 message: `Upgrade to custody level 2 for ${user.id}`,
@@ -171,7 +171,7 @@ class RemittanceAuthService extends authService_1.AuthService {
                 expiresAt: new Date(Date.now() + 300000).toISOString(), // 5 minutes
                 createdAt: Date.now(),
                 expiresAtTimestamp: Date.now() + 300000,
-                used: false
+                used: false,
             });
             if (!isValidSignature.success) {
                 return false;
@@ -201,7 +201,7 @@ class RemittanceAuthService extends authService_1.AuthService {
                 message: `Upgrade to full self-custody for ${user.id}`,
                 signature: auth.walletSignature,
                 address: auth.walletAddress,
-                nonce: this.generateRemittanceNonce()
+                nonce: this.generateRemittanceNonce(),
             }, {
                 id: 'self-custody-challenge',
                 message: `Upgrade to full self-custody for ${user.id}`,
@@ -211,7 +211,7 @@ class RemittanceAuthService extends authService_1.AuthService {
                 expiresAt: new Date(Date.now() + 300000).toISOString(), // 5 minutes
                 createdAt: Date.now(),
                 expiresAtTimestamp: Date.now() + 300000,
-                used: false
+                used: false,
             });
             if (!isValidSignature.success) {
                 return false;
@@ -263,10 +263,15 @@ class RemittanceAuthService extends authService_1.AuthService {
             isActive: true,
             custodyLevel: 0,
             kycStatus: 'pending',
-            limits: this.custodyLevels[0]?.limits || { daily: 500, monthly: 2000, perTransaction: 500, currency: 'USD' },
+            limits: this.custodyLevels[0]?.limits || {
+                daily: 500,
+                monthly: 2000,
+                perTransaction: 500,
+                currency: 'USD',
+            },
             walletAddresses: {},
             recoveryMethods: [],
-            lastActivity: new Date()
+            lastActivity: new Date(),
         };
     }
     /**
@@ -316,7 +321,7 @@ class RemittanceAuthService extends authService_1.AuthService {
      * Generate nonce for challenges
      */
     generateRemittanceNonce() {
-        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        return (Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
     }
     /**
      * Get custody level configuration

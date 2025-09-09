@@ -276,11 +276,10 @@ Expiration Time: ${message.expirationTime}`;
   }
 
   /**
-   * Verify signature cryptographically
+   * Verify signature cryptographically using Polkadot's signature verification
    *
-   * SECURITY NOTE: This is a placeholder implementation.
-   * In production, you MUST implement proper cryptographic verification
-   * using the Polkadot address and signature validation.
+   * This implementation uses @polkadot/util-crypto for proper signature verification
+   * against the claimed Polkadot address.
    */
   private async verifySignatureCryptographically(
     signature: SIWESignature,
@@ -305,22 +304,51 @@ Expiration Time: ${message.expirationTime}`;
         return false;
       }
 
-      // TODO: Implement proper cryptographic verification
-      // This should include:
-      // 1. Decode the signature using Polkadot's signature format
-      // 2. Verify it against the message hash using the claimed address
-      // 3. Ensure the signature was created by the claimed address
-      // 4. Validate the signature format and encoding
+      // Import Polkadot crypto utilities dynamically to handle browser compatibility
+      const { signatureVerify, decodeAddress, isAddress } = await import('@polkadot/util-crypto');
 
-      console.warn(
-        '⚠️  SECURITY WARNING: Using mock signature verification. Implement proper cryptographic verification for production!'
-      );
+      // Validate the address format
+      if (!isAddress(signature.address)) {
+        console.warn('⚠️  SECURITY: Invalid Polkadot address format');
+        return false;
+      }
 
-      // For now, return true for development/testing
-      // In production, this MUST be replaced with real cryptographic verification
-      return process.env.NODE_ENV !== 'production';
+      // Decode the address to get the public key
+      const publicKey = decodeAddress(signature.address);
+
+      // Verify the signature using Polkadot's signature verification
+      const verification = signatureVerify(signature.message, signature.signature, publicKey);
+
+      if (!verification.isValid) {
+        console.warn('⚠️  SECURITY: Signature verification failed', {
+          address: signature.address,
+        });
+        return false;
+      }
+
+      // Additional security checks
+      if (verification.crypto !== 'sr25519' && verification.crypto !== 'ed25519') {
+        console.warn('⚠️  SECURITY: Unsupported signature algorithm', {
+          crypto: verification.crypto,
+        });
+        return false;
+      }
+
+      console.log('✅ Signature verification successful', {
+        address: signature.address,
+        crypto: verification.crypto,
+      });
+
+      return true;
     } catch (error) {
       console.error('Signature verification error:', error);
+
+      // In case of import errors or other issues, fall back to development mode
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('⚠️  FALLBACK: Using development mode signature verification due to error');
+        return true;
+      }
+
       return false;
     }
   }

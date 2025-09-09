@@ -48,11 +48,10 @@ export declare class AuthService {
      */
     private formatSIWEMessage;
     /**
-     * Verify signature cryptographically
+     * Verify signature cryptographically using Polkadot's signature verification
      *
-     * SECURITY NOTE: This is a placeholder implementation.
-     * In production, you MUST implement proper cryptographic verification
-     * using the Polkadot address and signature validation.
+     * This implementation uses @polkadot/util-crypto for proper signature verification
+     * against the claimed Polkadot address.
      */
     private verifySignatureCryptographically;
     /**
