@@ -7,7 +7,7 @@ class ComplianceService {
         this.riskThresholds = {
             low: 0.3,
             medium: 0.6,
-            high: 0.8
+            high: 0.8,
         };
         this.kycProvider = kycProvider || new MockKYCProvider();
         this.amlProvider = amlProvider || new MockAMLProvider();
@@ -24,7 +24,7 @@ class ComplianceService {
                     status: 'rejected',
                     riskScore: 1.0,
                     requiredActions: ['DOCUMENT_VERIFICATION_FAILED'],
-                    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+                    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
                 };
             }
             // 2. Identity verification
@@ -34,7 +34,7 @@ class ComplianceService {
                     status: 'rejected',
                     riskScore: 0.9,
                     requiredActions: ['IDENTITY_VERIFICATION_FAILED'],
-                    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
                 };
             }
             // 3. AML screening
@@ -70,7 +70,7 @@ class ComplianceService {
                 status,
                 riskScore,
                 requiredActions,
-                expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year
+                expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
             };
         }
         catch (error) {
@@ -91,7 +91,7 @@ class ComplianceService {
                     passed: false,
                     riskScore: riskFactors.score,
                     flags: riskFactors.flags,
-                    requiredActions: ['MANUAL_REVIEW', 'ENHANCED_DUE_DILIGENCE']
+                    requiredActions: ['MANUAL_REVIEW', 'ENHANCED_DUE_DILIGENCE'],
                 };
             }
             if (riskFactors.score > this.riskThresholds.medium) {
@@ -99,14 +99,14 @@ class ComplianceService {
                     passed: true,
                     riskScore: riskFactors.score,
                     flags: riskFactors.flags,
-                    requiredActions: ['ENHANCED_MONITORING']
+                    requiredActions: ['ENHANCED_MONITORING'],
                 };
             }
             return {
                 passed: true,
                 riskScore: riskFactors.score,
                 flags: [],
-                requiredActions: []
+                requiredActions: [],
             };
         }
         catch (error) {
@@ -138,11 +138,13 @@ class ComplianceService {
         const now = new Date();
         const dayOfWeek = now.getDay();
         const hour = now.getHours();
-        if (dayOfWeek === 0 || dayOfWeek === 6) { // Weekend
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+            // Weekend
             riskScore += 0.1;
             flags.push('WEEKEND_TRANSACTION');
         }
-        if (hour < 6 || hour > 22) { // Off-hours
+        if (hour < 6 || hour > 22) {
+            // Off-hours
             riskScore += 0.1;
             flags.push('OFF_HOURS_TRANSACTION');
         }
@@ -197,7 +199,7 @@ class ComplianceService {
             kycStatus: 'verified',
             riskLevel: 'low',
             lastReview: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-            nextReview: new Date(Date.now() + 335 * 24 * 60 * 60 * 1000)
+            nextReview: new Date(Date.now() + 335 * 24 * 60 * 60 * 1000),
         };
     }
 }
@@ -215,8 +217,8 @@ class MockKYCProvider {
             extractedData: {
                 name: 'John Doe',
                 documentNumber: 'A1234567',
-                expiryDate: '2030-12-31'
-            }
+                expiryDate: '2030-12-31',
+            },
         };
     }
     async verifyIdentity(identity) {
@@ -225,7 +227,7 @@ class MockKYCProvider {
             isVerified: true,
             confidence: 0.92,
             matchScore: 0.95,
-            livenessScore: 0.98
+            livenessScore: 0.98,
         };
     }
     async screenUser(identity, address) {
@@ -235,7 +237,7 @@ class MockKYCProvider {
             riskScore: 0.1,
             sanctions: [],
             pep: false,
-            adverseMedia: []
+            adverseMedia: [],
         };
     }
 }
@@ -248,14 +250,14 @@ class MockAMLProvider {
             isValid: true,
             confidence: 0.95,
             documentType: 'passport',
-            extractedData: {}
+            extractedData: {},
         };
     }
     async verifyIdentity(identity) {
         return {
             isVerified: true,
             confidence: 0.92,
-            matchScore: 0.95
+            matchScore: 0.95,
         };
     }
     async screenUser(identity, address) {
@@ -264,7 +266,7 @@ class MockAMLProvider {
             riskScore: 0.1,
             sanctions: [],
             pep: false,
-            adverseMedia: []
+            adverseMedia: [],
         };
     }
 }

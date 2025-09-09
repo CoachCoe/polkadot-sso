@@ -26,7 +26,7 @@ class SubstrateTreasuryManager {
                 threshold,
                 custodyLevel,
                 balance: 0n,
-                isActive: true
+                isActive: true,
             };
             this.multiSigWallets.set(walletAddress, wallet);
             // Store custody level metadata on-chain
@@ -89,7 +89,8 @@ class SubstrateTreasuryManager {
             const todayAmount = userTransactions
                 .filter(tx => tx.timestamp.toISOString().split('T')[0] === today)
                 .reduce((sum, tx) => sum + tx.amount, 0n);
-            if (todayAmount + amount > BigInt(limits.daily * 1000000)) { // Convert to smallest unit
+            if (todayAmount + amount > BigInt(limits.daily * 1000000)) {
+                // Convert to smallest unit
                 return false;
             }
             // Check monthly limit
@@ -175,7 +176,7 @@ class SubstrateTreasuryManager {
             0: { daily: 500, monthly: 2000 },
             1: { daily: 2000, monthly: 10000 },
             2: { daily: 10000, monthly: 50000 },
-            3: null // No limits for self-custody
+            3: null, // No limits for self-custody
         };
         return limits[level] || null;
     }

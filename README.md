@@ -1,5 +1,7 @@
 # Polkadot Auth
 
+> 🚀 **Currently in Beta** - See [BETA_STATUS.md](BETA_STATUS.md) for current status and limitations
+
 **Framework-agnostic Polkadot authentication with SIWE-style messages and progressive custody remittance services**
 
 A plug-and-play authentication solution for Polkadot ecosystem, inspired by [Better Auth](https://www.better-auth.com/). Zero configuration, multiple framework support, enterprise-grade security, and now featuring a complete remittance platform with progressive custody levels.
@@ -76,11 +78,19 @@ As noted by [Brantly Millegan](https://x.com/BrantlyMillegan/status/195638929746
 
 ## 🚀 Quick Start
 
-### Express.js (Zero Config)
+> ⚠️ **Beta Notice**: This is a beta release. Please review [BETA_STATUS.md](BETA_STATUS.md) before using in production.
+
+### **Beta Installation**
 
 ```bash
-npm install @polkadot-auth/express
+# Install the beta packages
+npm install @polkadot-auth/core@beta @polkadot-auth/express@beta @polkadot-auth/next@beta @polkadot-auth/remix@beta @polkadot-auth/ui@beta @polkadot-auth/client-sdk@beta @polkadot-auth/sso@beta
+
+# Or install specific packages as needed
+npm install @polkadot-auth/express@beta
 ```
+
+### Express.js (Zero Config)
 
 ```typescript
 import express from 'express';

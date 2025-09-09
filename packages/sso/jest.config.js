@@ -37,5 +37,8 @@ export default {
   restoreMocks: true,
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@polkadot-auth/core$': '<rootDir>/../core/src/index.ts',
+    '^@polkadot-auth/core/(.*)$': '<rootDir>/../core/src/$1',
   },
+  transformIgnorePatterns: ['node_modules/(?!(@polkadot|@noble|polkadot-api)/)'],
 };

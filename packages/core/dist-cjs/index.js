@@ -14,7 +14,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RemittanceService = exports.RemittanceAuthService = exports.ComplianceService = exports.walletProviderService = exports.WalletProviderService = exports.PapiClientService = exports.createPapiClient = exports.ErrorService = exports.authService = exports.AuthService = exports.SIWEAuthService = exports.validateChainConfig = exports.getTestnetChains = exports.getSecureChainConfig = exports.getMainnetChains = exports.getDefaultChain = exports.getChainById = exports.getAllRpcUrls = exports.DEFAULT_CHAINS = exports.talismanProvider = exports.subWalletProvider = exports.polkadotJsProvider = exports.novaWalletProvider = exports.getProviderById = exports.getAvailableProviders = exports.DEFAULT_PROVIDERS = exports.createCustomProvider = void 0;
+exports.validateConfig = exports.getConfig = exports.configManager = exports.ProductionConfigManager = exports.RemittanceService = exports.RemittanceAuthService = exports.ExchangeRateService = exports.DEFAULT_EXCHANGE_RATE_CONFIG = exports.createExchangeRateService = exports.ComplianceService = exports.walletProviderService = exports.WalletProviderService = exports.PapiClientService = exports.createPapiClient = exports.ErrorService = exports.authService = exports.AuthService = exports.SIWEAuthService = exports.validateChainConfig = exports.getTestnetChains = exports.getSecureChainConfig = exports.getMainnetChains = exports.getDefaultChain = exports.getChainById = exports.getAllRpcUrls = exports.DEFAULT_CHAINS = exports.talismanProvider = exports.subWalletProvider = exports.polkadotJsProvider = exports.novaWalletProvider = exports.getProviderById = exports.getAvailableProviders = exports.DEFAULT_PROVIDERS = exports.createCustomProvider = void 0;
 exports.createPolkadotAuth = createPolkadotAuth;
 const siwe_1 = require("./auth/siwe");
 const chains_1 = require("./chains");
@@ -144,9 +144,19 @@ Object.defineProperty(exports, "walletProviderService", { enumerable: true, get:
 // Remittance services
 var complianceService_1 = require("./services/complianceService");
 Object.defineProperty(exports, "ComplianceService", { enumerable: true, get: function () { return complianceService_1.ComplianceService; } });
+var exchangeRateService_1 = require("./services/exchangeRateService");
+Object.defineProperty(exports, "createExchangeRateService", { enumerable: true, get: function () { return exchangeRateService_1.createExchangeRateService; } });
+Object.defineProperty(exports, "DEFAULT_EXCHANGE_RATE_CONFIG", { enumerable: true, get: function () { return exchangeRateService_1.DEFAULT_EXCHANGE_RATE_CONFIG; } });
+Object.defineProperty(exports, "ExchangeRateService", { enumerable: true, get: function () { return exchangeRateService_1.ExchangeRateService; } });
 var remittanceAuthService_1 = require("./services/remittanceAuthService");
 Object.defineProperty(exports, "RemittanceAuthService", { enumerable: true, get: function () { return remittanceAuthService_1.RemittanceAuthService; } });
 var remittanceService_1 = require("./services/remittanceService");
 Object.defineProperty(exports, "RemittanceService", { enumerable: true, get: function () { return remittanceService_1.RemittanceService; } });
+// Configuration
+var productionConfig_1 = require("./config/productionConfig");
+Object.defineProperty(exports, "ProductionConfigManager", { enumerable: true, get: function () { return productionConfig_1.ProductionConfigManager; } });
+Object.defineProperty(exports, "configManager", { enumerable: true, get: function () { return productionConfig_1.configManager; } });
+Object.defineProperty(exports, "getConfig", { enumerable: true, get: function () { return productionConfig_1.getConfig; } });
+Object.defineProperty(exports, "validateConfig", { enumerable: true, get: function () { return productionConfig_1.validateConfig; } });
 exports.default = createPolkadotAuth;
 //# sourceMappingURL=index.js.map

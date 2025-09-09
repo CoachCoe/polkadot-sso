@@ -1,10 +1,18 @@
-import { ChainConfig, Session, WalletProvider } from '@polkadot-auth/core';
+import { Session, WalletProvider } from '@polkadot-auth/core';
+export interface BasicChainConfig {
+    id: string;
+    name: string;
+    rpcUrl: string;
+    displayName?: string;
+    icon?: string;
+    testnet?: boolean;
+}
 export interface PolkadotAuthContextType {
     isConnected: boolean;
     address: string | null;
     session: Session | null;
     providers: WalletProvider[];
-    chains: ChainConfig[];
+    chains: BasicChainConfig[];
     connect: (providerId: string) => Promise<void>;
     disconnect: () => Promise<void>;
     signMessage: (message: string) => Promise<string>;
@@ -46,7 +54,7 @@ export interface UsePolkadotAuthReturn {
     address: string | null;
     session: Session | null;
     providers: WalletProvider[];
-    chains: ChainConfig[];
+    chains: BasicChainConfig[];
     connect: (providerId: string) => Promise<void>;
     disconnect: () => Promise<void>;
     signMessage: (message: string) => Promise<string>;

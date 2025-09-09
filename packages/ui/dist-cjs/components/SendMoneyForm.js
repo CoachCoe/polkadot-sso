@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SendMoneyForm = void 0;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
-const SendMoneyForm = ({ onSend, onGetQuote, limits, custodyLevel }) => {
+const SendMoneyForm = ({ onSend, onGetQuote, limits, custodyLevel, }) => {
     const [recipient, setRecipient] = (0, react_1.useState)('');
     const [amount, setAmount] = (0, react_1.useState)('');
     const [targetCurrency, setTargetCurrency] = (0, react_1.useState)('ARS');
@@ -57,21 +57,29 @@ const SendMoneyForm = ({ onSend, onGetQuote, limits, custodyLevel }) => {
     };
     const getCurrencySymbol = (currency) => {
         switch (currency) {
-            case 'USD': return '$';
-            case 'ARS': return '$';
-            case 'BRL': return 'R$';
-            default: return '$';
+            case 'USD':
+                return '$';
+            case 'ARS':
+                return '$';
+            case 'BRL':
+                return 'R$';
+            default:
+                return '$';
         }
     };
     const getCurrencyName = (currency) => {
         switch (currency) {
-            case 'USD': return 'US Dollar';
-            case 'ARS': return 'Argentine Peso';
-            case 'BRL': return 'Brazilian Real';
-            default: return 'US Dollar';
+            case 'USD':
+                return 'US Dollar';
+            case 'ARS':
+                return 'Argentine Peso';
+            case 'BRL':
+                return 'Brazilian Real';
+            default:
+                return 'US Dollar';
         }
     };
-    return ((0, jsx_runtime_1.jsxs)("div", { className: "send-money-form", children: [(0, jsx_runtime_1.jsxs)("div", { className: "form-header", children: [(0, jsx_runtime_1.jsx)("h2", { children: "Send Money" }), (0, jsx_runtime_1.jsx)("p", { children: "Send money globally with progressive custody" })] }), (0, jsx_runtime_1.jsxs)("form", { onSubmit: handleSubmit, className: "form", children: [(0, jsx_runtime_1.jsxs)("div", { className: "form-group", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "recipient", children: "Recipient Contact" }), (0, jsx_runtime_1.jsx)("input", { type: "text", id: "recipient", value: recipient, onChange: (e) => setRecipient(e.target.value), placeholder: "Enter phone number or email", required: true, className: "form-input" }), (0, jsx_runtime_1.jsx)("small", { className: "form-help", children: "Enter the recipient's phone number or email address" })] }), (0, jsx_runtime_1.jsxs)("div", { className: "form-group", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "amount", children: "Amount (USD)" }), (0, jsx_runtime_1.jsxs)("div", { className: "amount-input-group", children: [(0, jsx_runtime_1.jsx)("span", { className: "currency-symbol", children: "$" }), (0, jsx_runtime_1.jsx)("input", { type: "number", id: "amount", value: amount, onChange: (e) => setAmount(e.target.value), placeholder: "0.00", min: "0.01", step: "0.01", required: true, className: "form-input amount-input" })] }), limits && ((0, jsx_runtime_1.jsxs)("small", { className: "form-help", children: ["Maximum per transaction: $", limits.perTransaction.toLocaleString()] }))] }), (0, jsx_runtime_1.jsxs)("div", { className: "form-group", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "targetCurrency", children: "Target Currency" }), (0, jsx_runtime_1.jsxs)("select", { id: "targetCurrency", value: targetCurrency, onChange: (e) => setTargetCurrency(e.target.value), className: "form-select", children: [(0, jsx_runtime_1.jsx)("option", { value: "ARS", children: "Argentine Peso (ARS)" }), (0, jsx_runtime_1.jsx)("option", { value: "BRL", children: "Brazilian Real (BRL)" }), (0, jsx_runtime_1.jsx)("option", { value: "USD", children: "US Dollar (USD)" })] }), (0, jsx_runtime_1.jsx)("small", { className: "form-help", children: "Currency the recipient will receive" })] }), (0, jsx_runtime_1.jsxs)("div", { className: "form-actions", children: [(0, jsx_runtime_1.jsx)("button", { type: "button", onClick: handleGetQuote, className: "quote-button", disabled: !amount || !recipient, children: "Get Quote" }), (0, jsx_runtime_1.jsx)("button", { type: "submit", className: "send-button", disabled: isLoading || !amount || !recipient, children: isLoading ? 'Sending...' : 'Send Money' })] })] }), limits && ((0, jsx_runtime_1.jsxs)("div", { className: "limits-info", children: [(0, jsx_runtime_1.jsx)("h4", { children: "Your Transaction Limits" }), (0, jsx_runtime_1.jsxs)("div", { className: "limit-item", children: [(0, jsx_runtime_1.jsx)("span", { children: "Daily:" }), (0, jsx_runtime_1.jsxs)("span", { children: ["$", limits.daily.toLocaleString()] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "limit-item", children: [(0, jsx_runtime_1.jsx)("span", { children: "Monthly:" }), (0, jsx_runtime_1.jsxs)("span", { children: ["$", limits.monthly.toLocaleString()] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "limit-item", children: [(0, jsx_runtime_1.jsx)("span", { children: "Per Transaction:" }), (0, jsx_runtime_1.jsxs)("span", { children: ["$", limits.perTransaction.toLocaleString()] })] })] })), (0, jsx_runtime_1.jsx)("style", { children: `
+    return ((0, jsx_runtime_1.jsxs)("div", { className: 'send-money-form', children: [(0, jsx_runtime_1.jsxs)("div", { className: 'form-header', children: [(0, jsx_runtime_1.jsx)("h2", { children: "Send Money" }), (0, jsx_runtime_1.jsx)("p", { children: "Send money globally with progressive custody" })] }), (0, jsx_runtime_1.jsxs)("form", { onSubmit: handleSubmit, className: 'form', children: [(0, jsx_runtime_1.jsxs)("div", { className: 'form-group', children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: 'recipient', children: "Recipient Contact" }), (0, jsx_runtime_1.jsx)("input", { type: 'text', id: 'recipient', value: recipient, onChange: e => setRecipient(e.target.value), placeholder: 'Enter phone number or email', required: true, className: 'form-input' }), (0, jsx_runtime_1.jsx)("small", { className: 'form-help', children: "Enter the recipient's phone number or email address" })] }), (0, jsx_runtime_1.jsxs)("div", { className: 'form-group', children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: 'amount', children: "Amount (USD)" }), (0, jsx_runtime_1.jsxs)("div", { className: 'amount-input-group', children: [(0, jsx_runtime_1.jsx)("span", { className: 'currency-symbol', children: "$" }), (0, jsx_runtime_1.jsx)("input", { type: 'number', id: 'amount', value: amount, onChange: e => setAmount(e.target.value), placeholder: '0.00', min: '0.01', step: '0.01', required: true, className: 'form-input amount-input' })] }), limits && ((0, jsx_runtime_1.jsxs)("small", { className: 'form-help', children: ["Maximum per transaction: $", limits.perTransaction.toLocaleString()] }))] }), (0, jsx_runtime_1.jsxs)("div", { className: 'form-group', children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: 'targetCurrency', children: "Target Currency" }), (0, jsx_runtime_1.jsxs)("select", { id: 'targetCurrency', value: targetCurrency, onChange: e => setTargetCurrency(e.target.value), className: 'form-select', children: [(0, jsx_runtime_1.jsx)("option", { value: 'ARS', children: "Argentine Peso (ARS)" }), (0, jsx_runtime_1.jsx)("option", { value: 'BRL', children: "Brazilian Real (BRL)" }), (0, jsx_runtime_1.jsx)("option", { value: 'USD', children: "US Dollar (USD)" })] }), (0, jsx_runtime_1.jsx)("small", { className: 'form-help', children: "Currency the recipient will receive" })] }), (0, jsx_runtime_1.jsxs)("div", { className: 'form-actions', children: [(0, jsx_runtime_1.jsx)("button", { type: 'button', onClick: handleGetQuote, className: 'quote-button', disabled: !amount || !recipient, children: "Get Quote" }), (0, jsx_runtime_1.jsx)("button", { type: 'submit', className: 'send-button', disabled: isLoading || !amount || !recipient, children: isLoading ? 'Sending...' : 'Send Money' })] })] }), limits && ((0, jsx_runtime_1.jsxs)("div", { className: 'limits-info', children: [(0, jsx_runtime_1.jsx)("h4", { children: "Your Transaction Limits" }), (0, jsx_runtime_1.jsxs)("div", { className: 'limit-item', children: [(0, jsx_runtime_1.jsx)("span", { children: "Daily:" }), (0, jsx_runtime_1.jsxs)("span", { children: ["$", limits.daily.toLocaleString()] })] }), (0, jsx_runtime_1.jsxs)("div", { className: 'limit-item', children: [(0, jsx_runtime_1.jsx)("span", { children: "Monthly:" }), (0, jsx_runtime_1.jsxs)("span", { children: ["$", limits.monthly.toLocaleString()] })] }), (0, jsx_runtime_1.jsxs)("div", { className: 'limit-item', children: [(0, jsx_runtime_1.jsx)("span", { children: "Per Transaction:" }), (0, jsx_runtime_1.jsxs)("span", { children: ["$", limits.perTransaction.toLocaleString()] })] })] })), (0, jsx_runtime_1.jsx)("style", { children: `
         .send-money-form {
           background: #1f2937;
           border-radius: 12px;

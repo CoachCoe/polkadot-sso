@@ -1,13 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@polkadot-auth/core");
-const core_2 = require("@polkadot-auth/core");
-const core_3 = require("@polkadot-auth/core");
 const express_1 = require("express");
 const router = (0, express_1.Router)();
 // Initialize services
-const authService = new core_2.RemittanceAuthService();
-const remittanceService = new core_3.RemittanceService(authService);
+const authService = new core_1.RemittanceAuthService();
+const remittanceService = new core_1.RemittanceService(authService);
 const complianceService = new core_1.ComplianceService();
 // Middleware to ensure user is authenticated
 const requireAuth = (req, res, next) => {
@@ -15,7 +13,7 @@ const requireAuth = (req, res, next) => {
     if (!session || !session.userId) {
         return res.status(401).json({
             error: 'Authentication required',
-            code: 'AUTH_REQUIRED'
+            code: 'AUTH_REQUIRED',
         });
     }
     next();
@@ -29,7 +27,7 @@ const requireCustodyLevel = (minLevel) => {
                 error: `Custody level ${minLevel} required`,
                 code: 'INSUFFICIENT_CUSTODY_LEVEL',
                 currentLevel: session.custodyLevel,
-                requiredLevel: minLevel
+                requiredLevel: minLevel,
             });
         }
         next();
@@ -47,19 +45,19 @@ router.post('/send', requireAuth, async (req, res) => {
         if (!recipient || !amount || !targetCurrency) {
             return res.status(400).json({
                 error: 'Missing required fields: recipient, amount, targetCurrency',
-                code: 'MISSING_FIELDS'
+                code: 'MISSING_FIELDS',
             });
         }
         if (amount <= 0) {
             return res.status(400).json({
                 error: 'Amount must be positive',
-                code: 'INVALID_AMOUNT'
+                code: 'INVALID_AMOUNT',
             });
         }
         if (!['ARS', 'BRL', 'USD'].includes(targetCurrency)) {
             return res.status(400).json({
                 error: 'Unsupported target currency',
-                code: 'UNSUPPORTED_CURRENCY'
+                code: 'UNSUPPORTED_CURRENCY',
             });
         }
         // Check if amount is within limits
@@ -67,7 +65,7 @@ router.post('/send', requireAuth, async (req, res) => {
             return res.status(400).json({
                 error: 'Amount exceeds per-transaction limit',
                 code: 'LIMIT_EXCEEDED',
-                limit: session.limits.perTransaction
+                limit: session.limits.perTransaction,
             });
         }
         // Create remittance transaction
@@ -84,15 +82,15 @@ router.post('/send', requireAuth, async (req, res) => {
                 expiresAt: transaction.expiresAt,
                 fees: transaction.fees,
                 exchangeRate: transaction.exchangeRate,
-                createdAt: transaction.createdAt
-            }
+                createdAt: transaction.createdAt,
+            },
         });
     }
     catch (error) {
         console.error('Send money error:', error);
         res.status(500).json({
             error: error.message || 'Failed to send money',
-            code: error.code || 'SEND_FAILED'
+            code: error.code || 'SEND_FAILED',
         });
     }
 });
@@ -116,15 +114,15 @@ router.get('/history', requireAuth, async (req, res) => {
                 page: Number(page),
                 limit: Number(limit),
                 total: transactions.length,
-                pages: Math.ceil(transactions.length / Number(limit))
-            }
+                pages: Math.ceil(transactions.length / Number(limit)),
+            },
         });
     }
     catch (error) {
         console.error('Get history error:', error);
         res.status(500).json({
             error: error.message || 'Failed to get transaction history',
-            code: 'HISTORY_FAILED'
+            code: 'HISTORY_FAILED',
         });
     }
 });
@@ -140,26 +138,26 @@ router.get('/transaction/:id', requireAuth, async (req, res) => {
         if (!transaction) {
             return res.status(404).json({
                 error: 'Transaction not found',
-                code: 'TRANSACTION_NOT_FOUND'
+                code: 'TRANSACTION_NOT_FOUND',
             });
         }
         // Check if user has access to this transaction
         if (transaction.senderId !== session.userId && transaction.recipientId !== session.userId) {
             return res.status(403).json({
                 error: 'Access denied',
-                code: 'ACCESS_DENIED'
+                code: 'ACCESS_DENIED',
             });
         }
         res.json({
             success: true,
-            transaction
+            transaction,
         });
     }
     catch (error) {
         console.error('Get transaction error:', error);
         res.status(500).json({
             error: error.message || 'Failed to get transaction',
-            code: 'GET_TRANSACTION_FAILED'
+            code: 'GET_TRANSACTION_FAILED',
         });
     }
 });
@@ -174,13 +172,13 @@ router.post('/upgrade-custody', requireAuth, async (req, res) => {
         if (!targetLevel || targetLevel <= session.custodyLevel) {
             return res.status(400).json({
                 error: 'Invalid target custody level',
-                code: 'INVALID_TARGET_LEVEL'
+                code: 'INVALID_TARGET_LEVEL',
             });
         }
         if (targetLevel > 3) {
             return res.status(400).json({
                 error: 'Maximum custody level is 3',
-                code: 'MAX_LEVEL_EXCEEDED'
+                code: 'MAX_LEVEL_EXCEEDED',
             });
         }
         const success = await authService.upgradeCustodyLevel(session.userId, session.custodyLevel, targetLevel, additionalAuth);
@@ -191,13 +189,13 @@ router.post('/upgrade-custody', requireAuth, async (req, res) => {
             res.json({
                 success: true,
                 newLevel: targetLevel,
-                limits: session.limits
+                limits: session.limits,
             });
         }
         else {
             res.status(400).json({
                 error: 'Custody level upgrade failed',
-                code: 'UPGRADE_FAILED'
+                code: 'UPGRADE_FAILED',
             });
         }
     }
@@ -205,7 +203,7 @@ router.post('/upgrade-custody', requireAuth, async (req, res) => {
         console.error('Upgrade custody error:', error);
         res.status(500).json({
             error: error.message || 'Failed to upgrade custody level',
-            code: 'UPGRADE_FAILED'
+            code: 'UPGRADE_FAILED',
         });
     }
 });
@@ -219,20 +217,20 @@ router.post('/claim', async (req, res) => {
         if (!claimLink || !recipientAuth) {
             return res.status(400).json({
                 error: 'Missing required fields: claimLink, recipientAuth',
-                code: 'MISSING_FIELDS'
+                code: 'MISSING_FIELDS',
             });
         }
         const result = await remittanceService.claimRemittance(claimLink, recipientAuth);
         res.json({
             success: true,
-            result
+            result,
         });
     }
     catch (error) {
         console.error('Claim remittance error:', error);
         res.status(500).json({
             error: error.message || 'Failed to claim remittance',
-            code: 'CLAIM_FAILED'
+            code: 'CLAIM_FAILED',
         });
     }
 });
@@ -243,42 +241,43 @@ router.post('/claim', async (req, res) => {
 router.get('/rates', async (req, res) => {
     try {
         const { from = 'USD', to } = req.query;
-        // Mock exchange rates - in production, this would fetch from a real API
-        const rates = {
-            'USD-ARS': 850.0,
-            'USD-BRL': 5.2,
-            'USD-USD': 1.0
-        };
         if (to) {
-            const key = `${from}-${to}`;
-            const rate = rates[key];
+            // Get single exchange rate
+            const rates = await remittanceService.getExchangeRates('USD', [to]);
+            const rate = rates[to];
             if (!rate) {
                 return res.status(400).json({
                     error: 'Exchange rate not available',
-                    code: 'RATE_NOT_AVAILABLE'
+                    code: 'RATE_NOT_AVAILABLE',
                 });
             }
             res.json({
                 success: true,
-                from,
-                to,
-                rate,
-                timestamp: new Date()
+                from: 'USD',
+                to: to,
+                rate: rate,
+                timestamp: new Date().toISOString(),
             });
         }
         else {
+            // Get all supported exchange rates
+            const supportedCurrencies = ['ARS', 'BRL', 'USD'];
+            const rates = await remittanceService.getExchangeRates('USD', supportedCurrencies);
             res.json({
                 success: true,
-                rates,
-                timestamp: new Date()
+                rates: Object.entries(rates).reduce((acc, [currency, rate]) => {
+                    acc[`USD-${currency}`] = rate;
+                    return acc;
+                }, {}),
+                timestamp: new Date().toISOString(),
             });
         }
     }
     catch (error) {
-        console.error('Get rates error:', error);
+        console.error('Exchange rate fetch error:', error);
         res.status(500).json({
-            error: error.message || 'Failed to get exchange rates',
-            code: 'RATES_FAILED'
+            error: error.message || 'Failed to fetch exchange rates',
+            code: 'EXCHANGE_RATE_ERROR',
         });
     }
 });
@@ -294,14 +293,14 @@ router.get('/custody-levels', requireAuth, async (req, res) => {
             success: true,
             currentLevel: session.custodyLevel,
             levels: config.custodyLevels,
-            limits: session.limits
+            limits: session.limits,
         });
     }
     catch (error) {
         console.error('Get custody levels error:', error);
         res.status(500).json({
             error: error.message || 'Failed to get custody levels',
-            code: 'CUSTODY_LEVELS_FAILED'
+            code: 'CUSTODY_LEVELS_FAILED',
         });
     }
 });
@@ -316,20 +315,20 @@ router.post('/kyc', requireAuth, async (req, res) => {
         if (!documents) {
             return res.status(400).json({
                 error: 'Documents required for KYC',
-                code: 'DOCUMENTS_REQUIRED'
+                code: 'DOCUMENTS_REQUIRED',
             });
         }
         const kycResult = await complianceService.performKYC(session.userId, documents);
         res.json({
             success: true,
-            kyc: kycResult
+            kyc: kycResult,
         });
     }
     catch (error) {
         console.error('KYC error:', error);
         res.status(500).json({
             error: error.message || 'KYC verification failed',
-            code: 'KYC_FAILED'
+            code: 'KYC_FAILED',
         });
     }
 });
@@ -343,14 +342,14 @@ router.get('/compliance', requireAuth, async (req, res) => {
         const complianceStatus = await complianceService.getComplianceStatus(session.userId);
         res.json({
             success: true,
-            compliance: complianceStatus
+            compliance: complianceStatus,
         });
     }
     catch (error) {
         console.error('Get compliance error:', error);
         res.status(500).json({
             error: error.message || 'Failed to get compliance status',
-            code: 'COMPLIANCE_FAILED'
+            code: 'COMPLIANCE_FAILED',
         });
     }
 });
@@ -365,21 +364,20 @@ router.get('/quote', requireAuth, async (req, res) => {
         if (!amount || !targetCurrency) {
             return res.status(400).json({
                 error: 'Missing required fields: amount, targetCurrency',
-                code: 'MISSING_FIELDS'
+                code: 'MISSING_FIELDS',
             });
         }
         const amountNum = Number(amount);
         if (amountNum <= 0) {
             return res.status(400).json({
                 error: 'Amount must be positive',
-                code: 'INVALID_AMOUNT'
+                code: 'INVALID_AMOUNT',
             });
         }
         // Calculate fees
         const fees = authService.calculateFees(amountNum, session.custodyLevel);
         // Get exchange rate (mock)
-        const exchangeRate = targetCurrency === 'ARS' ? 850.0 :
-            targetCurrency === 'BRL' ? 5.2 : 1.0;
+        const exchangeRate = targetCurrency === 'ARS' ? 850.0 : targetCurrency === 'BRL' ? 5.2 : 1.0;
         const recipientAmount = amountNum * exchangeRate;
         res.json({
             success: true,
@@ -391,15 +389,15 @@ router.get('/quote', requireAuth, async (req, res) => {
                 recipientAmount,
                 fees,
                 totalCost: amountNum + fees.total,
-                expiresAt: new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
-            }
+                expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
+            },
         });
     }
     catch (error) {
         console.error('Get quote error:', error);
         res.status(500).json({
             error: error.message || 'Failed to get quote',
-            code: 'QUOTE_FAILED'
+            code: 'QUOTE_FAILED',
         });
     }
 });
