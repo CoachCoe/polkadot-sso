@@ -11,7 +11,7 @@ class ExchangeRateService {
         this.config = {
             timeout: 5000,
             cacheTimeout: 60000, // 1 minute cache
-            ...config
+            ...config,
         };
     }
     /**
@@ -35,7 +35,7 @@ class ExchangeRateService {
             // Cache the rate
             this.cache.set(cacheKey, {
                 rate,
-                timestamp: Date.now()
+                timestamp: Date.now(),
             });
             return rate;
         }
@@ -83,9 +83,9 @@ class ExchangeRateService {
             const response = await fetch(url, {
                 signal: controller.signal,
                 headers: {
-                    'Accept': 'application/json',
-                    ...(this.config.apiKey && { 'X-CG-API-KEY': this.config.apiKey })
-                }
+                    Accept: 'application/json',
+                    ...(this.config.apiKey && { 'X-CG-API-KEY': this.config.apiKey }),
+                },
             });
             clearTimeout(timeoutId);
             if (!response.ok) {
@@ -108,11 +108,11 @@ class ExchangeRateService {
      */
     getCoinGeckoId(currency) {
         const mapping = {
-            'USD': 'usd',
-            'ARS': 'usd', // Use USD as base for ARS conversion
-            'BRL': 'usd', // Use USD as base for BRL conversion
-            'USDC': 'usd-coin',
-            'USDT': 'tether'
+            USD: 'usd',
+            ARS: 'usd', // Use USD as base for ARS conversion
+            BRL: 'usd', // Use USD as base for BRL conversion
+            USDC: 'usd-coin',
+            USDT: 'tether',
         };
         return mapping[currency.toUpperCase()] || currency.toLowerCase();
     }
@@ -121,27 +121,27 @@ class ExchangeRateService {
      */
     getMockRate(fromCurrency, toCurrency) {
         const mockRates = {
-            'USD': {
-                'ARS': 850.0,
-                'BRL': 5.2,
-                'USD': 1.0,
-                'USDC': 1.0,
-                'USDT': 1.0
+            USD: {
+                ARS: 850.0,
+                BRL: 5.2,
+                USD: 1.0,
+                USDC: 1.0,
+                USDT: 1.0,
             },
-            'USDC': {
-                'ARS': 850.0,
-                'BRL': 5.2,
-                'USD': 1.0,
-                'USDC': 1.0,
-                'USDT': 1.0
+            USDC: {
+                ARS: 850.0,
+                BRL: 5.2,
+                USD: 1.0,
+                USDC: 1.0,
+                USDT: 1.0,
             },
-            'USDT': {
-                'ARS': 850.0,
-                'BRL': 5.2,
-                'USD': 1.0,
-                'USDC': 1.0,
-                'USDT': 1.0
-            }
+            USDT: {
+                ARS: 850.0,
+                BRL: 5.2,
+                USD: 1.0,
+                USDC: 1.0,
+                USDT: 1.0,
+            },
         };
         const from = fromCurrency.toUpperCase();
         const to = toCurrency.toUpperCase();
@@ -174,8 +174,8 @@ class ExchangeRateService {
             size: this.cache.size,
             entries: Array.from(this.cache.entries()).map(([key, value]) => ({
                 key,
-                age: now - value.timestamp
-            }))
+                age: now - value.timestamp,
+            })),
         };
     }
 }
@@ -192,6 +192,6 @@ function createExchangeRateService(config) {
 exports.DEFAULT_EXCHANGE_RATE_CONFIG = {
     provider: 'coingecko',
     timeout: 5000,
-    cacheTimeout: 60000
+    cacheTimeout: 60000,
 };
 //# sourceMappingURL=exchangeRateService.js.map

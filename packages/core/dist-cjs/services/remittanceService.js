@@ -190,7 +190,7 @@ class RemittanceService {
                 to,
                 rate,
                 timestamp: new Date(),
-                source: 'coingecko'
+                source: 'coingecko',
             };
         }
         catch (error) {

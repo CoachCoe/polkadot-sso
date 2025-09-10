@@ -102,7 +102,11 @@ class ProductionConfigManager {
         return {
             enabled: process.env.REMITANCE_ENABLED === 'true',
             defaultCurrency: process.env.REMITANCE_DEFAULT_CURRENCY || 'USD',
-            supportedCurrencies: this.parseArrayEnv('REMITANCE_SUPPORTED_CURRENCIES', ['USD', 'ARS', 'BRL']),
+            supportedCurrencies: this.parseArrayEnv('REMITANCE_SUPPORTED_CURRENCIES', [
+                'USD',
+                'ARS',
+                'BRL',
+            ]),
             treasuryAddress: process.env.REMITANCE_TREASURY_ADDRESS || '',
             minDeposit: parseFloat(process.env.REMITANCE_MIN_DEPOSIT || '10'),
             maxWithdrawal: parseFloat(process.env.REMITANCE_MAX_WITHDRAWAL || '10000'),
@@ -251,7 +255,10 @@ class ProductionConfigManager {
         const value = process.env[key];
         if (!value)
             return defaultValue;
-        return value.split(',').map(item => item.trim()).filter(Boolean);
+        return value
+            .split(',')
+            .map(item => item.trim())
+            .filter(Boolean);
     }
     /**
      * Get validation errors
