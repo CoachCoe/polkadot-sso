@@ -32,6 +32,9 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createAuthRouter = void 0;
 const express_1 = require("express");
@@ -45,6 +48,7 @@ const logger_1 = require("../utils/logger");
 const sanitization_1 = require("../utils/sanitization");
 const validation_2 = require("../utils/validation");
 const qrAuth_1 = require("./auth/qrAuth");
+const telegramAuth_1 = __importDefault(require("./auth/telegramAuth"));
 /**
  * @swagger
  * components:
@@ -2194,6 +2198,8 @@ const createAuthRouter = (tokenService, challengeService, auditService, clients)
     router.get('/qr/status', rateLimiters.challenge, qrAuth_1.checkQrAuthStatus);
     router.post('/qr/callback', rateLimiters.verify, qrAuth_1.handleQrCallback);
     router.get('/qr/result', rateLimiters.challenge, qrAuth_1.getQrAuthResult);
+    // Telegram Authentication routes
+    router.use('/telegram', telegramAuth_1.default);
     return router;
 };
 exports.createAuthRouter = createAuthRouter;

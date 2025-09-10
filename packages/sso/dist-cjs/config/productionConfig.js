@@ -82,7 +82,8 @@ class SSOConfigManager {
         if (this.config.server.enableMetrics && !this.config.server.metricsPort) {
             errors.push('METRICS_PORT is required when ENABLE_METRICS is true');
         }
-        if (this.config.server.metricsPort && (this.config.server.metricsPort < 1 || this.config.server.metricsPort > 65535)) {
+        if (this.config.server.metricsPort &&
+            (this.config.server.metricsPort < 1 || this.config.server.metricsPort > 65535)) {
             errors.push('METRICS_PORT must be between 1 and 65535');
         }
         if (this.config.server.metricsPort === this.config.server.port) {

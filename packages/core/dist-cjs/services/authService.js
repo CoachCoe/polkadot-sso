@@ -301,20 +301,20 @@ Expiration Time: ${message.expirationTime}`;
             const verification = signatureVerify(signature.message, signature.signature, publicKey);
             if (!verification.isValid) {
                 console.warn('⚠️  SECURITY: Signature verification failed', {
-                    address: signature.address
+                    address: signature.address,
                 });
                 return false;
             }
             // Additional security checks
             if (verification.crypto !== 'sr25519' && verification.crypto !== 'ed25519') {
                 console.warn('⚠️  SECURITY: Unsupported signature algorithm', {
-                    crypto: verification.crypto
+                    crypto: verification.crypto,
                 });
                 return false;
             }
             console.log('✅ Signature verification successful', {
                 address: signature.address,
-                crypto: verification.crypto
+                crypto: verification.crypto,
             });
             return true;
         }

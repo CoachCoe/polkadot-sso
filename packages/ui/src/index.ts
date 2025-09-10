@@ -4,6 +4,8 @@ export { NovaWalletSignInButton } from './components/NovaWalletSignInButton';
 export { PolkadotAuthProvider } from './components/PolkadotAuthProvider';
 export { PolkadotProfile } from './components/PolkadotProfile';
 export { PolkadotSignInButton } from './components/PolkadotSignInButton';
+export { TelegramAuthButton } from './components/TelegramAuthButton';
+export { TelegramQRModal } from './components/TelegramQRModal';
 export { WalletSelector } from './components/WalletSelector';
 
 // Remittance Components

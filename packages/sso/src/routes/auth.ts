@@ -13,11 +13,12 @@ import { createLogger, logError, logRequest } from '../utils/logger';
 import { escapeHtml } from '../utils/sanitization';
 import { validateAuthRequest, validateClientCredentials } from '../utils/validation';
 import {
-  generateQrAuth,
   checkQrAuthStatus,
-  handleQrCallback,
+  generateQrAuth,
   getQrAuthResult,
+  handleQrCallback,
 } from './auth/qrAuth';
+import telegramAuthRouter from './auth/telegramAuth';
 
 /**
  * @swagger
@@ -2257,6 +2258,9 @@ export const createAuthRouter = (
   router.get('/qr/status', rateLimiters.challenge, checkQrAuthStatus);
   router.post('/qr/callback', rateLimiters.verify, handleQrCallback);
   router.get('/qr/result', rateLimiters.challenge, getQrAuthResult);
+
+  // Telegram Authentication routes
+  router.use('/telegram', telegramAuthRouter);
 
   return router;
 };

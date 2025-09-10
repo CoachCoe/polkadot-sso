@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.usePolkadotAuthContext = exports.PolkadotAuthContext = exports.usePolkadotAuth = exports.TransactionHistory = exports.SendMoneyForm = exports.RemittanceQuote = exports.RemittanceDashboard = exports.CustodyLevelIndicator = exports.WalletSelector = exports.PolkadotSignInButton = exports.PolkadotProfile = exports.PolkadotAuthProvider = exports.NovaWalletSignInButton = exports.NovaQrAuth = void 0;
+exports.usePolkadotAuthContext = exports.PolkadotAuthContext = exports.usePolkadotAuth = exports.TransactionHistory = exports.SendMoneyForm = exports.RemittanceQuote = exports.RemittanceDashboard = exports.CustodyLevelIndicator = exports.WalletSelector = exports.TelegramQRModal = exports.TelegramAuthButton = exports.PolkadotSignInButton = exports.PolkadotProfile = exports.PolkadotAuthProvider = exports.NovaWalletSignInButton = exports.NovaQrAuth = void 0;
 // Components
 var NovaQrAuth_1 = require("./components/NovaQrAuth");
 Object.defineProperty(exports, "NovaQrAuth", { enumerable: true, get: function () { return NovaQrAuth_1.NovaQrAuth; } });
@@ -12,6 +12,10 @@ var PolkadotProfile_1 = require("./components/PolkadotProfile");
 Object.defineProperty(exports, "PolkadotProfile", { enumerable: true, get: function () { return PolkadotProfile_1.PolkadotProfile; } });
 var PolkadotSignInButton_1 = require("./components/PolkadotSignInButton");
 Object.defineProperty(exports, "PolkadotSignInButton", { enumerable: true, get: function () { return PolkadotSignInButton_1.PolkadotSignInButton; } });
+var TelegramAuthButton_1 = require("./components/TelegramAuthButton");
+Object.defineProperty(exports, "TelegramAuthButton", { enumerable: true, get: function () { return TelegramAuthButton_1.TelegramAuthButton; } });
+var TelegramQRModal_1 = require("./components/TelegramQRModal");
+Object.defineProperty(exports, "TelegramQRModal", { enumerable: true, get: function () { return TelegramQRModal_1.TelegramQRModal; } });
 var WalletSelector_1 = require("./components/WalletSelector");
 Object.defineProperty(exports, "WalletSelector", { enumerable: true, get: function () { return WalletSelector_1.WalletSelector; } });
 // Remittance Components
