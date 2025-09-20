@@ -53,10 +53,7 @@ function generateCredentialId() {
  * Generate a credential hash for integrity verification
  */
 function generateCredentialHash(data) {
-    return crypto
-        .createHash('sha256')
-        .update(JSON.stringify(data))
-        .digest('hex');
+    return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
 }
 /**
  * Validate credential data against schema
@@ -87,20 +84,22 @@ function validateCredentialData(data, credentialType) {
                 if (ruleObj.maxLength && typeof value === 'string' && value.length > ruleObj.maxLength) {
                     errors.push(`Field '${field}' must be no more than ${ruleObj.maxLength} characters long`);
                 }
-                if (ruleObj.pattern && typeof value === 'string' && !new RegExp(ruleObj.pattern).test(value)) {
+                if (ruleObj.pattern &&
+                    typeof value === 'string' &&
+                    !new RegExp(ruleObj.pattern).test(value)) {
                     errors.push(`Field '${field}' does not match required pattern`);
                 }
             }
         }
         return {
             valid: errors.length === 0,
-            errors
+            errors,
         };
     }
     catch (error) {
         return {
             valid: false,
-            errors: ['Invalid credential type schema']
+            errors: ['Invalid credential type schema'],
         };
     }
 }
@@ -129,7 +128,7 @@ function formatCredentialForDisplay(credential) {
         status: credential.status,
         issuedAt: new Date(credential.issued_at).toISOString(),
         expiresAt: credential.expires_at ? new Date(credential.expires_at).toISOString() : undefined,
-        isActive: isCredentialActive(credential)
+        isActive: isCredentialActive(credential),
     };
 }
 /**
@@ -141,7 +140,7 @@ function generateCredentialSummary(credential) {
         type: credential.credential_type_id,
         status: credential.status,
         issuedAt: new Date(credential.issued_at).toISOString(),
-        expiresAt: credential.expires_at ? new Date(credential.expires_at).toISOString() : undefined
+        expiresAt: credential.expires_at ? new Date(credential.expires_at).toISOString() : undefined,
     };
 }
 //# sourceMappingURL=credentialUtils.js.map

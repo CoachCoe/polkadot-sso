@@ -1,22 +1,48 @@
 import app from './app';
 import { createLogger } from './utils/logger';
 
-const logger = createLogger('sso-package');
+const logger = createLogger('password-manager-package');
+
+// Start the server
+const PORT = process.env.PORT || 3001;
+const server = app.listen(PORT, () => {
+  logger.info(`🚀 Password Manager server running on port ${PORT}`);
+  logger.info(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
+  logger.info(`🏥 Health Check: http://localhost:${PORT}/health`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    logger.info('Process terminated');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  logger.info('SIGINT received, shutting down gracefully');
+  server.close(() => {
+    logger.info('Process terminated');
+    process.exit(0);
+  });
+});
 
 export { app };
 
-export type { Challenge, Client, Credential } from './types';
+// Password Manager Types
+    export * from './modules/credentials/types/credential';
 
-export { AuditService, ChallengeService, TokenService, WalletBasedKusamaService } from './services';
+// Password Manager Services
+export { CredentialService } from './modules/credentials/services/credentialService';
 
-export { CredentialService } from './modules/credentials';
+// Password Manager Routes
+export { createCredentialRouter } from './modules/credentials/routes/credentials';
 
-export { createAuthRouter, createClientRouter, createTokenRouter } from './routes';
-
-export { createCredentialRouter } from './modules/credentials';
-
+// Shared Utilities
 export { createLogger } from './utils';
 
+// Configuration
 export { corsConfig, initializeDatabase, sessionConfig } from './config';
 
 export default app;

@@ -16,7 +16,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./auditService"), exports);
 __exportStar(require("./challengeService"), exports);
-__exportStar(require("./credentialService"), exports);
 __exportStar(require("./kusamaIntegrationService"), exports);
 __exportStar(require("./realTransactionService"), exports);
 __exportStar(require("./siweStyleAuthService"), exports);

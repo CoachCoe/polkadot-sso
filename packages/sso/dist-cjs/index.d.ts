@@ -1,8 +1,8 @@
 import app from './app';
 export { app };
-export type { Challenge, Client, Credential } from './types';
-export { AuditService, ChallengeService, CredentialService, TokenService, WalletBasedKusamaService, } from './services';
-export { createAuthRouter, createClientRouter, createCredentialRouter, createTokenRouter, } from './routes';
+export * from './modules/credentials/types/credential';
+export { CredentialService } from './modules/credentials/services/credentialService';
+export { createCredentialRouter } from './modules/credentials/routes/credentials';
 export { createLogger } from './utils';
 export { corsConfig, initializeDatabase, sessionConfig } from './config';
 export default app;
