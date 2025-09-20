@@ -1,8 +1,9 @@
 import app from './app';
 export { app };
-export * from './modules/credentials/types/credential';
-export { CredentialService } from './modules/credentials/services/credentialService';
-export { createCredentialRouter } from './modules/credentials/routes/credentials';
+export { ChallengeService } from './services/challengeService';
+export { SIWEStyleAuthService } from './services/siweStyleAuthService';
+export { TokenService } from './services/token';
+export { createAuthRouter } from './routes/auth';
 export { createLogger } from './utils';
 export { corsConfig, initializeDatabase, sessionConfig } from './config';
 export default app;

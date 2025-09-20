@@ -49,9 +49,10 @@
   "license": "MIT",
   "dependencies": {
     "@noble/hashes": "^2.0.0",
-    "@polkadot/api": "^10.0.0",
+    "@polkadot/api": "^10.13.1",
     "@polkadot/extension-dapp": "^0.45.0",
-    "@polkadot/util": "^12.0.0",
+    "@polkadot/keyring": "^13.5.6",
+    "@polkadot/util": "^12.6.2",
     "@polkadot/util-crypto": "^12.6.2",
     "@types/crypto-js": "^4.2.2",
     "crypto-js": "^4.2.0",
@@ -66,8 +67,6 @@
     "typescript": "^5.3.2"
   },
   "peerDependencies": {
-    "@polkadot/api": "^10.0.0",
-    "@polkadot/extension-dapp": "^0.45.0",
-    "@polkadot/util": "^12.0.0"
+    "@polkadot/extension-dapp": "^0.45.0"
   }
 }

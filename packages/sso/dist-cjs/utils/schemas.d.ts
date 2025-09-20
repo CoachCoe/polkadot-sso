@@ -42,17 +42,17 @@ export declare const verificationQuerySchema: z.ZodObject<{
     code_verifier: z.ZodString;
     state: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    signature: string;
+    address: string;
     code_verifier: string;
     state: string;
-    address: string;
     challenge_id: string;
+    signature: string;
 }, {
-    signature: string;
+    address: string;
     code_verifier: string;
     state: string;
-    address: string;
     challenge_id: string;
+    signature: string;
 }>;
 export declare const verificationResponseSchema: z.ZodObject<{
     success: z.ZodBoolean;
@@ -75,15 +75,15 @@ export declare const tokenRequestSchema: z.ZodObject<{
     redirect_uri: z.ZodString;
 }, "strip", z.ZodTypeAny, {
     client_id: string;
+    client_secret: string;
     code: string;
     grant_type: "authorization_code";
-    client_secret: string;
     redirect_uri: string;
 }, {
     client_id: string;
+    client_secret: string;
     code: string;
     grant_type: "authorization_code";
-    client_secret: string;
     redirect_uri: string;
 }>;
 export declare const tokenResponseSchema: z.ZodObject<{
@@ -131,13 +131,13 @@ export declare const clientUpdateSchema: z.ZodObject<Omit<{
     allowed_origins: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
     client_secret: z.ZodOptional<z.ZodOptional<z.ZodString>>;
 }, "client_id">, "strip", z.ZodTypeAny, {
-    client_secret?: string | undefined;
     name?: string | undefined;
+    client_secret?: string | undefined;
     redirect_urls?: string[] | undefined;
     allowed_origins?: string[] | undefined;
 }, {
-    client_secret?: string | undefined;
     name?: string | undefined;
+    client_secret?: string | undefined;
     redirect_urls?: string[] | undefined;
     allowed_origins?: string[] | undefined;
 }>;
@@ -151,16 +151,16 @@ export declare const clientResponseSchema: z.ZodObject<{
     is_active: z.ZodBoolean;
 }, "strip", z.ZodTypeAny, {
     client_id: string;
-    created_at: number;
     name: string;
+    created_at: number;
     redirect_urls: string[];
     allowed_origins: string[];
     updated_at: number;
     is_active: boolean;
 }, {
     client_id: string;
-    created_at: number;
     name: string;
+    created_at: number;
     redirect_urls: string[];
     allowed_origins: string[];
     updated_at: number;
@@ -268,12 +268,12 @@ export declare const sessionCreateSchema: z.ZodObject<{
     fingerprint: z.ZodString;
 }, "strip", z.ZodTypeAny, {
     client_id: string;
-    fingerprint: string;
     address: string;
+    fingerprint: string;
 }, {
     client_id: string;
-    fingerprint: string;
     address: string;
+    fingerprint: string;
 }>;
 export declare const sessionResponseSchema: z.ZodObject<{
     id: z.ZodString;
@@ -287,27 +287,27 @@ export declare const sessionResponseSchema: z.ZodObject<{
     last_used_at: z.ZodNumber;
     is_active: z.ZodBoolean;
 }, "strip", z.ZodTypeAny, {
-    id: string;
     client_id: string;
-    created_at: number;
     address: string;
+    id: string;
+    created_at: number;
     access_token: string;
     refresh_token: string;
-    is_active: boolean;
     access_token_expires_at: number;
     refresh_token_expires_at: number;
     last_used_at: number;
+    is_active: boolean;
 }, {
-    id: string;
     client_id: string;
-    created_at: number;
     address: string;
+    id: string;
+    created_at: number;
     access_token: string;
     refresh_token: string;
-    is_active: boolean;
     access_token_expires_at: number;
     refresh_token_expires_at: number;
     last_used_at: number;
+    is_active: boolean;
 }>;
 export declare const auditLogCreateSchema: z.ZodObject<{
     event_type: z.ZodEnum<["login", "logout", "credential_create", "credential_revoke", "token_refresh", "error"]>;
@@ -320,18 +320,18 @@ export declare const auditLogCreateSchema: z.ZodObject<{
     user_agent: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     client_id: string;
-    status: "pending" | "success" | "failure";
-    event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
+    status: "success" | "failure" | "pending";
     action: string;
+    event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
     ip_address: string;
     user_address?: string | undefined;
     details?: string | undefined;
     user_agent?: string | undefined;
 }, {
     client_id: string;
-    status: "pending" | "success" | "failure";
-    event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
+    status: "success" | "failure" | "pending";
     action: string;
+    event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
     ip_address: string;
     user_address?: string | undefined;
     details?: string | undefined;
@@ -349,23 +349,23 @@ export declare const auditLogResponseSchema: z.ZodObject<{
     user_agent: z.ZodOptional<z.ZodString>;
     created_at: z.ZodNumber;
 }, "strip", z.ZodTypeAny, {
-    id: number;
     client_id: string;
+    id: number;
     created_at: number;
     status: string;
-    event_type: string;
     action: string;
+    event_type: string;
     ip_address: string;
     user_address?: string | undefined;
     details?: string | undefined;
     user_agent?: string | undefined;
 }, {
-    id: number;
     client_id: string;
+    id: number;
     created_at: number;
     status: string;
-    event_type: string;
     action: string;
+    event_type: string;
     ip_address: string;
     user_address?: string | undefined;
     details?: string | undefined;
@@ -478,16 +478,16 @@ export declare const paginatedResponseSchema: <T extends z.ZodTypeAny>(itemSchem
         has_next: z.ZodBoolean;
         has_prev: z.ZodBoolean;
     }, "strip", z.ZodTypeAny, {
+        total: number;
         limit: number;
         page: number;
-        total: number;
         total_pages: number;
         has_next: boolean;
         has_prev: boolean;
     }, {
+        total: number;
         limit: number;
         page: number;
-        total: number;
         total_pages: number;
         has_next: boolean;
         has_prev: boolean;
@@ -495,9 +495,9 @@ export declare const paginatedResponseSchema: <T extends z.ZodTypeAny>(itemSchem
 }, "strip", z.ZodTypeAny, {
     items: T["_output"][];
     pagination: {
+        total: number;
         limit: number;
         page: number;
-        total: number;
         total_pages: number;
         has_next: boolean;
         has_prev: boolean;
@@ -505,9 +505,9 @@ export declare const paginatedResponseSchema: <T extends z.ZodTypeAny>(itemSchem
 }, {
     items: T["_input"][];
     pagination: {
+        total: number;
         limit: number;
         page: number;
-        total: number;
         total_pages: number;
         has_next: boolean;
         has_prev: boolean;
@@ -557,17 +557,17 @@ export declare const schemas: {
         code_verifier: z.ZodString;
         state: z.ZodString;
     }, "strip", z.ZodTypeAny, {
-        signature: string;
+        address: string;
         code_verifier: string;
         state: string;
-        address: string;
         challenge_id: string;
+        signature: string;
     }, {
-        signature: string;
+        address: string;
         code_verifier: string;
         state: string;
-        address: string;
         challenge_id: string;
+        signature: string;
     }>;
     readonly verificationResponse: z.ZodObject<{
         success: z.ZodBoolean;
@@ -590,15 +590,15 @@ export declare const schemas: {
         redirect_uri: z.ZodString;
     }, "strip", z.ZodTypeAny, {
         client_id: string;
+        client_secret: string;
         code: string;
         grant_type: "authorization_code";
-        client_secret: string;
         redirect_uri: string;
     }, {
         client_id: string;
+        client_secret: string;
         code: string;
         grant_type: "authorization_code";
-        client_secret: string;
         redirect_uri: string;
     }>;
     readonly tokenResponse: z.ZodObject<{
@@ -646,13 +646,13 @@ export declare const schemas: {
         allowed_origins: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
         client_secret: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     }, "client_id">, "strip", z.ZodTypeAny, {
-        client_secret?: string | undefined;
         name?: string | undefined;
+        client_secret?: string | undefined;
         redirect_urls?: string[] | undefined;
         allowed_origins?: string[] | undefined;
     }, {
-        client_secret?: string | undefined;
         name?: string | undefined;
+        client_secret?: string | undefined;
         redirect_urls?: string[] | undefined;
         allowed_origins?: string[] | undefined;
     }>;
@@ -666,16 +666,16 @@ export declare const schemas: {
         is_active: z.ZodBoolean;
     }, "strip", z.ZodTypeAny, {
         client_id: string;
-        created_at: number;
         name: string;
+        created_at: number;
         redirect_urls: string[];
         allowed_origins: string[];
         updated_at: number;
         is_active: boolean;
     }, {
         client_id: string;
-        created_at: number;
         name: string;
+        created_at: number;
         redirect_urls: string[];
         allowed_origins: string[];
         updated_at: number;
@@ -783,12 +783,12 @@ export declare const schemas: {
         fingerprint: z.ZodString;
     }, "strip", z.ZodTypeAny, {
         client_id: string;
-        fingerprint: string;
         address: string;
+        fingerprint: string;
     }, {
         client_id: string;
-        fingerprint: string;
         address: string;
+        fingerprint: string;
     }>;
     readonly sessionResponse: z.ZodObject<{
         id: z.ZodString;
@@ -802,27 +802,27 @@ export declare const schemas: {
         last_used_at: z.ZodNumber;
         is_active: z.ZodBoolean;
     }, "strip", z.ZodTypeAny, {
-        id: string;
         client_id: string;
-        created_at: number;
         address: string;
+        id: string;
+        created_at: number;
         access_token: string;
         refresh_token: string;
-        is_active: boolean;
         access_token_expires_at: number;
         refresh_token_expires_at: number;
         last_used_at: number;
+        is_active: boolean;
     }, {
-        id: string;
         client_id: string;
-        created_at: number;
         address: string;
+        id: string;
+        created_at: number;
         access_token: string;
         refresh_token: string;
-        is_active: boolean;
         access_token_expires_at: number;
         refresh_token_expires_at: number;
         last_used_at: number;
+        is_active: boolean;
     }>;
     readonly auditLogCreate: z.ZodObject<{
         event_type: z.ZodEnum<["login", "logout", "credential_create", "credential_revoke", "token_refresh", "error"]>;
@@ -835,18 +835,18 @@ export declare const schemas: {
         user_agent: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         client_id: string;
-        status: "pending" | "success" | "failure";
-        event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
+        status: "success" | "failure" | "pending";
         action: string;
+        event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
         ip_address: string;
         user_address?: string | undefined;
         details?: string | undefined;
         user_agent?: string | undefined;
     }, {
         client_id: string;
-        status: "pending" | "success" | "failure";
-        event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
+        status: "success" | "failure" | "pending";
         action: string;
+        event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
         ip_address: string;
         user_address?: string | undefined;
         details?: string | undefined;
@@ -864,23 +864,23 @@ export declare const schemas: {
         user_agent: z.ZodOptional<z.ZodString>;
         created_at: z.ZodNumber;
     }, "strip", z.ZodTypeAny, {
-        id: number;
         client_id: string;
+        id: number;
         created_at: number;
         status: string;
-        event_type: string;
         action: string;
+        event_type: string;
         ip_address: string;
         user_address?: string | undefined;
         details?: string | undefined;
         user_agent?: string | undefined;
     }, {
-        id: number;
         client_id: string;
+        id: number;
         created_at: number;
         status: string;
-        event_type: string;
         action: string;
+        event_type: string;
         ip_address: string;
         user_address?: string | undefined;
         details?: string | undefined;
@@ -993,16 +993,16 @@ export declare const schemas: {
             has_next: z.ZodBoolean;
             has_prev: z.ZodBoolean;
         }, "strip", z.ZodTypeAny, {
+            total: number;
             limit: number;
             page: number;
-            total: number;
             total_pages: number;
             has_next: boolean;
             has_prev: boolean;
         }, {
+            total: number;
             limit: number;
             page: number;
-            total: number;
             total_pages: number;
             has_next: boolean;
             has_prev: boolean;
@@ -1010,9 +1010,9 @@ export declare const schemas: {
     }, "strip", z.ZodTypeAny, {
         items: T["_output"][];
         pagination: {
+            total: number;
             limit: number;
             page: number;
-            total: number;
             total_pages: number;
             has_next: boolean;
             has_prev: boolean;
@@ -1020,9 +1020,9 @@ export declare const schemas: {
     }, {
         items: T["_input"][];
         pagination: {
+            total: number;
             limit: number;
             page: number;
-            total: number;
             total_pages: number;
             has_next: boolean;
             has_prev: boolean;

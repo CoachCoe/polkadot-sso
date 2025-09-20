@@ -31,9 +31,9 @@ process.on('SIGINT', () => {
 export { app };
 
 // SSO Services
-export { SIWEStyleAuthService } from './services/siweStyleAuthService';
-export { TokenService } from './services/token';
-export { ChallengeService } from './services/challengeService';
+  export { ChallengeService } from './services/challengeService';
+  export { SIWEStyleAuthService } from './services/siweStyleAuthService';
+  export { TokenService } from './services/token';
 
 // SSO Routes
 export { createAuthRouter } from './routes/auth';

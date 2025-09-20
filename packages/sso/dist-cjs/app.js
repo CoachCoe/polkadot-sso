@@ -9,18 +9,12 @@ const express_1 = __importDefault(require("express"));
 const helmet_1 = __importDefault(require("helmet"));
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
-const credentials_1 = require("./modules/credentials/routes/credentials");
-const credentialService_1 = require("./modules/credentials/services/credentialService");
-const logger_1 = require("./utils/logger");
-// Mock AuditService for testing
-class MockAuditService {
-    async log() { return Promise.resolve(); }
-    async audit() { return Promise.resolve(); }
-    getAuditLogs() { return []; }
-    getAuditStats() { return {}; }
-    cleanupOldAuditLogs() { return Promise.resolve(); }
-}
-const logger = (0, logger_1.createLogger)('password-manager-app');
+const auth_js_1 = require("./routes/auth.js");
+const logger_js_1 = require("./utils/logger.js");
+const token_js_1 = require("./services/token.js");
+const challengeService_js_1 = require("./services/challengeService.js");
+const auditService_js_1 = require("./services/auditService.js");
+const logger = (0, logger_js_1.createLogger)('polkadot-sso-app');
 const app = (0, express_1.default)();
 // Security middleware
 app.use((0, helmet_1.default)());
@@ -32,9 +26,9 @@ const swaggerOptions = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'Polkadot Password Manager API',
+            title: 'Polkadot SSO API',
             version: '1.0.0',
-            description: 'Secure password management service for Polkadot ecosystem',
+            description: 'Single Sign-On service for Polkadot ecosystem applications',
         },
         servers: [
             {
@@ -43,7 +37,7 @@ const swaggerOptions = {
             },
         ],
     },
-    apis: ['./src/modules/credentials/routes/*.ts'],
+    apis: ['./src/routes/*.ts'],
 };
 const swaggerSpec = (0, swagger_jsdoc_1.default)(swaggerOptions);
 app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerSpec));
@@ -52,14 +46,17 @@ app.get('/health', (req, res) => {
     res.json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        service: 'polkadot-password-manager',
+        service: 'polkadot-sso',
         version: '1.0.0',
     });
 });
 // Initialize services
-const credentialService = new credentialService_1.CredentialService();
+const tokenService = new token_js_1.TokenService();
+const challengeService = new challengeService_js_1.ChallengeService();
+const auditService = new auditService_js_1.AuditService();
+const clients = new Map(); // Empty clients map for now
 // API routes
-app.use('/api/credentials', (0, credentials_1.createCredentialRouter)(credentialService));
+app.use('/api/auth', (0, auth_js_1.createAuthRouter)(tokenService, challengeService, auditService, clients));
 // Error handling middleware
 app.use((err, req, res, next) => {
     logger.error('Unhandled error:', err);
@@ -75,6 +72,6 @@ app.use('*', (req, res) => {
         message: `Route ${req.originalUrl} not found`,
     });
 });
-logger.info('Password Manager application initialized successfully');
+logger.info('Polkadot SSO application initialized successfully');
 exports.default = app;
 //# sourceMappingURL=app.js.map

@@ -32,11 +32,13 @@
   "license": "MIT",
   "dependencies": {
     "@polkadot-auth/core": "file:../core",
+    "@polkadot/api": "^16.4.7",
     "@polkadot/keyring": "^12.6.2",
+    "@polkadot/util": "^13.5.6",
     "@polkadot/util-crypto": "^12.6.2",
-    "telegraf": "^4.15.0",
+    "node-telegram-bot-api": "^0.61.0",
     "qrcode": "^1.5.3",
-    "node-telegram-bot-api": "^0.61.0"
+    "telegraf": "^4.15.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
