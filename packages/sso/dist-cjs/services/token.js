@@ -1,19 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TokenService = void 0;
-const auth_1 = require("../config/auth");
-const db_1 = require("../config/db");
-const crypto_1 = require("../utils/crypto");
-const logger_1 = require("../utils/logger");
-const cacheService_1 = require("./cacheService");
-const jwtService_1 = require("./jwtService");
-const logger = (0, logger_1.createLogger)('token-service');
+const auth_js_1 = require("../config/auth.js");
+const db_js_1 = require("../config/db.js");
+const crypto_js_1 = require("../utils/crypto.js");
+const logger_js_1 = require("../utils/logger.js");
+const cacheService_js_1 = require("./cacheService.js");
+const jwtService_js_1 = require("./jwtService.js");
+const logger = (0, logger_js_1.createLogger)('token-service');
 class TokenService {
     constructor() { }
     generateTokens(address, client_id) {
         // Create a temporary session object for token generation
         const tempSession = {
-            id: Array.from((0, crypto_1.randomBytes)(16))
+            id: Array.from((0, crypto_js_1.randomBytes)(16))
                 .map(b => b.toString(16).padStart(2, '0'))
                 .join(''),
             address,
@@ -22,7 +22,7 @@ class TokenService {
             refresh_token: '',
             access_token_id: '',
             refresh_token_id: '',
-            fingerprint: Array.from((0, crypto_1.randomBytes)(16))
+            fingerprint: Array.from((0, crypto_js_1.randomBytes)(16))
                 .map(b => b.toString(16).padStart(2, '0'))
                 .join(''),
             access_token_expires_at: 0,
@@ -32,7 +32,7 @@ class TokenService {
             is_active: true,
         };
         // Generate token pair using the JWT service
-        const tokenPair = jwtService_1.jwtService.generateTokenPair(tempSession);
+        const tokenPair = jwtService_js_1.jwtService.generateTokenPair(tempSession);
         return {
             accessToken: tokenPair.accessToken,
             refreshToken: tokenPair.refreshToken,
@@ -48,22 +48,22 @@ class TokenService {
         try {
             // Use the JWT service to verify the token
             const payload = type === 'access'
-                ? jwtService_1.jwtService.verifyAccessToken(token)
-                : jwtService_1.jwtService.verifyRefreshToken(token);
+                ? jwtService_js_1.jwtService.verifyAccessToken(token)
+                : jwtService_js_1.jwtService.verifyRefreshToken(token);
             if (!payload) {
                 throw new Error('Invalid or expired token');
             }
-            if (jwtService_1.jwtService.isTokenExpired(payload)) {
+            if (jwtService_js_1.jwtService.isTokenExpired(payload)) {
                 throw new Error('Token has expired');
             }
-            if (jwtService_1.jwtService.isTokenBlacklisted(payload.jti)) {
+            if (jwtService_js_1.jwtService.isTokenBlacklisted(payload.jti)) {
                 throw new Error('Token has been revoked');
             }
-            const cacheStrategies = (0, cacheService_1.getCacheStrategies)();
+            const cacheStrategies = (0, cacheService_js_1.getCacheStrategies)();
             const cacheKey = `session:${payload.address}:${payload.clientId}`;
             let session = await cacheStrategies.getSession(cacheKey);
             if (!session) {
-                db = await (0, db_1.getDatabaseConnection)();
+                db = await (0, db_js_1.getDatabaseConnection)();
                 session = (await db.get('SELECT * FROM sessions WHERE address = ? AND client_id = ? AND is_active = 1', [payload.address, payload.clientId]));
                 if (session) {
                     await cacheStrategies.setSession(cacheKey, session);
@@ -88,7 +88,7 @@ class TokenService {
         }
         finally {
             if (db) {
-                (0, db_1.releaseDatabaseConnection)(db);
+                (0, db_js_1.releaseDatabaseConnection)(db);
             }
         }
     }
@@ -97,8 +97,8 @@ class TokenService {
         try {
             const tokens = this.generateTokens(address, client_id);
             const now = Date.now();
-            const accessTokenExpiresAt = now + auth_1.JWT_CONFIG.accessTokenExpiry * 1000;
-            const refreshTokenExpiresAt = now + auth_1.JWT_CONFIG.refreshTokenExpiry * 1000;
+            const accessTokenExpiresAt = now + auth_js_1.JWT_CONFIG.accessTokenExpiry * 1000;
+            const refreshTokenExpiresAt = now + auth_js_1.JWT_CONFIG.refreshTokenExpiry * 1000;
             const session = {
                 id: crypto.randomUUID(),
                 address,
@@ -114,7 +114,7 @@ class TokenService {
                 last_used_at: now,
                 is_active: true,
             };
-            db = await (0, db_1.getDatabaseConnection)();
+            db = await (0, db_js_1.getDatabaseConnection)();
             await db.run(`INSERT INTO sessions (
           id, address, client_id, access_token, refresh_token,
           access_token_id, refresh_token_id, fingerprint,
@@ -135,7 +135,7 @@ class TokenService {
                 session.last_used_at,
                 session.is_active ? 1 : 0,
             ]);
-            const cacheStrategies = (0, cacheService_1.getCacheStrategies)();
+            const cacheStrategies = (0, cacheService_js_1.getCacheStrategies)();
             const cacheKey = `session:${address}:${client_id}`;
             await cacheStrategies.setSession(cacheKey, session);
             logger.info('Session created successfully', {
@@ -155,7 +155,7 @@ class TokenService {
         }
         finally {
             if (db) {
-                (0, db_1.releaseDatabaseConnection)(db);
+                (0, db_js_1.releaseDatabaseConnection)(db);
             }
         }
     }
@@ -166,9 +166,9 @@ class TokenService {
             if (!result.valid || !result.session) {
                 return false;
             }
-            db = await (0, db_1.getDatabaseConnection)();
+            db = await (0, db_js_1.getDatabaseConnection)();
             await db.run('UPDATE sessions SET is_active = 0 WHERE id = ?', [result.session.id]);
-            const cacheStrategies = (0, cacheService_1.getCacheStrategies)();
+            const cacheStrategies = (0, cacheService_js_1.getCacheStrategies)();
             const cacheKey = `session:${result.session.address}:${result.session.client_id}`;
             await cacheStrategies.getSession(cacheKey); // This will clear the cache entry
             logger.info('Session invalidated successfully', {
@@ -185,7 +185,7 @@ class TokenService {
         }
         finally {
             if (db) {
-                (0, db_1.releaseDatabaseConnection)(db);
+                (0, db_js_1.releaseDatabaseConnection)(db);
             }
         }
     }
@@ -198,9 +198,9 @@ class TokenService {
             }
             const tokens = this.generateTokens(result.session.address, result.session.client_id);
             const now = Date.now();
-            const accessTokenExpiresAt = now + auth_1.JWT_CONFIG.accessTokenExpiry * 1000;
-            const refreshTokenExpiresAt = now + auth_1.JWT_CONFIG.refreshTokenExpiry * 1000;
-            db = await (0, db_1.getDatabaseConnection)();
+            const accessTokenExpiresAt = now + auth_js_1.JWT_CONFIG.accessTokenExpiry * 1000;
+            const refreshTokenExpiresAt = now + auth_js_1.JWT_CONFIG.refreshTokenExpiry * 1000;
+            db = await (0, db_js_1.getDatabaseConnection)();
             await db.run(`UPDATE sessions SET
           access_token = ?, refresh_token = ?,
           access_token_id = ?, refresh_token_id = ?,
@@ -228,7 +228,7 @@ class TokenService {
                 refresh_token_expires_at: refreshTokenExpiresAt,
                 last_used_at: now,
             };
-            const cacheStrategies = (0, cacheService_1.getCacheStrategies)();
+            const cacheStrategies = (0, cacheService_js_1.getCacheStrategies)();
             const cacheKey = `session:${result.session.address}:${result.session.client_id}`;
             await cacheStrategies.setSession(cacheKey, updatedSession);
             logger.info('Session refreshed successfully', {
@@ -245,14 +245,14 @@ class TokenService {
         }
         finally {
             if (db) {
-                (0, db_1.releaseDatabaseConnection)(db);
+                (0, db_js_1.releaseDatabaseConnection)(db);
             }
         }
     }
     async getSessionStats() {
         let db = null;
         try {
-            db = await (0, db_1.getDatabaseConnection)();
+            db = await (0, db_js_1.getDatabaseConnection)();
             const activeResult = await db.get('SELECT COUNT(*) as count FROM sessions WHERE is_active = 1');
             const totalResult = await db.get('SELECT COUNT(*) as count FROM sessions');
             return {
@@ -268,7 +268,7 @@ class TokenService {
         }
         finally {
             if (db) {
-                (0, db_1.releaseDatabaseConnection)(db);
+                (0, db_js_1.releaseDatabaseConnection)(db);
             }
         }
     }

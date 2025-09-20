@@ -1,14 +1,14 @@
 import { Router } from 'express';
 import { Database } from 'sqlite';
-import { createRateLimiters } from '../../middleware/rateLimit';
-import { sanitizeRequest, validateBody } from '../../middleware/validation';
-import { AuditService } from '../../services/auditService';
-import { ChallengeService } from '../../services/challengeService';
-import { TokenService } from '../../services/token';
-import { Client } from '../../types/auth';
-import { schemas } from '../../utils/schemas';
-import { createLoginHandler, createTokenHandler, createVerifyHandler } from './handlers';
-import { generateApiDocsPage, generateChallengePage } from './templates';
+import { createRateLimiters } from '../../middleware/rateLimit.js';
+import { sanitizeRequest, validateBody } from '../../middleware/validation.js';
+import { AuditService } from '../../services/auditService.js';
+import { ChallengeService } from '../../services/challengeService.js';
+import { TokenService } from '../../services/token.js';
+import { Client } from '../../types/auth.js';
+import { schemas } from '../../utils/schemas.js';
+import { createLoginHandler, createTokenHandler, createVerifyHandler } from './handlers.js';
+import { generateApiDocsPage, generateChallengePage } from './templates.js';
 
 export const createAuthRouter = (
   tokenService: TokenService,

@@ -1,6 +1,6 @@
 import * as crypto from 'crypto';
 import { Database } from 'sqlite3';
-import { createLogger } from './logger';
+import { createLogger } from './logger.js';
 const logger = createLogger('query-protection');
 export interface QueryResult<T = any> {
   success: boolean;

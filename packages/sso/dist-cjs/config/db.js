@@ -14,8 +14,8 @@ const promises_1 = require("fs/promises");
 const path_1 = require("path");
 const sqlite_1 = require("sqlite");
 const sqlite3_1 = __importDefault(require("sqlite3"));
-const logger_1 = require("../utils/logger");
-const logger = (0, logger_1.createLogger)('database-pool');
+const logger_js_1 = require("../utils/logger.js");
+const logger = (0, logger_js_1.createLogger)('database-pool');
 const DB_POOL_CONFIG = {
     min: parseInt(process.env.DB_POOL_MIN || '2'),
     max: parseInt(process.env.DB_POOL_MAX || '10'),

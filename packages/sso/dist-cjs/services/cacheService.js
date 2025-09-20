@@ -5,8 +5,8 @@ exports.getCacheService = getCacheService;
 exports.getCacheStrategies = getCacheStrategies;
 exports.shutdownCacheService = shutdownCacheService;
 const redis_1 = require("redis");
-const logger_1 = require("../utils/logger");
-const logger = (0, logger_1.createLogger)('cache-service');
+const logger_js_1 = require("../utils/logger.js");
+const logger = (0, logger_js_1.createLogger)('cache-service');
 class CacheService {
     constructor() {
         this.client = null;

@@ -1,5 +1,5 @@
 import { createClient, RedisClientType } from 'redis';
-import { createLogger } from '../utils/logger';
+import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('cache-service');
 

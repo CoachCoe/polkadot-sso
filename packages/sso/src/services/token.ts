@@ -1,10 +1,10 @@
-import { JWT_CONFIG } from '../config/auth';
-import { getDatabaseConnection, releaseDatabaseConnection } from '../config/db';
-import { Session } from '../types/auth';
-import { randomBytes } from '../utils/crypto';
-import { createLogger } from '../utils/logger';
-import { getCacheStrategies } from './cacheService';
-import { jwtService } from './jwtService';
+import { JWT_CONFIG } from '../config/auth.js';
+import { getDatabaseConnection, releaseDatabaseConnection } from '../config/db.js';
+import { Session } from '../types/auth.js';
+import { randomBytes } from '../utils/crypto.js';
+import { createLogger } from '../utils/logger.js';
+import { getCacheStrategies } from './cacheService.js';
+import { jwtService } from './jwtService.js';
 
 const logger = createLogger('token-service');
 

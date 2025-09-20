@@ -1,4 +1,4 @@
-import { Challenge } from '../types/auth';
+import { Challenge } from '../types/auth.js';
 export declare class ChallengeService {
     constructor();
     private generateCodeVerifier;

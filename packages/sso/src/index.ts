@@ -1,5 +1,5 @@
-import app from './app';
-import { createLogger } from './utils/logger';
+import app from './app.js';
+import { createLogger } from './utils/logger.js';
 
 const logger = createLogger('polkadot-sso');
 
@@ -31,17 +31,17 @@ process.on('SIGINT', () => {
 export { app };
 
 // SSO Services
-  export { ChallengeService } from './services/challengeService';
-  export { SIWEStyleAuthService } from './services/siweStyleAuthService';
-  export { TokenService } from './services/token';
+  export { ChallengeService } from './services/challengeService.js';
+  export { SIWEStyleAuthService } from './services/siweStyleAuthService.js';
+  export { TokenService } from './services/token.js';
 
 // SSO Routes
-export { createAuthRouter } from './routes/auth';
+export { createAuthRouter } from './routes/auth/index.js';
 
 // Shared Utilities
-export { createLogger } from './utils';
+export { createLogger } from './utils/index.js';
 
 // Configuration
-export { corsConfig, initializeDatabase, sessionConfig } from './config';
+export { corsConfig, initializeDatabase, sessionConfig } from './config/index.js';
 
 export default app;

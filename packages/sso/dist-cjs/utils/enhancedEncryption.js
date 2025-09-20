@@ -35,7 +35,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decryptData = exports.encryptData = exports.enhancedEncryption = exports.EnhancedEncryption = void 0;
 const crypto = __importStar(require("crypto"));
-const secrets_1 = require("./secrets");
+const secrets_js_1 = require("./secrets.js");
 const ALGORITHM = 'aes-256-gcm';
 const KEY_LENGTH = 32;
 const IV_LENGTH = 12;
@@ -44,7 +44,7 @@ const ITERATIONS = 100000;
 const DIGEST = 'sha512';
 class EnhancedEncryption {
     constructor() {
-        this.secretManager = secrets_1.SecretManager.getInstance();
+        this.secretManager = secrets_js_1.SecretManager.getInstance();
     }
     static getInstance() {
         if (!EnhancedEncryption.instance) {

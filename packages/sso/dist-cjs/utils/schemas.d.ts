@@ -45,14 +45,14 @@ export declare const verificationQuerySchema: z.ZodObject<{
     address: string;
     code_verifier: string;
     state: string;
-    challenge_id: string;
     signature: string;
+    challenge_id: string;
 }, {
     address: string;
     code_verifier: string;
     state: string;
-    challenge_id: string;
     signature: string;
+    challenge_id: string;
 }>;
 export declare const verificationResponseSchema: z.ZodObject<{
     success: z.ZodBoolean;
@@ -75,15 +75,15 @@ export declare const tokenRequestSchema: z.ZodObject<{
     redirect_uri: z.ZodString;
 }, "strip", z.ZodTypeAny, {
     client_id: string;
-    client_secret: string;
     code: string;
     grant_type: "authorization_code";
+    client_secret: string;
     redirect_uri: string;
 }, {
     client_id: string;
-    client_secret: string;
     code: string;
     grant_type: "authorization_code";
+    client_secret: string;
     redirect_uri: string;
 }>;
 export declare const tokenResponseSchema: z.ZodObject<{
@@ -293,10 +293,10 @@ export declare const sessionResponseSchema: z.ZodObject<{
     created_at: number;
     access_token: string;
     refresh_token: string;
+    is_active: boolean;
     access_token_expires_at: number;
     refresh_token_expires_at: number;
     last_used_at: number;
-    is_active: boolean;
 }, {
     client_id: string;
     address: string;
@@ -304,10 +304,10 @@ export declare const sessionResponseSchema: z.ZodObject<{
     created_at: number;
     access_token: string;
     refresh_token: string;
+    is_active: boolean;
     access_token_expires_at: number;
     refresh_token_expires_at: number;
     last_used_at: number;
-    is_active: boolean;
 }>;
 export declare const auditLogCreateSchema: z.ZodObject<{
     event_type: z.ZodEnum<["login", "logout", "credential_create", "credential_revoke", "token_refresh", "error"]>;
@@ -321,8 +321,8 @@ export declare const auditLogCreateSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     client_id: string;
     status: "success" | "failure" | "pending";
-    action: string;
     event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
+    action: string;
     ip_address: string;
     user_address?: string | undefined;
     details?: string | undefined;
@@ -330,8 +330,8 @@ export declare const auditLogCreateSchema: z.ZodObject<{
 }, {
     client_id: string;
     status: "success" | "failure" | "pending";
-    action: string;
     event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
+    action: string;
     ip_address: string;
     user_address?: string | undefined;
     details?: string | undefined;
@@ -353,8 +353,8 @@ export declare const auditLogResponseSchema: z.ZodObject<{
     id: number;
     created_at: number;
     status: string;
-    action: string;
     event_type: string;
+    action: string;
     ip_address: string;
     user_address?: string | undefined;
     details?: string | undefined;
@@ -364,8 +364,8 @@ export declare const auditLogResponseSchema: z.ZodObject<{
     id: number;
     created_at: number;
     status: string;
-    action: string;
     event_type: string;
+    action: string;
     ip_address: string;
     user_address?: string | undefined;
     details?: string | undefined;
@@ -560,14 +560,14 @@ export declare const schemas: {
         address: string;
         code_verifier: string;
         state: string;
-        challenge_id: string;
         signature: string;
+        challenge_id: string;
     }, {
         address: string;
         code_verifier: string;
         state: string;
-        challenge_id: string;
         signature: string;
+        challenge_id: string;
     }>;
     readonly verificationResponse: z.ZodObject<{
         success: z.ZodBoolean;
@@ -590,15 +590,15 @@ export declare const schemas: {
         redirect_uri: z.ZodString;
     }, "strip", z.ZodTypeAny, {
         client_id: string;
-        client_secret: string;
         code: string;
         grant_type: "authorization_code";
+        client_secret: string;
         redirect_uri: string;
     }, {
         client_id: string;
-        client_secret: string;
         code: string;
         grant_type: "authorization_code";
+        client_secret: string;
         redirect_uri: string;
     }>;
     readonly tokenResponse: z.ZodObject<{
@@ -808,10 +808,10 @@ export declare const schemas: {
         created_at: number;
         access_token: string;
         refresh_token: string;
+        is_active: boolean;
         access_token_expires_at: number;
         refresh_token_expires_at: number;
         last_used_at: number;
-        is_active: boolean;
     }, {
         client_id: string;
         address: string;
@@ -819,10 +819,10 @@ export declare const schemas: {
         created_at: number;
         access_token: string;
         refresh_token: string;
+        is_active: boolean;
         access_token_expires_at: number;
         refresh_token_expires_at: number;
         last_used_at: number;
-        is_active: boolean;
     }>;
     readonly auditLogCreate: z.ZodObject<{
         event_type: z.ZodEnum<["login", "logout", "credential_create", "credential_revoke", "token_refresh", "error"]>;
@@ -836,8 +836,8 @@ export declare const schemas: {
     }, "strip", z.ZodTypeAny, {
         client_id: string;
         status: "success" | "failure" | "pending";
-        action: string;
         event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
+        action: string;
         ip_address: string;
         user_address?: string | undefined;
         details?: string | undefined;
@@ -845,8 +845,8 @@ export declare const schemas: {
     }, {
         client_id: string;
         status: "success" | "failure" | "pending";
-        action: string;
         event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
+        action: string;
         ip_address: string;
         user_address?: string | undefined;
         details?: string | undefined;
@@ -868,8 +868,8 @@ export declare const schemas: {
         id: number;
         created_at: number;
         status: string;
-        action: string;
         event_type: string;
+        action: string;
         ip_address: string;
         user_address?: string | undefined;
         details?: string | undefined;
@@ -879,8 +879,8 @@ export declare const schemas: {
         id: number;
         created_at: number;
         status: string;
-        action: string;
         event_type: string;
+        action: string;
         ip_address: string;
         user_address?: string | undefined;
         details?: string | undefined;

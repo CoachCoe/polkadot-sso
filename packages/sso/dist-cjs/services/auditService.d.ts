@@ -1,4 +1,4 @@
-import { AuditEvent } from '../types/audit';
+import { AuditEvent } from '../types/audit.js';
 export declare class AuditService {
     constructor();
     log(event: AuditEvent): Promise<void>;

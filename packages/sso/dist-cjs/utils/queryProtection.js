@@ -35,8 +35,8 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createQueryProtectionMiddleware = exports.QueryProtection = void 0;
 const crypto = __importStar(require("crypto"));
-const logger_1 = require("./logger");
-const logger = (0, logger_1.createLogger)('query-protection');
+const logger_js_1 = require("./logger.js");
+const logger = (0, logger_js_1.createLogger)('query-protection');
 class QueryProtection {
     constructor(database) {
         this.queryStats = new Map();

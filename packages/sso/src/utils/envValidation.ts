@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createLogger } from './logger';
+import { createLogger } from './logger.js';
 
 const logger = createLogger('env-validation');
 

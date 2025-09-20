@@ -1,7 +1,7 @@
 import RedisStore from 'connect-redis';
 import { randomBytes } from 'crypto';
 import { createClient } from 'redis';
-import { createLogger } from '../utils/logger';
+import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('session-config');
 logger.info('Session configuration loaded', {

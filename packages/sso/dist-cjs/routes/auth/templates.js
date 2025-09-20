@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateChallengePage = generateChallengePage;
 exports.generateApiDocsPage = generateApiDocsPage;
-const sanitization_1 = require("../../utils/sanitization");
+const sanitization_js_1 = require("../../utils/sanitization.js");
 function generateChallengePage(data, nonce) {
     return `
 <!DOCTYPE html>
@@ -113,7 +113,7 @@ function generateChallengePage(data, nonce) {
             <div class="subtitle">Sign this message to authenticate</div>
         </div>
 
-        <div class="challenge-box">${(0, sanitization_1.escapeHtml)(data.message)}</div>
+        <div class="challenge-box">${(0, sanitization_js_1.escapeHtml)(data.message)}</div>
 
         <button id="signButton" class="btn">
             <span id="buttonText">Sign with Wallet</span>
@@ -125,12 +125,12 @@ function generateChallengePage(data, nonce) {
 
     <script nonce="${nonce}">
         window.CHALLENGE_DATA = {
-            address: "${(0, sanitization_1.escapeHtml)(String(data.address ?? ''))}",
+            address: "${(0, sanitization_js_1.escapeHtml)(String(data.address ?? ''))}",
             message: ${JSON.stringify(data.message)},
-            challengeId: "${(0, sanitization_1.escapeHtml)(data.challengeId)}",
-            codeVerifier: "${(0, sanitization_1.escapeHtml)(data.codeVerifier)}",
-            state: "${(0, sanitization_1.escapeHtml)(data.state)}",
-            nonce: "${(0, sanitization_1.escapeHtml)(data.nonce)}"
+            challengeId: "${(0, sanitization_js_1.escapeHtml)(data.challengeId)}",
+            codeVerifier: "${(0, sanitization_js_1.escapeHtml)(data.codeVerifier)}",
+            state: "${(0, sanitization_js_1.escapeHtml)(data.state)}",
+            nonce: "${(0, sanitization_js_1.escapeHtml)(data.nonce)}"
         };
     </script>
 

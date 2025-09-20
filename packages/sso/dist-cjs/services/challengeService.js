@@ -1,23 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChallengeService = void 0;
-const db_1 = require("../config/db");
-const crypto_1 = require("../utils/crypto");
-const logger_1 = require("../utils/logger");
-const cacheService_1 = require("./cacheService");
-const logger = (0, logger_1.createLogger)('challenge-service');
+const db_js_1 = require("../config/db.js");
+const crypto_js_1 = require("../utils/crypto.js");
+const logger_js_1 = require("../utils/logger.js");
+const cacheService_js_1 = require("./cacheService.js");
+const logger = (0, logger_js_1.createLogger)('challenge-service');
 class ChallengeService {
     constructor() { }
     generateCodeVerifier() {
-        return Buffer.from((0, crypto_1.randomBytes)(32)).toString('base64url');
+        return Buffer.from((0, crypto_js_1.randomBytes)(32)).toString('base64url');
     }
     async generateCodeChallenge(verifier) {
-        const hash = (0, crypto_1.createHash)('sha256');
+        const hash = (0, crypto_js_1.createHash)('sha256');
         hash.update(verifier);
         return hash.digest('base64url');
     }
     generateNonce() {
-        return Array.from((0, crypto_1.randomBytes)(32))
+        return Array.from((0, crypto_js_1.randomBytes)(32))
             .map(b => b.toString(16).padStart(2, '0'))
             .join('');
     }
@@ -55,7 +55,7 @@ class ChallengeService {
         try {
             const code_verifier = this.generateCodeVerifier();
             const code_challenge = await this.generateCodeChallenge(code_verifier);
-            const state = Array.from((0, crypto_1.randomBytes)(16))
+            const state = Array.from((0, crypto_js_1.randomBytes)(16))
                 .map(b => b.toString(16).padStart(2, '0'))
                 .join('');
             const nonce = this.generateNonce();
@@ -71,13 +71,13 @@ class ChallengeService {
                 nonce,
                 issuedAt,
                 expirationTime,
-                requestId: Array.from((0, crypto_1.randomBytes)(16))
+                requestId: Array.from((0, crypto_js_1.randomBytes)(16))
                     .map(b => b.toString(16).padStart(2, '0'))
                     .join(''),
                 resources: ['https://polkadot-sso.localhost'],
             });
             const challenge = {
-                id: (0, crypto_1.randomUUID)(),
+                id: (0, crypto_js_1.randomUUID)(),
                 message,
                 client_id,
                 created_at: Date.now(),
@@ -90,7 +90,7 @@ class ChallengeService {
                 issued_at: issuedAt,
                 used: false,
             };
-            db = await (0, db_1.getDatabaseConnection)();
+            db = await (0, db_js_1.getDatabaseConnection)();
             await db.run(`INSERT INTO challenges (
           id, message, client_id, created_at, expires_at,
           expires_at_timestamp, code_verifier, code_challenge,
@@ -109,7 +109,7 @@ class ChallengeService {
                 challenge.issued_at,
                 0,
             ]);
-            const cacheStrategies = (0, cacheService_1.getCacheStrategies)();
+            const cacheStrategies = (0, cacheService_js_1.getCacheStrategies)();
             await cacheStrategies.setChallenge(challenge.id, challenge);
             logger.info('Challenge generated successfully', {
                 challengeId: challenge.id,
@@ -128,17 +128,17 @@ class ChallengeService {
         }
         finally {
             if (db) {
-                (0, db_1.releaseDatabaseConnection)(db);
+                (0, db_js_1.releaseDatabaseConnection)(db);
             }
         }
     }
     async getChallenge(challengeId) {
         let db = null;
         try {
-            const cacheStrategies = (0, cacheService_1.getCacheStrategies)();
+            const cacheStrategies = (0, cacheService_js_1.getCacheStrategies)();
             let challenge = await cacheStrategies.getChallenge(challengeId);
             if (!challenge) {
-                db = await (0, db_1.getDatabaseConnection)();
+                db = await (0, db_js_1.getDatabaseConnection)();
                 const result = await db.get('SELECT * FROM challenges WHERE id = ? AND used = 0 AND expires_at > ?', [challengeId, Date.now()]);
                 if (result) {
                     challenge = {
@@ -169,17 +169,17 @@ class ChallengeService {
         }
         finally {
             if (db) {
-                (0, db_1.releaseDatabaseConnection)(db);
+                (0, db_js_1.releaseDatabaseConnection)(db);
             }
         }
     }
     async markChallengeUsed(challengeId) {
         let db = null;
         try {
-            db = await (0, db_1.getDatabaseConnection)();
+            db = await (0, db_js_1.getDatabaseConnection)();
             const result = await db.run('UPDATE challenges SET used = 1 WHERE id = ?', [challengeId]);
             if (result.changes > 0) {
-                const cacheStrategies = (0, cacheService_1.getCacheStrategies)();
+                const cacheStrategies = (0, cacheService_js_1.getCacheStrategies)();
                 await cacheStrategies.getChallenge(challengeId);
                 logger.info('Challenge marked as used', { challengeId });
                 return true;
@@ -195,14 +195,14 @@ class ChallengeService {
         }
         finally {
             if (db) {
-                (0, db_1.releaseDatabaseConnection)(db);
+                (0, db_js_1.releaseDatabaseConnection)(db);
             }
         }
     }
     async cleanupExpiredChallenges() {
         let db = null;
         try {
-            db = await (0, db_1.getDatabaseConnection)();
+            db = await (0, db_js_1.getDatabaseConnection)();
             const result = await db.run('DELETE FROM challenges WHERE expires_at < ?', [Date.now()]);
             if (result.changes > 0) {
                 logger.info('Cleaned up expired challenges', { count: result.changes });
@@ -217,14 +217,14 @@ class ChallengeService {
         }
         finally {
             if (db) {
-                (0, db_1.releaseDatabaseConnection)(db);
+                (0, db_js_1.releaseDatabaseConnection)(db);
             }
         }
     }
     async getChallengeStats() {
         let db = null;
         try {
-            db = await (0, db_1.getDatabaseConnection)();
+            db = await (0, db_js_1.getDatabaseConnection)();
             const now = Date.now();
             const activeResult = await db.get('SELECT COUNT(*) as count FROM challenges WHERE used = 0 AND expires_at > ?', [now]);
             const expiredResult = await db.get('SELECT COUNT(*) as count FROM challenges WHERE expires_at <= ?', [now]);
@@ -243,7 +243,7 @@ class ChallengeService {
         }
         finally {
             if (db) {
-                (0, db_1.releaseDatabaseConnection)(db);
+                (0, db_js_1.releaseDatabaseConnection)(db);
             }
         }
     }

@@ -1,7 +1,7 @@
-import { z } from 'zod';
-import { Request, Response, NextFunction } from 'express';
-import { sanitizeInput } from '../utils/sanitization';
+import { NextFunction, Request, Response } from 'express';
 import { ParsedQs } from 'qs';
+import { z } from 'zod';
+import { sanitizeInput } from '../utils/sanitization.js';
 
 export const sanitizeRequest = () => (req: Request, res: Response, next: NextFunction) => {
   if (req.body) req.body = sanitizeInput(req.body);

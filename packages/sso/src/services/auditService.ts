@@ -1,6 +1,6 @@
-import { getDatabaseConnection, releaseDatabaseConnection } from '../config/db';
-import { AuditEvent } from '../types/audit';
-import { createLogger } from '../utils/logger';
+import { getDatabaseConnection, releaseDatabaseConnection } from '../config/db.js';
+import { AuditEvent } from '../types/audit.js';
+import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('audit-service');
 
