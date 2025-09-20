@@ -1,6 +1,5 @@
 export * from './auditService';
 export * from './challengeService';
-export * from './credentialService';
 export * from './kusamaIntegrationService';
 export * from './realTransactionService';
 export * from './siweStyleAuthService';

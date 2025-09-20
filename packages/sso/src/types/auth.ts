@@ -54,9 +54,6 @@ export interface TokenPayload {
   iss?: string;
 }
 
-// Re-export credential types from the credentials module
-export * from '../modules/credentials/types/credential';
-
 export interface RequestWithId extends Request {
   id: string;
 }

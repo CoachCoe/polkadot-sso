@@ -1,22 +1,23 @@
 import app from './app';
 import { createLogger } from './utils/logger';
 
-const logger = createLogger('sso-package');
+const logger = createLogger('password-manager-package');
 
 export { app };
 
-export type { Challenge, Client, Credential } from './types';
+// Password Manager Types
+    export * from './modules/credentials/types/credential';
 
-export { AuditService, ChallengeService, TokenService, WalletBasedKusamaService } from './services';
+// Password Manager Services
+export { CredentialService } from './modules/credentials/services/credentialService';
 
-export { CredentialService } from './modules/credentials';
+// Password Manager Routes
+export { createCredentialRouter } from './modules/credentials/routes/credentials';
 
-export { createAuthRouter, createClientRouter, createTokenRouter } from './routes';
-
-export { createCredentialRouter } from './modules/credentials';
-
+// Shared Utilities
 export { createLogger } from './utils';
 
+// Configuration
 export { corsConfig, initializeDatabase, sessionConfig } from './config';
 
 export default app;

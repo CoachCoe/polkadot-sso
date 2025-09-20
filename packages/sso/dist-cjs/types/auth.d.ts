@@ -48,7 +48,6 @@ export interface TokenPayload {
     aud?: string;
     iss?: string;
 }
-export * from '../modules/credentials/types/credential';
 export interface RequestWithId extends Request {
     id: string;
 }

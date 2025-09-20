@@ -33,6 +33,6 @@ exports.CREDENTIAL_MODULE_CONFIG = {
     dependencies: ['security', 'storage'],
     initOrder: 4,
     enabled: true,
-    description: 'Credential and password management functionality'
+    description: 'Credential and password management functionality',
 };
 //# sourceMappingURL=index.js.map
