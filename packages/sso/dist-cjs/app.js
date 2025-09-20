@@ -9,12 +9,12 @@ const express_1 = __importDefault(require("express"));
 const helmet_1 = __importDefault(require("helmet"));
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
-const auth_js_1 = require("./routes/auth.js");
-const logger_js_1 = require("./utils/logger.js");
-const token_js_1 = require("./services/token.js");
-const challengeService_js_1 = require("./services/challengeService.js");
-const auditService_js_1 = require("./services/auditService.js");
-const logger = (0, logger_js_1.createLogger)('polkadot-sso-app');
+const auth_1 = require("./routes/auth");
+const auditService_1 = require("./services/auditService");
+const challengeService_1 = require("./services/challengeService");
+const token_1 = require("./services/token");
+const logger_1 = require("./utils/logger");
+const logger = (0, logger_1.createLogger)('polkadot-sso-app');
 const app = (0, express_1.default)();
 // Security middleware
 app.use((0, helmet_1.default)());
@@ -51,12 +51,12 @@ app.get('/health', (req, res) => {
     });
 });
 // Initialize services
-const tokenService = new token_js_1.TokenService();
-const challengeService = new challengeService_js_1.ChallengeService();
-const auditService = new auditService_js_1.AuditService();
+const tokenService = new token_1.TokenService();
+const challengeService = new challengeService_1.ChallengeService();
+const auditService = new auditService_1.AuditService();
 const clients = new Map(); // Empty clients map for now
 // API routes
-app.use('/api/auth', (0, auth_js_1.createAuthRouter)(tokenService, challengeService, auditService, clients));
+app.use('/api/auth', (0, auth_1.createAuthRouter)(tokenService, challengeService, auditService, clients));
 // Error handling middleware
 app.use((err, req, res, next) => {
     logger.error('Unhandled error:', err);

@@ -5,11 +5,11 @@ import express, { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import { createAuthRouter } from './routes/auth.js';
-import { createLogger } from './utils/logger.js';
-import { TokenService } from './services/token.js';
-import { ChallengeService } from './services/challengeService.js';
-import { AuditService } from './services/auditService.js';
+import { createAuthRouter } from './routes/auth';
+import { AuditService } from './services/auditService';
+import { ChallengeService } from './services/challengeService';
+import { TokenService } from './services/token';
+import { createLogger } from './utils/logger';
 
 const logger = createLogger('polkadot-sso-app');
 
