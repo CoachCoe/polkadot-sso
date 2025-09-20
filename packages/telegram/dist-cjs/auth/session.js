@@ -110,7 +110,7 @@ class TelegramSessionManager {
      * Get all active challenges
      */
     getActiveChallenges() {
-        return Array.from(this.challenges.values()).filter((challenge) => challenge.status === 'pending');
+        return Array.from(this.challenges.values()).filter(challenge => challenge.status === 'pending');
     }
     /**
      * Get challenge statistics
@@ -119,10 +119,10 @@ class TelegramSessionManager {
         const challenges = Array.from(this.challenges.values());
         return {
             total: challenges.length,
-            pending: challenges.filter((c) => c.status === 'pending').length,
-            completed: challenges.filter((c) => c.status === 'completed').length,
-            expired: challenges.filter((c) => c.status === 'expired').length,
-            failed: challenges.filter((c) => c.status === 'failed').length,
+            pending: challenges.filter(c => c.status === 'pending').length,
+            completed: challenges.filter(c => c.status === 'completed').length,
+            expired: challenges.filter(c => c.status === 'expired').length,
+            failed: challenges.filter(c => c.status === 'failed').length,
         };
     }
     /**

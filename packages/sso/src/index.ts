@@ -7,20 +7,13 @@ export { app };
 
 export type { Challenge, Client, Credential } from './types';
 
-export {
-  AuditService,
-  ChallengeService,
-  CredentialService,
-  TokenService,
-  WalletBasedKusamaService,
-} from './services';
+export { AuditService, ChallengeService, TokenService, WalletBasedKusamaService } from './services';
 
-export {
-  createAuthRouter,
-  createClientRouter,
-  createCredentialRouter,
-  createTokenRouter,
-} from './routes';
+export { CredentialService } from './modules/credentials';
+
+export { createAuthRouter, createClientRouter, createTokenRouter } from './routes';
+
+export { createCredentialRouter } from './modules/credentials';
 
 export { createLogger } from './utils';
 

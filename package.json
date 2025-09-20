@@ -4,8 +4,7 @@
   "description": "Framework-agnostic Polkadot authentication with SIWE-style messages",
   "private": true,
   "workspaces": [
-    "packages/*",
-    "examples/*"
+    "packages/*"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
@@ -15,13 +14,6 @@
     "clean": "npm run clean --workspaces",
     "type-check": "npm run type-check --workspaces",
     "publish-packages": "npm run build && npm publish --workspaces --access public",
-    "example:express": "cd examples/express-simple && npm run dev",
-    "example:next": "cd examples/next-simple && npm run dev",
-    "example:next:build": "cd examples/next-simple && npm run build",
-    "example:remix": "cd examples/remix-simple && npm run dev",
-    "example:remix:build": "cd examples/remix-simple && npm run build",
-    "example:trex": "cd examples/trex-integration && npm run dev",
-    "example:trex:build": "cd examples/trex-integration && npm run build",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "validate-env": "node scripts/validate-env.js",
     "sso:build": "cd packages/sso && npm run build",
@@ -43,8 +35,7 @@
   "author": "Polkadot Auth Team",
   "license": "MIT",
   "dependencies": {
-    "@polkadot-api/descriptors": "file:.papi/descriptors",
-    "@polkadot-auth/sso": "file:packages/sso"
+    "@polkadot-api/descriptors": "file:.papi/descriptors"
   },
   "devDependencies": {
     "@types/jest": "^29.5.8",
