@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { Database } from 'sqlite';
 import { createRateLimiters } from '../../middleware/rateLimit.js';
-import { sanitizeRequest, validateBody } from '../../middleware/validation.js';
+import { nonceMiddleware } from '../../middleware/security.js';
+import { sanitizeRequest, validateBody, validateQuery } from '../../middleware/validation.js';
 import { AuditService } from '../../services/auditService.js';
 import { ChallengeService } from '../../services/challengeService.js';
 import { TokenService } from '../../services/token.js';
@@ -10,15 +11,17 @@ import { schemas } from '../../utils/schemas.js';
 import { createLoginHandler, createTokenHandler, createVerifyHandler } from './handlers.js';
 import { generateApiDocsPage, generateChallengePage } from './templates.js';
 
+type RateLimiters = ReturnType<typeof createRateLimiters>;
+
 export const createAuthRouter = (
   tokenService: TokenService,
   challengeService: ChallengeService,
   auditService: AuditService,
   clients: Map<string, Client>,
-  db: Database
+  db: Database,
+  rateLimiters: RateLimiters
 ) => {
   const router = Router();
-  const rateLimiters = createRateLimiters(auditService);
 
   const loginHandler = createLoginHandler(
     tokenService,
@@ -34,7 +37,8 @@ export const createAuthRouter = (
     '/challenge',
     rateLimiters.challenge,
     sanitizeRequest(),
-    validateBody(schemas.challengeQuery),
+    nonceMiddleware as any,
+    validateQuery(schemas.challengeQuery),
     async (req, res) => {
       try {
         const { client_id, address } = req.query;
@@ -77,7 +81,7 @@ export const createAuthRouter = (
     '/login',
     rateLimiters.login,
     sanitizeRequest(),
-    validateBody(schemas.challengeQuery),
+    validateQuery(schemas.challengeQuery),
     loginHandler
   );
 
@@ -85,7 +89,7 @@ export const createAuthRouter = (
     '/verify',
     rateLimiters.verify,
     sanitizeRequest(),
-    validateBody(schemas.verificationQuery),
+    validateQuery(schemas.verificationQuery),
     verifyHandler
   );
 

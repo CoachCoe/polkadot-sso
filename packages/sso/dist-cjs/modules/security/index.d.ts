@@ -4,6 +4,6 @@ export { sanitizeRequest, sanitizeRequestParams, validateBody } from '../../midd
 export { AuditService } from '../../services/auditService.js';
 export { decryptData, encryptData } from '../../utils/encryption.js';
 export { enhancedEncryption } from '../../utils/enhancedEncryption.js';
-export { createQueryProtectionMiddleware, QueryProtection } from '../../utils/queryProtection.js';
+export { QueryProtection, createQueryProtectionMiddleware } from '../../utils/queryProtection.js';
 export { SecretManager } from '../../utils/secrets.js';
 //# sourceMappingURL=index.d.ts.map

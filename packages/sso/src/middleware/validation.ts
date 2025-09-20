@@ -33,6 +33,24 @@ export const validateBody = (schema: z.ZodSchema) => {
   };
 };
 
+export const validateQuery = (schema: z.ZodSchema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    try {
+      schema.parse(req.query);
+      next();
+    } catch (error: unknown) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({
+          error: 'Validation failed',
+          details: error.errors,
+        });
+      } else {
+        next(error);
+      }
+    }
+  };
+};
+
 export const sanitizeRequestParams = () => (req: Request, res: Response, next: NextFunction) => {
   for (const param in req.params) {
     req.params[param] = sanitizeInput(req.params[param]) as string;

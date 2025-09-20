@@ -1,4 +1,4 @@
-import { Request, Response as ExpressResponse, NextFunction, RequestHandler } from 'express';
+import { Response as ExpressResponse, NextFunction, Request, RequestHandler } from 'express';
 export interface ResponseWithLocals extends ExpressResponse {
     locals: {
         nonce: string;

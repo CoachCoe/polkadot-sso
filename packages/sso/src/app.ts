@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { initializeDatabase } from './config/db.js';
+import { createRateLimiters } from './middleware/rateLimit.js';
 import { createAuthRouter } from './routes/auth/index.js';
 import { AuditService } from './services/auditService.js';
 import { ChallengeService } from './services/challengeService.js';
@@ -61,6 +62,18 @@ const challengeService = new ChallengeService();
 const auditService = new AuditService();
 const clients = new Map(); // Empty clients map for now
 
+// Add default client for password manager
+clients.set('polkadot-password-manager', {
+  client_id: 'polkadot-password-manager',
+  client_secret: process.env.DEFAULT_CLIENT_SECRET || 'default-client-secret-for-development-only',
+  name: 'Polkadot Password Manager',
+  redirect_url: 'http://localhost:3000/callback',
+  allowed_origins: ['http://localhost:3000', 'http://localhost:3001']
+});
+
+// Create rate limiters once at app initialization
+const rateLimiters = createRateLimiters(auditService);
+
 // Initialize database
 let db: any = null;
 initializeDatabase().then(database => {
@@ -76,7 +89,7 @@ app.use('/api/auth', (req, res, next) => {
   if (!db) {
     return res.status(503).json({ error: 'Database not initialized' });
   }
-  const authRouter = createAuthRouter(tokenService, challengeService, auditService, clients, db);
+  const authRouter = createAuthRouter(tokenService, challengeService, auditService, clients, db, rateLimiters);
   authRouter(req, res, next);
 });
 
