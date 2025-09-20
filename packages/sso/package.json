@@ -1,7 +1,7 @@
 {
-  "name": "@polkadot-auth/password-manager",
+  "name": "@polkadot-auth/sso",
   "version": "1.0.0",
-  "description": "Secure password management for Polkadot ecosystem",
+  "description": "Single Sign-On service for Polkadot ecosystem applications",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -78,13 +78,13 @@
   },
   "keywords": [
     "polkadot",
-    "password",
-    "manager",
+    "sso",
+    "authentication",
     "security",
     "web3",
-    "encryption",
-    "vault",
-    "credentials"
+    "wallet",
+    "siwe",
+    "polkadot-js"
   ],
   "author": "Polkadot Auth Team",
   "license": "MIT"

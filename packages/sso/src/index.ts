@@ -1,12 +1,12 @@
 import app from './app';
 import { createLogger } from './utils/logger';
 
-const logger = createLogger('password-manager-package');
+const logger = createLogger('polkadot-sso');
 
 // Start the server
 const PORT = process.env.PORT || 3001;
 const server = app.listen(PORT, () => {
-  logger.info(`🚀 Password Manager server running on port ${PORT}`);
+  logger.info(`🚀 Polkadot SSO server running on port ${PORT}`);
   logger.info(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
   logger.info(`🏥 Health Check: http://localhost:${PORT}/health`);
 });
@@ -30,14 +30,13 @@ process.on('SIGINT', () => {
 
 export { app };
 
-// Password Manager Types
-    export * from './modules/credentials/types/credential';
+// SSO Services
+export { SIWEStyleAuthService } from './services/siweStyleAuthService';
+export { TokenService } from './services/token';
+export { ChallengeService } from './services/challengeService';
 
-// Password Manager Services
-export { CredentialService } from './modules/credentials/services/credentialService';
-
-// Password Manager Routes
-export { createCredentialRouter } from './modules/credentials/routes/credentials';
+// SSO Routes
+export { createAuthRouter } from './routes/auth';
 
 // Shared Utilities
 export { createLogger } from './utils';
