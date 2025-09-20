@@ -2,18 +2,17 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createAuthRouter = void 0;
 const express_1 = require("express");
-const rateLimit_js_1 = require("../../middleware/rateLimit.js");
 const validation_js_1 = require("../../middleware/validation.js");
+const security_js_1 = require("../../middleware/security.js");
 const schemas_js_1 = require("../../utils/schemas.js");
 const handlers_js_1 = require("./handlers.js");
 const templates_js_1 = require("./templates.js");
-const createAuthRouter = (tokenService, challengeService, auditService, clients, db) => {
+const createAuthRouter = (tokenService, challengeService, auditService, clients, db, rateLimiters) => {
     const router = (0, express_1.Router)();
-    const rateLimiters = (0, rateLimit_js_1.createRateLimiters)(auditService);
     const loginHandler = (0, handlers_js_1.createLoginHandler)(tokenService, challengeService, auditService, clients, db);
     const verifyHandler = (0, handlers_js_1.createVerifyHandler)(challengeService, auditService, clients, db);
     const tokenHandler = (0, handlers_js_1.createTokenHandler)(tokenService, auditService, db);
-    router.get('/challenge', rateLimiters.challenge, (0, validation_js_1.sanitizeRequest)(), (0, validation_js_1.validateBody)(schemas_js_1.schemas.challengeQuery), async (req, res) => {
+    router.get('/challenge', rateLimiters.challenge, (0, validation_js_1.sanitizeRequest)(), security_js_1.nonceMiddleware, (0, validation_js_1.validateQuery)(schemas_js_1.schemas.challengeQuery), async (req, res) => {
         try {
             const { client_id, address } = req.query;
             const client = clients.get(client_id);
@@ -39,8 +38,8 @@ const createAuthRouter = (tokenService, challengeService, auditService, clients,
         const html = (0, templates_js_1.generateApiDocsPage)();
         res.send(html);
     });
-    router.get('/login', rateLimiters.login, (0, validation_js_1.sanitizeRequest)(), (0, validation_js_1.validateBody)(schemas_js_1.schemas.challengeQuery), loginHandler);
-    router.post('/verify', rateLimiters.verify, (0, validation_js_1.sanitizeRequest)(), (0, validation_js_1.validateBody)(schemas_js_1.schemas.verificationQuery), verifyHandler);
+    router.get('/login', rateLimiters.login, (0, validation_js_1.sanitizeRequest)(), (0, validation_js_1.validateQuery)(schemas_js_1.schemas.challengeQuery), loginHandler);
+    router.post('/verify', rateLimiters.verify, (0, validation_js_1.sanitizeRequest)(), (0, validation_js_1.validateQuery)(schemas_js_1.schemas.verificationQuery), verifyHandler);
     router.post('/token', rateLimiters.token, (0, validation_js_1.sanitizeRequest)(), (0, validation_js_1.validateBody)(schemas_js_1.schemas.tokenRequest), tokenHandler);
     router.get('/callback', (req, res) => {
         const { code, state, error } = req.query;

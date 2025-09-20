@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.nonceMiddleware = exports.securityHeaders = exports.errorHandler = exports.csrfProtection = exports.securityMiddleware = void 0;
-const helmet_1 = __importDefault(require("helmet"));
 const cors_1 = __importDefault(require("cors"));
 const csurf_1 = __importDefault(require("csurf"));
+const helmet_1 = __importDefault(require("helmet"));
 const nonce_js_1 = require("../utils/nonce.js");
 exports.securityMiddleware = [
     (0, helmet_1.default)({

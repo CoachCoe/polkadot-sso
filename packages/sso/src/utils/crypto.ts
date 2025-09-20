@@ -1,4 +1,4 @@
-import * as CryptoJS from 'crypto-js';
+import CryptoJS from 'crypto-js';
 
 export interface CryptoUtils {
   randomBytes: (size: number) => Uint8Array;

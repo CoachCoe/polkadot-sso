@@ -320,18 +320,18 @@ export declare const auditLogCreateSchema: z.ZodObject<{
     user_agent: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     client_id: string;
+    action: string;
     status: "success" | "failure" | "pending";
     event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
-    action: string;
     ip_address: string;
     user_address?: string | undefined;
     details?: string | undefined;
     user_agent?: string | undefined;
 }, {
     client_id: string;
+    action: string;
     status: "success" | "failure" | "pending";
     event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
-    action: string;
     ip_address: string;
     user_address?: string | undefined;
     details?: string | undefined;
@@ -350,22 +350,22 @@ export declare const auditLogResponseSchema: z.ZodObject<{
     created_at: z.ZodNumber;
 }, "strip", z.ZodTypeAny, {
     client_id: string;
+    action: string;
     id: number;
     created_at: number;
     status: string;
     event_type: string;
-    action: string;
     ip_address: string;
     user_address?: string | undefined;
     details?: string | undefined;
     user_agent?: string | undefined;
 }, {
     client_id: string;
+    action: string;
     id: number;
     created_at: number;
     status: string;
     event_type: string;
-    action: string;
     ip_address: string;
     user_address?: string | undefined;
     details?: string | undefined;
@@ -835,18 +835,18 @@ export declare const schemas: {
         user_agent: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         client_id: string;
+        action: string;
         status: "success" | "failure" | "pending";
         event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
-        action: string;
         ip_address: string;
         user_address?: string | undefined;
         details?: string | undefined;
         user_agent?: string | undefined;
     }, {
         client_id: string;
+        action: string;
         status: "success" | "failure" | "pending";
         event_type: "error" | "login" | "logout" | "credential_create" | "credential_revoke" | "token_refresh";
-        action: string;
         ip_address: string;
         user_address?: string | undefined;
         details?: string | undefined;
@@ -865,22 +865,22 @@ export declare const schemas: {
         created_at: z.ZodNumber;
     }, "strip", z.ZodTypeAny, {
         client_id: string;
+        action: string;
         id: number;
         created_at: number;
         status: string;
         event_type: string;
-        action: string;
         ip_address: string;
         user_address?: string | undefined;
         details?: string | undefined;
         user_agent?: string | undefined;
     }, {
         client_id: string;
+        action: string;
         id: number;
         created_at: number;
         status: string;
         event_type: string;
-        action: string;
         ip_address: string;
         user_address?: string | undefined;
         details?: string | undefined;
