@@ -1,8 +1,8 @@
-export { createBruteForceProtection } from '../../middleware/bruteForce';
-export { createRateLimiters } from '../../middleware/rateLimit';
-export { sanitizeRequest, sanitizeRequestParams, validateBody } from '../../middleware/validation';
-export { AuditService } from '../../services/auditService';
-export { decryptData, encryptData } from '../../utils/encryption';
-export { enhancedEncryption } from '../../utils/enhancedEncryption';
-export { createQueryProtectionMiddleware, QueryProtection } from '../../utils/queryProtection';
-export { SecretManager } from '../../utils/secrets';
+export { createBruteForceProtection } from '../../middleware/bruteForce.js';
+export { createRateLimiters } from '../../middleware/rateLimit.js';
+export { sanitizeRequest, sanitizeRequestParams, validateBody } from '../../middleware/validation.js';
+export { AuditService } from '../../services/auditService.js';
+export { decryptData, encryptData } from '../../utils/encryption.js';
+export { enhancedEncryption } from '../../utils/enhancedEncryption.js';
+export { QueryProtection, createQueryProtectionMiddleware } from '../../utils/queryProtection.js';
+export { SecretManager } from '../../utils/secrets.js';

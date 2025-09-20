@@ -1,5 +1,5 @@
 import * as crypto from 'crypto';
-import { SecretManager } from './secrets';
+import { SecretManager } from './secrets.js';
 const ALGORITHM = 'aes-256-gcm';
 const KEY_LENGTH = 32;
 const IV_LENGTH = 12;

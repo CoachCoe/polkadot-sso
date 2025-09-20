@@ -1,4 +1,4 @@
-import { Session } from '../types/auth';
+import { Session } from '../types/auth.js';
 export declare class TokenService {
     constructor();
     generateTokens(address: string, client_id: string): {
@@ -12,7 +12,7 @@ export declare class TokenService {
     };
     verifyToken(token: string, type: 'access' | 'refresh'): Promise<{
         valid: boolean;
-        decoded: import("./jwtService").JWTPayload;
+        decoded: import("./jwtService.js").JWTPayload;
         session: Session;
         error?: undefined;
     } | {

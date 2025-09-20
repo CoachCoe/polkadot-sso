@@ -2,12 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createTokenRouter = void 0;
 const express_1 = require("express");
-const rateLimit_1 = require("../middleware/rateLimit");
-const validation_1 = require("../middleware/validation");
+const rateLimit_js_1 = require("../middleware/rateLimit.js");
+const validation_js_1 = require("../middleware/validation.js");
 const createTokenRouter = (tokenService, auditService) => {
     const router = (0, express_1.Router)();
-    const rateLimiters = (0, rateLimit_1.createRateLimiters)(auditService);
-    router.post('/refresh', rateLimiters.refresh, (0, validation_1.sanitizeRequest)(), async (req, res, next) => {
+    const rateLimiters = (0, rateLimit_js_1.createRateLimiters)(auditService);
+    router.post('/refresh', rateLimiters.refresh, (0, validation_js_1.sanitizeRequest)(), async (req, res, next) => {
         try {
             const { refresh_token } = req.body;
             if (!refresh_token || typeof refresh_token !== 'string') {

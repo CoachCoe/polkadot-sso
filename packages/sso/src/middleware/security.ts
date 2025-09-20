@@ -1,8 +1,8 @@
-import { Request, Response as ExpressResponse, NextFunction, RequestHandler } from 'express';
-import helmet from 'helmet';
 import cors from 'cors';
 import csurf from 'csurf';
-import { generateNonce } from '../utils/nonce';
+import { Response as ExpressResponse, NextFunction, Request, RequestHandler } from 'express';
+import helmet from 'helmet';
+import { generateNonce } from '../utils/nonce.js';
 
 export interface ResponseWithLocals extends ExpressResponse {
   locals: {

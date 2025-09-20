@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response, Router } from 'express';
-import { createRateLimiters } from '../middleware/rateLimit';
-import { sanitizeRequest } from '../middleware/validation';
-import { AuditService } from '../services/auditService';
-import { TokenService } from '../services/token';
+import { createRateLimiters } from '../middleware/rateLimit.js';
+import { sanitizeRequest } from '../middleware/validation.js';
+import { AuditService } from '../services/auditService.js';
+import { TokenService } from '../services/token.js';
 
 export const createTokenRouter = (
   tokenService: TokenService,

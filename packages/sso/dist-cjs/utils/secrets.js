@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateAllSecrets = exports.getSecret = exports.validateAllSecrets = exports.SecretManager = exports.OPTIONAL_SECRETS = exports.REQUIRED_SECRETS = void 0;
-const encryption_1 = require("./encryption");
+const encryption_js_1 = require("./encryption.js");
 exports.REQUIRED_SECRETS = [
     {
         name: 'SESSION_SECRET',
@@ -50,14 +50,14 @@ class SecretManager {
                 errors.push(`${config.name} is required but not set`);
                 continue;
             }
-            if (!(0, encryption_1.validateSecret)(value, config.minLength)) {
+            if (!(0, encryption_js_1.validateSecret)(value, config.minLength)) {
                 errors.push(`${config.name} must be at least ${config.minLength} characters long with sufficient entropy`);
             }
         }
         // Validate optional secrets if they exist
         for (const config of exports.OPTIONAL_SECRETS) {
             const value = process.env[config.name];
-            if (value && !(0, encryption_1.validateSecret)(value, config.minLength)) {
+            if (value && !(0, encryption_js_1.validateSecret)(value, config.minLength)) {
                 errors.push(`${config.name} must be at least ${config.minLength} characters long with sufficient entropy`);
             }
         }
@@ -77,10 +77,10 @@ class SecretManager {
     generateAllSecrets() {
         const generated = {};
         for (const config of exports.REQUIRED_SECRETS) {
-            generated[config.name] = (0, encryption_1.generateSecureKey)(config.minLength);
+            generated[config.name] = (0, encryption_js_1.generateSecureKey)(config.minLength);
         }
         for (const config of exports.OPTIONAL_SECRETS) {
-            generated[config.name] = (0, encryption_1.generateSecureKey)(config.minLength);
+            generated[config.name] = (0, encryption_js_1.generateSecureKey)(config.minLength);
         }
         return generated;
     }
@@ -90,7 +90,7 @@ class SecretManager {
         if (!config) {
             throw new Error(`Unknown secret: ${name}`);
         }
-        const newSecret = (0, encryption_1.generateSecureKey)(config.minLength);
+        const newSecret = (0, encryption_js_1.generateSecureKey)(config.minLength);
         this.secrets.set(name, newSecret);
         return newSecret;
     }

@@ -1,4 +1,4 @@
-import { generateSecureKey, validateSecret } from './encryption';
+import { generateSecureKey, validateSecret } from './encryption.js';
 
 export interface SecretConfig {
   name: string;

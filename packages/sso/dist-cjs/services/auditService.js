@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuditService = void 0;
-const db_1 = require("../config/db");
-const logger_1 = require("../utils/logger");
-const logger = (0, logger_1.createLogger)('audit-service');
+const db_js_1 = require("../config/db.js");
+const logger_js_1 = require("../utils/logger.js");
+const logger = (0, logger_js_1.createLogger)('audit-service');
 class AuditService {
     constructor() { }
     async log(event) {
         let db = null;
         try {
-            db = await (0, db_1.getDatabaseConnection)();
+            db = await (0, db_js_1.getDatabaseConnection)();
             await db.run(`INSERT INTO audit_logs (
           event_type, user_address, client_id,
           action, status, details, ip_address,
@@ -40,14 +40,14 @@ class AuditService {
         }
         finally {
             if (db) {
-                (0, db_1.releaseDatabaseConnection)(db);
+                (0, db_js_1.releaseDatabaseConnection)(db);
             }
         }
     }
     async getAuditLogs(filters = {}) {
         let db = null;
         try {
-            db = await (0, db_1.getDatabaseConnection)();
+            db = await (0, db_js_1.getDatabaseConnection)();
             let query = 'SELECT * FROM audit_logs WHERE 1=1';
             const params = [];
             if (filters.user_address) {
@@ -109,14 +109,14 @@ class AuditService {
         }
         finally {
             if (db) {
-                (0, db_1.releaseDatabaseConnection)(db);
+                (0, db_js_1.releaseDatabaseConnection)(db);
             }
         }
     }
     async getAuditStats() {
         let db = null;
         try {
-            db = await (0, db_1.getDatabaseConnection)();
+            db = await (0, db_js_1.getDatabaseConnection)();
             const totalResult = await db.get('SELECT COUNT(*) as count FROM audit_logs');
             const typeResults = await db.all('SELECT event_type, COUNT(*) as count FROM audit_logs GROUP BY event_type');
             const statusResults = await db.all('SELECT status, COUNT(*) as count FROM audit_logs GROUP BY status');
@@ -153,7 +153,7 @@ class AuditService {
         }
         finally {
             if (db) {
-                (0, db_1.releaseDatabaseConnection)(db);
+                (0, db_js_1.releaseDatabaseConnection)(db);
             }
         }
     }
@@ -161,7 +161,7 @@ class AuditService {
         let db = null;
         try {
             const cutoffDate = Date.now() - daysToKeep * 24 * 60 * 60 * 1000;
-            db = await (0, db_1.getDatabaseConnection)();
+            db = await (0, db_js_1.getDatabaseConnection)();
             const result = await db.run('DELETE FROM audit_logs WHERE created_at < ?', [cutoffDate]);
             if (result.changes > 0) {
                 logger.info('Cleaned up old audit logs', {
@@ -179,7 +179,7 @@ class AuditService {
         }
         finally {
             if (db) {
-                (0, db_1.releaseDatabaseConnection)(db);
+                (0, db_js_1.releaseDatabaseConnection)(db);
             }
         }
     }

@@ -5,11 +5,12 @@ import express, { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import { createAuthRouter } from './routes/auth';
-import { AuditService } from './services/auditService';
-import { ChallengeService } from './services/challengeService';
-import { TokenService } from './services/token';
-import { createLogger } from './utils/logger';
+import { initializeDatabase } from './config/db.js';
+import { createAuthRouter } from './routes/auth/index.js';
+import { AuditService } from './services/auditService.js';
+import { ChallengeService } from './services/challengeService.js';
+import { TokenService } from './services/token.js';
+import { createLogger } from './utils/logger.js';
 
 const logger = createLogger('polkadot-sso-app');
 
@@ -60,8 +61,24 @@ const challengeService = new ChallengeService();
 const auditService = new AuditService();
 const clients = new Map(); // Empty clients map for now
 
+// Initialize database
+let db: any = null;
+initializeDatabase().then(database => {
+  db = database;
+  logger.info('Database initialized successfully');
+}).catch(error => {
+  logger.error('Failed to initialize database:', error);
+  process.exit(1);
+});
+
 // API routes
-app.use('/api/auth', createAuthRouter(tokenService, challengeService, auditService, clients));
+app.use('/api/auth', (req, res, next) => {
+  if (!db) {
+    return res.status(503).json({ error: 'Database not initialized' });
+  }
+  const authRouter = createAuthRouter(tokenService, challengeService, auditService, clients, db);
+  authRouter(req, res, next);
+});
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

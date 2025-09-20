@@ -4,8 +4,8 @@ exports.env = void 0;
 exports.validateEnvironment = validateEnvironment;
 exports.getValidatedEnv = getValidatedEnv;
 const zod_1 = require("zod");
-const logger_1 = require("./logger");
-const logger = (0, logger_1.createLogger)('env-validation');
+const logger_js_1 = require("./logger.js");
+const logger = (0, logger_js_1.createLogger)('env-validation');
 const envSchema = zod_1.z.object({
     SESSION_SECRET: zod_1.z.string().min(32, 'SESSION_SECRET must be at least 32 characters'),
     NODE_ENV: zod_1.z.enum(['development', 'production', 'test']).default('development'),

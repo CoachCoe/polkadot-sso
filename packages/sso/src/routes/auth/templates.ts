@@ -1,4 +1,4 @@
-import { escapeHtml } from '../../utils/sanitization';
+import { escapeHtml } from '../../utils/sanitization.js';
 
 export interface ChallengeTemplateData {
   address?: string;

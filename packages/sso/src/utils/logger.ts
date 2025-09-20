@@ -1,6 +1,6 @@
-import * as winston from 'winston';
 import { Request } from 'express';
-import { RequestWithId } from '../types/auth';
+import * as winston from 'winston';
+import { RequestWithId } from '../types/auth.js';
 
 export const createLogger = (service: string) => {
   return winston.createLogger({

@@ -2,7 +2,7 @@ import { mkdir } from 'fs/promises';
 import { dirname } from 'path';
 import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
-import { createLogger } from '../utils/logger';
+import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('database-pool');
 

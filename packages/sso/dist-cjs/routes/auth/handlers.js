@@ -35,10 +35,10 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createTokenHandler = exports.createVerifyHandler = exports.createLoginHandler = void 0;
 const crypto_1 = __importStar(require("crypto"));
-const db_1 = require("../../utils/db");
-const logger_1 = require("../../utils/logger");
-const validation_1 = require("../../utils/validation");
-const logger = (0, logger_1.createLogger)('auth-handlers');
+const db_js_1 = require("../../utils/db.js");
+const logger_js_1 = require("../../utils/logger.js");
+const validation_js_1 = require("../../utils/validation.js");
+const logger = (0, logger_js_1.createLogger)('auth-handlers');
 function generateCodeChallenge(verifier) {
     const hash = (0, crypto_1.createHash)('sha256');
     hash.update(verifier);
@@ -66,16 +66,16 @@ function verifySignature(message, signature, address) {
 const createLoginHandler = (tokenService, challengeService, auditService, clients, db) => {
     return async (req, res) => {
         try {
-            (0, logger_1.logRequest)(req, 'Login attempt', { address: req.query.address });
-            const validation = (0, validation_1.validateAuthRequest)(req);
+            (0, logger_js_1.logRequest)(req, 'Login attempt', { address: req.query.address });
+            const validation = (0, validation_js_1.validateAuthRequest)(req);
             if (!validation.isValid) {
-                (0, logger_1.logError)(req, new Error(validation.error || 'Validation failed'));
+                (0, logger_js_1.logError)(req, new Error(validation.error || 'Validation failed'));
                 return res.status(400).json({ error: validation.error });
             }
             const { client_id, wallet } = req.query;
             const client = clients.get(client_id);
             if (!client) {
-                (0, logger_1.logError)(req, new Error('Invalid client'));
+                (0, logger_js_1.logError)(req, new Error('Invalid client'));
                 return res.status(400).json({ error: 'Invalid client' });
             }
             const challenge = await challengeService.generateChallenge(client_id, req.query.address);
@@ -98,7 +98,7 @@ const createLoginHandler = (tokenService, challengeService, auditService, client
             });
         }
         catch (error) {
-            (0, logger_1.logError)(req, error);
+            (0, logger_js_1.logError)(req, error);
             res.status(500).json({ error: 'Login failed' });
         }
     };
@@ -160,7 +160,7 @@ const createVerifyHandler = (challengeService, auditService, clients, db) => {
             res.redirect(`${client.redirect_url}?code=${authCode}&state=${state}`);
         }
         catch (error) {
-            (0, logger_1.logError)(req, error);
+            (0, logger_js_1.logError)(req, error);
             logger.error('Verification handler error', {
                 error: error instanceof Error ? error.message : String(error),
             });
@@ -179,11 +179,11 @@ const createTokenHandler = (tokenService, auditService, db) => {
             if (!client_id || typeof client_id !== 'string') {
                 return res.status(400).send('Invalid client_id');
             }
-            const client = await (0, validation_1.validateClientCredentials)(req);
+            const client = await (0, validation_js_1.validateClientCredentials)(req);
             if (!client) {
                 return res.status(401).send('Invalid client credentials');
             }
-            const authCode = await db_1.secureQueries.authCodes.verify(db, code, client_id);
+            const authCode = await db_js_1.secureQueries.authCodes.verify(db, code, client_id);
             if (!authCode || Date.now() > authCode.expires_at) {
                 return res.status(400).send('Invalid or expired authorization code');
             }
@@ -219,7 +219,7 @@ const createTokenHandler = (tokenService, auditService, db) => {
             });
         }
         catch (error) {
-            (0, logger_1.logError)(req, error);
+            (0, logger_js_1.logError)(req, error);
             res.status(500).json({ error: 'Token exchange failed' });
         }
     };

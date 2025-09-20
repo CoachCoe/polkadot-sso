@@ -1,13 +1,13 @@
 import crypto, { createHash } from 'crypto';
 import { RequestHandler } from 'express';
 import { Database } from 'sqlite';
-import { AuditService } from '../../services/auditService';
-import { ChallengeService } from '../../services/challengeService';
-import { TokenService } from '../../services/token';
-import { Client } from '../../types/auth';
-import { secureQueries } from '../../utils/db';
-import { createLogger, logError, logRequest } from '../../utils/logger';
-import { validateAuthRequest, validateClientCredentials } from '../../utils/validation';
+import { AuditService } from '../../services/auditService.js';
+import { ChallengeService } from '../../services/challengeService.js';
+import { TokenService } from '../../services/token.js';
+import { Client } from '../../types/auth.js';
+import { secureQueries } from '../../utils/db.js';
+import { createLogger, logError, logRequest } from '../../utils/logger.js';
+import { validateAuthRequest, validateClientCredentials } from '../../utils/validation.js';
 
 const logger = createLogger('auth-handlers');
 

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
-import { AuditService } from '../services/auditService';
+import { AuditService } from '../services/auditService.js';
 
 export const createRateLimiter = (
   windowMs: number,

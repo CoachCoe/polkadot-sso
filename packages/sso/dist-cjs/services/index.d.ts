@@ -1,9 +1,9 @@
-export * from './auditService';
-export * from './challengeService';
-export * from './kusamaIntegrationService';
-export * from './realTransactionService';
-export * from './siweStyleAuthService';
-export * from './token';
-export * from './walletBasedKusamaService';
-export * from './walletSecurityMonitoringService';
+export * from './auditService.js';
+export * from './challengeService.js';
+export * from './kusamaIntegrationService.js';
+export * from './realTransactionService.js';
+export * from './siweStyleAuthService.js';
+export * from './token.js';
+export * from './walletBasedKusamaService.js';
+export * from './walletSecurityMonitoringService.js';
 //# sourceMappingURL=index.d.ts.map

@@ -1,8 +1,8 @@
-import { getDatabaseConnection, releaseDatabaseConnection } from '../config/db';
-import { Challenge } from '../types/auth';
-import { createHash, randomBytes, randomUUID } from '../utils/crypto';
-import { createLogger } from '../utils/logger';
-import { getCacheStrategies } from './cacheService';
+import { getDatabaseConnection, releaseDatabaseConnection } from '../config/db.js';
+import { Challenge } from '../types/auth.js';
+import { createHash, randomBytes, randomUUID } from '../utils/crypto.js';
+import { createLogger } from '../utils/logger.js';
+import { getCacheStrategies } from './cacheService.js';
 
 const logger = createLogger('challenge-service');
 

@@ -7,8 +7,8 @@ exports.sessionConfig = void 0;
 const connect_redis_1 = __importDefault(require("connect-redis"));
 const crypto_1 = require("crypto");
 const redis_1 = require("redis");
-const logger_1 = require("../utils/logger");
-const logger = (0, logger_1.createLogger)('session-config');
+const logger_js_1 = require("../utils/logger.js");
+const logger = (0, logger_js_1.createLogger)('session-config');
 logger.info('Session configuration loaded', {
     sessionSecretConfigured: !!process.env.SESSION_SECRET,
     nodeEnv: process.env.NODE_ENV,

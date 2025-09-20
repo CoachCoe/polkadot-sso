@@ -7,7 +7,7 @@ exports.nonceMiddleware = exports.securityHeaders = exports.errorHandler = expor
 const helmet_1 = __importDefault(require("helmet"));
 const cors_1 = __importDefault(require("cors"));
 const csurf_1 = __importDefault(require("csurf"));
-const nonce_1 = require("../utils/nonce");
+const nonce_js_1 = require("../utils/nonce.js");
 exports.securityMiddleware = [
     (0, helmet_1.default)({
         contentSecurityPolicy: {
@@ -80,7 +80,7 @@ const securityHeaders = (req, res, next) => {
 };
 exports.securityHeaders = securityHeaders;
 const nonceMiddleware = (req, res, next) => {
-    res.locals.nonce = (0, nonce_1.generateNonce)();
+    res.locals.nonce = (0, nonce_js_1.generateNonce)();
     next();
 };
 exports.nonceMiddleware = nonceMiddleware;
