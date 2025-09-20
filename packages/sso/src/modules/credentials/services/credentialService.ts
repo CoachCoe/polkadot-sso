@@ -7,17 +7,17 @@ export class CredentialService {
   private credentials: Map<string, any> = new Map();
 
   async createCredential(data: any): Promise<any> {
-    const id = crypto.randomUUID();
+      const id = crypto.randomUUID();
     const credential = {
       id,
       ...data,
       created_at: Date.now(),
       updated_at: Date.now(),
     };
-    
+
     this.credentials.set(id, credential);
     logger.info('Credential created', { id });
-    
+
     return credential;
   }
 
@@ -26,7 +26,7 @@ export class CredentialService {
     if (!credential) {
       throw new Error('Credential not found');
     }
-    return credential;
+      return credential;
   }
 
   async listCredentials(): Promise<any[]> {

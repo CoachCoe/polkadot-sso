@@ -22,6 +22,28 @@ const app_1 = __importDefault(require("./app"));
 exports.app = app_1.default;
 const logger_1 = require("./utils/logger");
 const logger = (0, logger_1.createLogger)('password-manager-package');
+// Start the server
+const PORT = process.env.PORT || 3001;
+const server = app_1.default.listen(PORT, () => {
+    logger.info(`🚀 Password Manager server running on port ${PORT}`);
+    logger.info(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
+    logger.info(`🏥 Health Check: http://localhost:${PORT}/health`);
+});
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    logger.info('SIGTERM received, shutting down gracefully');
+    server.close(() => {
+        logger.info('Process terminated');
+        process.exit(0);
+    });
+});
+process.on('SIGINT', () => {
+    logger.info('SIGINT received, shutting down gracefully');
+    server.close(() => {
+        logger.info('Process terminated');
+        process.exit(0);
+    });
+});
 // Password Manager Types
 __exportStar(require("./modules/credentials/types/credential"), exports);
 // Password Manager Services

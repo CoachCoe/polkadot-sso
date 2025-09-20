@@ -58,16 +58,15 @@ declare const envSchema: z.ZodObject<{
     STATIC_CACHE_ENABLED: boolean;
     KUSAMA_ACCOUNT_TYPE: "sr25519" | "ed25519" | "ecdsa";
     LOG_LEVEL: "error" | "warn" | "info" | "debug";
-    JWT_SECRET?: string | undefined;
     DATABASE_URL?: string | undefined;
     REDIS_URL?: string | undefined;
     COOKIE_DOMAIN?: string | undefined;
+    JWT_SECRET?: string | undefined;
     KUSAMA_ENDPOINT?: string | undefined;
     DEFAULT_CLIENT_SECRET?: string | undefined;
     LOG_FILE?: string | undefined;
 }, {
     SESSION_SECRET: string;
-    JWT_SECRET?: string | undefined;
     NODE_ENV?: "development" | "production" | "test" | undefined;
     PORT?: string | undefined;
     DATABASE_URL?: string | undefined;
@@ -84,6 +83,7 @@ declare const envSchema: z.ZodObject<{
     ALLOWED_ORIGINS?: string | undefined;
     COOKIE_DOMAIN?: string | undefined;
     COOKIE_SECURE?: string | undefined;
+    JWT_SECRET?: string | undefined;
     JWT_ISSUER?: string | undefined;
     JWT_ACCESS_TOKEN_EXPIRY?: string | undefined;
     JWT_REFRESH_TOKEN_EXPIRY?: string | undefined;
@@ -134,10 +134,10 @@ export declare const env: {
     STATIC_CACHE_ENABLED: boolean;
     KUSAMA_ACCOUNT_TYPE: "sr25519" | "ed25519" | "ecdsa";
     LOG_LEVEL: "error" | "warn" | "info" | "debug";
-    JWT_SECRET?: string | undefined;
     DATABASE_URL?: string | undefined;
     REDIS_URL?: string | undefined;
     COOKIE_DOMAIN?: string | undefined;
+    JWT_SECRET?: string | undefined;
     KUSAMA_ENDPOINT?: string | undefined;
     DEFAULT_CLIENT_SECRET?: string | undefined;
     LOG_FILE?: string | undefined;

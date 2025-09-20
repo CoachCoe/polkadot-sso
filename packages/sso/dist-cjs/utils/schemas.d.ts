@@ -76,14 +76,14 @@ export declare const tokenRequestSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     client_id: string;
     code: string;
-    client_secret: string;
     grant_type: "authorization_code";
+    client_secret: string;
     redirect_uri: string;
 }, {
     client_id: string;
     code: string;
-    client_secret: string;
     grant_type: "authorization_code";
+    client_secret: string;
     redirect_uri: string;
 }>;
 export declare const tokenResponseSchema: z.ZodObject<{
@@ -591,14 +591,14 @@ export declare const schemas: {
     }, "strip", z.ZodTypeAny, {
         client_id: string;
         code: string;
-        client_secret: string;
         grant_type: "authorization_code";
+        client_secret: string;
         redirect_uri: string;
     }, {
         client_id: string;
         code: string;
-        client_secret: string;
         grant_type: "authorization_code";
+        client_secret: string;
         redirect_uri: string;
     }>;
     readonly tokenResponse: z.ZodObject<{
