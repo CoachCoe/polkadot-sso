@@ -1,3 +1,4 @@
+import { Database } from 'sqlite';
 import { getDatabaseConnection, releaseDatabaseConnection } from '../config/db.js';
 import { AuditEvent } from '../types/audit.js';
 import { createLogger } from '../utils/logger.js';
@@ -8,7 +9,7 @@ export class AuditService {
   constructor() {}
 
   async log(event: AuditEvent): Promise<void> {
-    let db: any = null;
+    let db: Database | null = null;
     try {
       db = await getDatabaseConnection();
       await db.run(
@@ -61,12 +62,12 @@ export class AuditService {
       offset?: number;
     } = {}
   ): Promise<Array<AuditEvent & { id: number; created_at: number }>> {
-    let db: any = null;
+    let db: Database | null = null;
     try {
       db = await getDatabaseConnection();
 
       let query = 'SELECT * FROM audit_logs WHERE 1=1';
-      const params: any[] = [];
+      const params: unknown[] = [];
 
       if (filters.user_address) {
         query += ' AND user_address = ?';
@@ -147,7 +148,7 @@ export class AuditService {
     by_status: Record<string, number>;
     by_action: Record<string, number>;
   }> {
-    let db: any = null;
+    let db: Database | null = null;
     try {
       db = await getDatabaseConnection();
 
@@ -202,14 +203,14 @@ export class AuditService {
   }
 
   async cleanupOldAuditLogs(daysToKeep: number = 90): Promise<number> {
-    let db: any = null;
+    let db: Database | null = null;
     try {
       const cutoffDate = Date.now() - daysToKeep * 24 * 60 * 60 * 1000;
 
       db = await getDatabaseConnection();
       const result = await db.run('DELETE FROM audit_logs WHERE created_at < ?', [cutoffDate]);
 
-      if (result.changes > 0) {
+      if (result.changes && result.changes > 0) {
         logger.info('Cleaned up old audit logs', {
           deleted: result.changes,
           daysKept: daysToKeep,

@@ -63,7 +63,7 @@ function verifySignature(message, signature, address) {
         return false;
     }
 }
-const createLoginHandler = (tokenService, challengeService, auditService, clients, db) => {
+const createLoginHandler = (_tokenService, challengeService, auditService, clients, _db) => {
     return async (req, res) => {
         try {
             (0, logger_js_1.logRequest)(req, 'Login attempt', { address: req.query.address });
@@ -89,7 +89,7 @@ const createLoginHandler = (tokenService, challengeService, auditService, client
                 ip_address: req.ip || 'unknown',
                 user_agent: req.get('User-Agent'),
             });
-            res.json({
+            return res.json({
                 challenge_id: challenge.id,
                 message: challenge.message,
                 code_verifier: challenge.code_verifier,
@@ -99,7 +99,7 @@ const createLoginHandler = (tokenService, challengeService, auditService, client
         }
         catch (error) {
             (0, logger_js_1.logError)(req, error);
-            res.status(500).json({ error: 'Login failed' });
+            return res.status(500).json({ error: 'Login failed' });
         }
     };
 };
@@ -157,14 +157,14 @@ const createVerifyHandler = (challengeService, auditService, clients, db) => {
                 ip_address: req.ip || 'unknown',
                 user_agent: req.get('User-Agent'),
             });
-            res.redirect(`${client.redirect_url}?code=${authCode}&state=${state}`);
+            return res.redirect(`${client.redirect_url}?code=${authCode}&state=${state}`);
         }
         catch (error) {
             (0, logger_js_1.logError)(req, error);
             logger.error('Verification handler error', {
                 error: error instanceof Error ? error.message : String(error),
             });
-            res.status(500).json({ error: 'Verification failed' });
+            return res.status(500).json({ error: 'Verification failed' });
         }
     };
 };
@@ -211,7 +211,7 @@ const createTokenHandler = (tokenService, auditService, db) => {
                 ip_address: req.ip || 'unknown',
                 user_agent: req.get('User-Agent'),
             });
-            res.json({
+            return res.json({
                 access_token: session.access_token,
                 token_type: 'Bearer',
                 expires_in: 900, // 15 minutes
@@ -220,7 +220,7 @@ const createTokenHandler = (tokenService, auditService, db) => {
         }
         catch (error) {
             (0, logger_js_1.logError)(req, error);
-            res.status(500).json({ error: 'Token exchange failed' });
+            return res.status(500).json({ error: 'Token exchange failed' });
         }
     };
 };

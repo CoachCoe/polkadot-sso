@@ -1,3 +1,4 @@
+import { Database } from 'sqlite';
 import { getDatabaseConnection, releaseDatabaseConnection } from '../config/db.js';
 import { Challenge } from '../types/auth.js';
 import { createHash, randomBytes, randomUUID } from '../utils/crypto.js';
@@ -90,7 +91,7 @@ export class ChallengeService {
   }
 
   async generateChallenge(client_id: string, userAddress?: string): Promise<Challenge> {
-    let db: any = null;
+    let db: Database | null = null;
     try {
       const code_verifier = this.generateCodeVerifier();
       const code_challenge = await this.generateCodeChallenge(code_verifier);
@@ -180,7 +181,7 @@ export class ChallengeService {
   }
 
   async getChallenge(challengeId: string): Promise<Challenge | null> {
-    let db: any = null;
+    let db: Database | null = null;
     try {
       const cacheStrategies = getCacheStrategies();
       let challenge = await cacheStrategies.getChallenge<Challenge>(challengeId);
@@ -227,12 +228,12 @@ export class ChallengeService {
   }
 
   async markChallengeUsed(challengeId: string): Promise<boolean> {
-    let db: any = null;
+    let db: Database | null = null;
     try {
       db = await getDatabaseConnection();
       const result = await db.run('UPDATE challenges SET used = 1 WHERE id = ?', [challengeId]);
 
-      if (result.changes > 0) {
+      if (result.changes && result.changes > 0) {
         const cacheStrategies = getCacheStrategies();
         await cacheStrategies.getChallenge(challengeId);
 
@@ -255,12 +256,12 @@ export class ChallengeService {
   }
 
   async cleanupExpiredChallenges(): Promise<number> {
-    let db: any = null;
+    let db: Database | null = null;
     try {
       db = await getDatabaseConnection();
       const result = await db.run('DELETE FROM challenges WHERE expires_at < ?', [Date.now()]);
 
-      if (result.changes > 0) {
+      if (result.changes && result.changes > 0) {
         logger.info('Cleaned up expired challenges', { count: result.changes });
       }
 
@@ -278,7 +279,7 @@ export class ChallengeService {
   }
 
   async getChallengeStats(): Promise<{ active: number; expired: number; used: number }> {
-    let db: any = null;
+    let db: Database | null = null;
     try {
       db = await getDatabaseConnection();
       const now = Date.now();

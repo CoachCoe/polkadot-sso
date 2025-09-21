@@ -9,6 +9,7 @@ declare class DatabasePool {
     initialize(): Promise<void>;
     private createConnection;
     getConnection(): Promise<Database>;
+    private isConnectionHealthy;
     releaseConnection(db: Database): void;
     private startReaper;
     private reapIdleConnections;

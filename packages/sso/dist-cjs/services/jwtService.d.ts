@@ -23,6 +23,7 @@ export declare class JWTService {
     private accessTokenExpiry;
     private refreshTokenExpiry;
     constructor();
+    private validateSecret;
     /**
      * Generate a new token pair for a session
      */
@@ -61,7 +62,7 @@ export declare class JWTService {
     /**
      * Check if a token is blacklisted
      */
-    isTokenBlacklisted(tokenId: string): boolean;
+    isTokenBlacklisted(_tokenId: string): boolean;
 }
 export declare const jwtService: JWTService;
 //# sourceMappingURL=jwtService.d.ts.map

@@ -17,9 +17,9 @@ process.env.PORT = '3001';
 
 const originalConsole = { ...console };
 beforeAll(() => {
-  console.log = jest.fn();
-  console.warn = jest.fn();
-  console.error = jest.fn();
+  console.log = () => {};
+  console.warn = () => {};
+  console.error = () => {};
 });
 
 afterAll(() => {
@@ -28,9 +28,7 @@ afterAll(() => {
   console.error = originalConsole.error;
 });
 
-jest.setTimeout(10000);
-
-// Add a simple test to satisfy Jest's requirement
+// Add a simple test to satisfy Vitest's requirement
 describe('Test Setup', () => {
   it('should configure test environment', () => {
     expect(process.env.NODE_ENV).toBe('test');

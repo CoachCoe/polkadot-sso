@@ -8,20 +8,37 @@ const crypto_1 = __importDefault(require("crypto"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 class JWTService {
     constructor() {
-        // Require strong secrets in production
-        this.accessTokenSecret =
-            process.env.JWT_ACCESS_SECRET || crypto_1.default.randomBytes(64).toString('hex');
-        this.refreshTokenSecret =
-            process.env.JWT_REFRESH_SECRET || crypto_1.default.randomBytes(64).toString('hex');
+        // Validate and require strong secrets
+        this.accessTokenSecret = this.validateSecret('JWT_ACCESS_SECRET');
+        this.refreshTokenSecret = this.validateSecret('JWT_REFRESH_SECRET');
         this.issuer = process.env.JWT_ISSUER || 'polkadot-sso';
         this.accessTokenExpiry = parseInt(process.env.JWT_ACCESS_EXPIRY || '900'); // 15 minutes
         this.refreshTokenExpiry = parseInt(process.env.JWT_REFRESH_EXPIRY || '604800'); // 7 days
-        // Warn if using default secrets in production
-        if (process.env.NODE_ENV === 'production' &&
-            (this.accessTokenSecret === 'default-access-secret' ||
-                this.refreshTokenSecret === 'default-refresh-secret')) {
-            console.warn('⚠️  WARNING: Using default JWT secrets in production! Set JWT_ACCESS_SECRET and JWT_REFRESH_SECRET environment variables.');
+        // Validate expiry times
+        if (this.accessTokenExpiry < 60) {
+            throw new Error('JWT_ACCESS_EXPIRY must be at least 60 seconds');
         }
+        if (this.refreshTokenExpiry < 3600) {
+            throw new Error('JWT_REFRESH_EXPIRY must be at least 3600 seconds (1 hour)');
+        }
+    }
+    validateSecret(envVar) {
+        const secret = process.env[envVar];
+        if (!secret) {
+            throw new Error(`${envVar} is required and must be provided via environment variable`);
+        }
+        if (secret.length < 32) {
+            throw new Error(`${envVar} must be at least 32 characters long for security`);
+        }
+        if (secret.length > 512) {
+            throw new Error(`${envVar} must not exceed 512 characters`);
+        }
+        // Check for common weak secrets
+        const weakSecrets = ['secret', 'password', '123456', 'default', 'test'];
+        if (weakSecrets.some(weak => secret.toLowerCase().includes(weak))) {
+            throw new Error(`${envVar} contains weak or common secret patterns`);
+        }
+        return secret;
     }
     /**
      * Generate a new token pair for a session
@@ -173,7 +190,7 @@ class JWTService {
     /**
      * Check if a token is blacklisted
      */
-    isTokenBlacklisted(tokenId) {
+    isTokenBlacklisted(_tokenId) {
         // In a real implementation, you would check Redis for the token ID
         return false;
     }

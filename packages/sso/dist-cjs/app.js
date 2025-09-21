@@ -6,20 +6,33 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = require("dotenv");
 (0, dotenv_1.config)();
 const express_1 = __importDefault(require("express"));
-const helmet_1 = __importDefault(require("helmet"));
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const db_js_1 = require("./config/db.js");
+const errorHandler_js_1 = require("./middleware/errorHandler.js");
 const rateLimit_js_1 = require("./middleware/rateLimit.js");
+const security_js_1 = require("./middleware/security.js");
+const validation_js_1 = require("./middleware/validation.js");
 const index_js_1 = require("./routes/auth/index.js");
 const auditService_js_1 = require("./services/auditService.js");
 const challengeService_js_1 = require("./services/challengeService.js");
 const token_js_1 = require("./services/token.js");
+const errors_js_1 = require("./utils/errors.js");
 const logger_js_1 = require("./utils/logger.js");
 const logger = (0, logger_js_1.createLogger)('polkadot-sso-app');
 const app = (0, express_1.default)();
-// Security middleware
-app.use((0, helmet_1.default)());
+// Apply security middleware
+security_js_1.securityMiddleware.forEach(middleware => {
+    if (middleware) {
+        app.use(middleware);
+    }
+});
+// Apply validation middleware
+validation_js_1.validationMiddleware.forEach(middleware => {
+    if (middleware) {
+        app.use(middleware);
+    }
+});
 // Body parsing middleware
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
@@ -44,7 +57,7 @@ const swaggerOptions = {
 const swaggerSpec = (0, swagger_jsdoc_1.default)(swaggerOptions);
 app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerSpec));
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
     res.json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
@@ -79,26 +92,16 @@ let db = null;
 // API routes
 app.use('/api/auth', (req, res, next) => {
     if (!db) {
-        return res.status(503).json({ error: 'Database not initialized' });
+        const error = new errors_js_1.ServiceUnavailableError('Database not initialized', undefined, req.requestId);
+        return next(error);
     }
     const authRouter = (0, index_js_1.createAuthRouter)(tokenService, challengeService, auditService, clients, db, rateLimiters);
     authRouter(req, res, next);
 });
-// Error handling middleware
-app.use((err, req, res, next) => {
-    logger.error('Unhandled error:', err);
-    res.status(500).json({
-        error: 'Internal server error',
-        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
-    });
-});
-// 404 handler
-app.use('*', (req, res) => {
-    res.status(404).json({
-        error: 'Not found',
-        message: `Route ${req.originalUrl} not found`,
-    });
-});
+// 404 handler (must be before error handler)
+app.use('*', errorHandler_js_1.notFoundHandler);
+// Global error handling middleware (must be last)
+app.use(errorHandler_js_1.globalErrorHandler);
 logger.info('Polkadot SSO application initialized successfully');
 exports.default = app;
 //# sourceMappingURL=app.js.map

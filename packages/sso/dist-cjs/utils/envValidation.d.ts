@@ -17,7 +17,8 @@ declare const envSchema: z.ZodObject<{
     ALLOWED_ORIGINS: z.ZodDefault<z.ZodEffects<z.ZodString, string[], string>>;
     COOKIE_DOMAIN: z.ZodOptional<z.ZodString>;
     COOKIE_SECURE: z.ZodDefault<z.ZodEffects<z.ZodString, boolean, string>>;
-    JWT_SECRET: z.ZodOptional<z.ZodString>;
+    JWT_ACCESS_SECRET: z.ZodString;
+    JWT_REFRESH_SECRET: z.ZodString;
     JWT_ISSUER: z.ZodDefault<z.ZodString>;
     JWT_ACCESS_TOKEN_EXPIRY: z.ZodDefault<z.ZodPipeline<z.ZodEffects<z.ZodString, number, string>, z.ZodNumber>>;
     JWT_REFRESH_TOKEN_EXPIRY: z.ZodDefault<z.ZodPipeline<z.ZodEffects<z.ZodString, number, string>, z.ZodNumber>>;
@@ -38,6 +39,9 @@ declare const envSchema: z.ZodObject<{
     DB_POOL_ACQUIRE_TIMEOUT: number;
     DB_POOL_IDLE_TIMEOUT: number;
     DB_POOL_REAP_INTERVAL: number;
+    ALLOWED_ORIGINS: string[];
+    JWT_ACCESS_SECRET: string;
+    JWT_REFRESH_SECRET: string;
     JWT_ISSUER: string;
     SESSION_SECRET: string;
     NODE_ENV: "development" | "production" | "test";
@@ -46,7 +50,6 @@ declare const envSchema: z.ZodObject<{
     REDIS_MAX_RETRIES: number;
     REDIS_CONNECT_TIMEOUT: number;
     REDIS_PING_INTERVAL: number;
-    ALLOWED_ORIGINS: string[];
     COOKIE_SECURE: boolean;
     JWT_ACCESS_TOKEN_EXPIRY: number;
     JWT_REFRESH_TOKEN_EXPIRY: number;
@@ -62,16 +65,18 @@ declare const envSchema: z.ZodObject<{
     DEFAULT_CLIENT_SECRET?: string | undefined;
     DATABASE_URL?: string | undefined;
     COOKIE_DOMAIN?: string | undefined;
-    JWT_SECRET?: string | undefined;
     KUSAMA_ENDPOINT?: string | undefined;
     LOG_FILE?: string | undefined;
 }, {
+    JWT_ACCESS_SECRET: string;
+    JWT_REFRESH_SECRET: string;
     SESSION_SECRET: string;
     DB_POOL_MIN?: string | undefined;
     DB_POOL_MAX?: string | undefined;
     DB_POOL_ACQUIRE_TIMEOUT?: string | undefined;
     DB_POOL_IDLE_TIMEOUT?: string | undefined;
     DB_POOL_REAP_INTERVAL?: string | undefined;
+    ALLOWED_ORIGINS?: string | undefined;
     REDIS_URL?: string | undefined;
     JWT_ISSUER?: string | undefined;
     DEFAULT_CLIENT_SECRET?: string | undefined;
@@ -82,10 +87,8 @@ declare const envSchema: z.ZodObject<{
     REDIS_MAX_RETRIES?: string | undefined;
     REDIS_CONNECT_TIMEOUT?: string | undefined;
     REDIS_PING_INTERVAL?: string | undefined;
-    ALLOWED_ORIGINS?: string | undefined;
     COOKIE_DOMAIN?: string | undefined;
     COOKIE_SECURE?: string | undefined;
-    JWT_SECRET?: string | undefined;
     JWT_ACCESS_TOKEN_EXPIRY?: string | undefined;
     JWT_REFRESH_TOKEN_EXPIRY?: string | undefined;
     RATE_LIMIT_WINDOW_MS?: string | undefined;
@@ -114,6 +117,9 @@ export declare const env: {
     DB_POOL_ACQUIRE_TIMEOUT: number;
     DB_POOL_IDLE_TIMEOUT: number;
     DB_POOL_REAP_INTERVAL: number;
+    ALLOWED_ORIGINS: string[];
+    JWT_ACCESS_SECRET: string;
+    JWT_REFRESH_SECRET: string;
     JWT_ISSUER: string;
     SESSION_SECRET: string;
     NODE_ENV: "development" | "production" | "test";
@@ -122,7 +128,6 @@ export declare const env: {
     REDIS_MAX_RETRIES: number;
     REDIS_CONNECT_TIMEOUT: number;
     REDIS_PING_INTERVAL: number;
-    ALLOWED_ORIGINS: string[];
     COOKIE_SECURE: boolean;
     JWT_ACCESS_TOKEN_EXPIRY: number;
     JWT_REFRESH_TOKEN_EXPIRY: number;
@@ -138,7 +143,6 @@ export declare const env: {
     DEFAULT_CLIENT_SECRET?: string | undefined;
     DATABASE_URL?: string | undefined;
     COOKIE_DOMAIN?: string | undefined;
-    JWT_SECRET?: string | undefined;
     KUSAMA_ENDPOINT?: string | undefined;
     LOG_FILE?: string | undefined;
 };

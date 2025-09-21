@@ -1,24 +1,39 @@
 import { config } from 'dotenv';
 config();
 
-import express, { NextFunction, Request, Response } from 'express';
-import helmet from 'helmet';
+import express, { Request, Response } from 'express';
+import { Database } from 'sqlite';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { initializeDatabase } from './config/db.js';
+import { globalErrorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { createRateLimiters } from './middleware/rateLimit.js';
+import { securityMiddleware } from './middleware/security.js';
+import { validationMiddleware } from './middleware/validation.js';
 import { createAuthRouter } from './routes/auth/index.js';
 import { AuditService } from './services/auditService.js';
 import { ChallengeService } from './services/challengeService.js';
 import { TokenService } from './services/token.js';
+import { ServiceUnavailableError } from './utils/errors.js';
 import { createLogger } from './utils/logger.js';
 
 const logger = createLogger('polkadot-sso-app');
 
 const app = express();
 
-// Security middleware
-app.use(helmet());
+// Apply security middleware
+securityMiddleware.forEach(middleware => {
+  if (middleware) {
+    app.use(middleware);
+  }
+});
+
+// Apply validation middleware
+validationMiddleware.forEach(middleware => {
+  if (middleware) {
+    app.use(middleware);
+  }
+});
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -47,7 +62,7 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Health check endpoint
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
@@ -75,7 +90,7 @@ clients.set('polkadot-password-manager', {
 const rateLimiters = createRateLimiters(auditService);
 
 // Initialize database
-let db: any = null;
+let db: Database | null = null;
 initializeDatabase().then(database => {
   db = database;
   logger.info('Database initialized successfully');
@@ -87,28 +102,18 @@ initializeDatabase().then(database => {
 // API routes
 app.use('/api/auth', (req, res, next) => {
   if (!db) {
-    return res.status(503).json({ error: 'Database not initialized' });
+    const error = new ServiceUnavailableError('Database not initialized', undefined, (req as Request & { requestId?: string }).requestId);
+    return next(error);
   }
   const authRouter = createAuthRouter(tokenService, challengeService, auditService, clients, db, rateLimiters);
   authRouter(req, res, next);
 });
 
-// Error handling middleware
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  logger.error('Unhandled error:', err);
-  res.status(500).json({
-    error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
-  });
-});
+// 404 handler (must be before error handler)
+app.use('*', notFoundHandler);
 
-// 404 handler
-app.use('*', (req: Request, res: Response) => {
-  res.status(404).json({
-    error: 'Not found',
-    message: `Route ${req.originalUrl} not found`,
-  });
-});
+// Global error handling middleware (must be last)
+app.use(globalErrorHandler);
 
 logger.info('Polkadot SSO application initialized successfully');
 

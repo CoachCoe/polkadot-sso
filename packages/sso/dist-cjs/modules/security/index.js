@@ -1,8 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SecretManager = exports.createQueryProtectionMiddleware = exports.QueryProtection = exports.enhancedEncryption = exports.encryptData = exports.decryptData = exports.AuditService = exports.validateBody = exports.sanitizeRequestParams = exports.sanitizeRequest = exports.createRateLimiters = exports.createBruteForceProtection = void 0;
-var bruteForce_js_1 = require("../../middleware/bruteForce.js");
-Object.defineProperty(exports, "createBruteForceProtection", { enumerable: true, get: function () { return bruteForce_js_1.createBruteForceProtection; } });
+exports.SecretManager = exports.enhancedEncryption = exports.encryptData = exports.decryptData = exports.AuditService = exports.validateBody = exports.sanitizeRequestParams = exports.sanitizeRequest = exports.createRateLimiters = void 0;
 var rateLimit_js_1 = require("../../middleware/rateLimit.js");
 Object.defineProperty(exports, "createRateLimiters", { enumerable: true, get: function () { return rateLimit_js_1.createRateLimiters; } });
 var validation_js_1 = require("../../middleware/validation.js");
@@ -16,9 +14,6 @@ Object.defineProperty(exports, "decryptData", { enumerable: true, get: function 
 Object.defineProperty(exports, "encryptData", { enumerable: true, get: function () { return encryption_js_1.encryptData; } });
 var enhancedEncryption_js_1 = require("../../utils/enhancedEncryption.js");
 Object.defineProperty(exports, "enhancedEncryption", { enumerable: true, get: function () { return enhancedEncryption_js_1.enhancedEncryption; } });
-var queryProtection_js_1 = require("../../utils/queryProtection.js");
-Object.defineProperty(exports, "QueryProtection", { enumerable: true, get: function () { return queryProtection_js_1.QueryProtection; } });
-Object.defineProperty(exports, "createQueryProtectionMiddleware", { enumerable: true, get: function () { return queryProtection_js_1.createQueryProtectionMiddleware; } });
 var secrets_js_1 = require("../../utils/secrets.js");
 Object.defineProperty(exports, "SecretManager", { enumerable: true, get: function () { return secrets_js_1.SecretManager; } });
 //# sourceMappingURL=index.js.map

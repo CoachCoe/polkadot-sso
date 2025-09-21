@@ -48,11 +48,11 @@ function verifySignature(message: string, signature: string, address: string): b
 }
 
 export const createLoginHandler = (
-  tokenService: TokenService,
+  _tokenService: TokenService,
   challengeService: ChallengeService,
   auditService: AuditService,
   clients: Map<string, Client>,
-  db: Database
+  _db: Database
 ): RequestHandler => {
   return async (req, res) => {
     try {
@@ -87,7 +87,7 @@ export const createLoginHandler = (
         user_agent: req.get('User-Agent'),
       });
 
-      res.json({
+      return res.json({
         challenge_id: challenge.id,
         message: challenge.message,
         code_verifier: challenge.code_verifier,
@@ -96,7 +96,7 @@ export const createLoginHandler = (
       });
     } catch (error) {
       logError(req, error as Error);
-      res.status(500).json({ error: 'Login failed' });
+      return res.status(500).json({ error: 'Login failed' });
     }
   };
 };
@@ -176,13 +176,13 @@ export const createVerifyHandler = (
         user_agent: req.get('User-Agent'),
       });
 
-      res.redirect(`${client.redirect_url}?code=${authCode}&state=${state}`);
+      return res.redirect(`${client.redirect_url}?code=${authCode}&state=${state}`);
     } catch (error) {
       logError(req, error as Error);
       logger.error('Verification handler error', {
         error: error instanceof Error ? error.message : String(error),
       });
-      res.status(500).json({ error: 'Verification failed' });
+      return res.status(500).json({ error: 'Verification failed' });
     }
   };
 };
@@ -243,7 +243,7 @@ export const createTokenHandler = (
         user_agent: req.get('User-Agent'),
       });
 
-      res.json({
+      return res.json({
         access_token: session.access_token,
         token_type: 'Bearer',
         expires_in: 900, // 15 minutes
@@ -251,7 +251,7 @@ export const createTokenHandler = (
       });
     } catch (error) {
       logError(req, error as Error);
-      res.status(500).json({ error: 'Token exchange failed' });
+      return res.status(500).json({ error: 'Token exchange failed' });
     }
   };
 };

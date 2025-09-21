@@ -19,7 +19,6 @@ __exportStar(require("./encryption.js"), exports);
 __exportStar(require("./envValidation.js"), exports);
 __exportStar(require("./logger.js"), exports);
 __exportStar(require("./nonce.js"), exports);
-__exportStar(require("./queryProtection.js"), exports);
 __exportStar(require("./sanitization.js"), exports);
 __exportStar(require("./schemas.js"), exports);
 __exportStar(require("./secrets.js"), exports);

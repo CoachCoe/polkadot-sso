@@ -45,7 +45,7 @@ export declare class SIWEStyleAuthService {
         error?: string;
         parsedMessage?: SIWEMessage;
     }>;
-    createSession(address: string, client_id: string, parsedMessage: SIWEMessage): Promise<Session>;
+    createSession(address: string, client_id: string, _parsedMessage: SIWEMessage): Promise<Session>;
     getSessionByAccessToken(accessToken: string): Promise<Session | undefined>;
     refreshSession(refreshToken: string): Promise<Session | null>;
     invalidateSession(sessionId: string): Promise<void>;

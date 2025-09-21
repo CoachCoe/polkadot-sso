@@ -3,7 +3,6 @@ export * from './encryption.js';
 export * from './envValidation.js';
 export * from './logger.js';
 export * from './nonce.js';
-export * from './queryProtection.js';
 export * from './sanitization.js';
 export * from './schemas.js';
 export * from './secrets.js';

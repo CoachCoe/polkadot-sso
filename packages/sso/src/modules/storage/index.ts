@@ -1,4 +1,1 @@
-export {
-  KusamaIntegrationService,
-  kusamaIntegrationService,
-} from '../../services/kusamaIntegrationService';
+// Storage module - no exports needed for core SSO functionality

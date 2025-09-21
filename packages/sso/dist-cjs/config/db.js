@@ -73,21 +73,32 @@ class DatabasePool {
         if (this.isShuttingDown) {
             throw new Error('Database pool is shutting down');
         }
-        const availableConnection = this.pool.find(conn => !conn.inUse);
+        // Check for available healthy connection
+        const availableConnection = this.pool.find(conn => !conn.inUse && this.isConnectionHealthy(conn));
         if (availableConnection) {
             availableConnection.inUse = true;
             availableConnection.lastUsed = Date.now();
             return availableConnection.db;
         }
+        // Create new connection if under limit
         if (this.pool.length < DB_POOL_CONFIG.max) {
-            const newConnection = await this.createConnection();
-            newConnection.inUse = true;
-            newConnection.lastUsed = Date.now();
-            return newConnection.db;
+            try {
+                const newConnection = await this.createConnection();
+                newConnection.inUse = true;
+                newConnection.lastUsed = Date.now();
+                return newConnection.db;
+            }
+            catch (error) {
+                logger.error('Failed to create new database connection', {
+                    error: error instanceof Error ? error.message : String(error),
+                });
+                throw error;
+            }
         }
+        // Wait for available connection with timeout
         return new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
-                reject(new Error('Database connection timeout'));
+                reject(new Error(`Database connection timeout after ${DB_POOL_CONFIG.acquireTimeout}ms`));
             }, DB_POOL_CONFIG.acquireTimeout);
             this.waiting.push({
                 resolve: (db) => {
@@ -100,6 +111,26 @@ class DatabasePool {
                 },
             });
         });
+    }
+    isConnectionHealthy(connection) {
+        try {
+            // Check if connection is still valid
+            if (!connection.db) {
+                return false;
+            }
+            // Check if connection has been idle too long
+            const idleTime = Date.now() - connection.lastUsed;
+            if (idleTime > DB_POOL_CONFIG.idleTimeout) {
+                return false;
+            }
+            return true;
+        }
+        catch (error) {
+            logger.warn('Connection health check failed', {
+                error: error instanceof Error ? error.message : String(error),
+            });
+            return false;
+        }
     }
     releaseConnection(db) {
         const connection = this.pool.find(conn => conn.db === db);
@@ -123,10 +154,22 @@ class DatabasePool {
     }
     reapIdleConnections() {
         const now = Date.now();
-        const idleConnections = this.pool.filter(conn => !conn.inUse && now - conn.lastUsed > DB_POOL_CONFIG.idleTimeout);
-        const connectionsToRemove = Math.max(0, idleConnections.length - DB_POOL_CONFIG.min);
-        for (let i = 0; i < connectionsToRemove; i++) {
-            const connection = idleConnections[i];
+        // Find connections that are idle or unhealthy
+        const connectionsToRemove = this.pool.filter(conn => {
+            if (conn.inUse)
+                return false; // Don't remove in-use connections
+            // Remove if idle too long
+            if (now - conn.lastUsed > DB_POOL_CONFIG.idleTimeout)
+                return true;
+            // Remove if unhealthy
+            if (!this.isConnectionHealthy(conn))
+                return true;
+            return false;
+        });
+        // Ensure we don't go below minimum connections
+        const maxRemovable = Math.max(0, connectionsToRemove.length - Math.max(0, DB_POOL_CONFIG.min - (this.pool.length - connectionsToRemove.length)));
+        const toRemove = connectionsToRemove.slice(0, maxRemovable);
+        for (const connection of toRemove) {
             const index = this.pool.indexOf(connection);
             if (index > -1) {
                 this.pool.splice(index, 1);
@@ -137,10 +180,11 @@ class DatabasePool {
                 });
             }
         }
-        if (connectionsToRemove > 0) {
-            logger.debug('Reaped idle database connections', {
-                removed: connectionsToRemove,
+        if (toRemove.length > 0) {
+            logger.debug('Reaped database connections', {
+                removed: toRemove.length,
                 remaining: this.pool.length,
+                reason: 'idle or unhealthy',
             });
         }
     }

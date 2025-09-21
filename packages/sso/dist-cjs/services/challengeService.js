@@ -178,7 +178,7 @@ class ChallengeService {
         try {
             db = await (0, db_js_1.getDatabaseConnection)();
             const result = await db.run('UPDATE challenges SET used = 1 WHERE id = ?', [challengeId]);
-            if (result.changes > 0) {
+            if (result.changes && result.changes > 0) {
                 const cacheStrategies = (0, cacheService_js_1.getCacheStrategies)();
                 await cacheStrategies.getChallenge(challengeId);
                 logger.info('Challenge marked as used', { challengeId });
@@ -204,7 +204,7 @@ class ChallengeService {
         try {
             db = await (0, db_js_1.getDatabaseConnection)();
             const result = await db.run('DELETE FROM challenges WHERE expires_at < ?', [Date.now()]);
-            if (result.changes > 0) {
+            if (result.changes && result.changes > 0) {
                 logger.info('Cleaned up expired challenges', { count: result.changes });
             }
             return result.changes || 0;

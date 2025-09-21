@@ -163,7 +163,7 @@ class AuditService {
             const cutoffDate = Date.now() - daysToKeep * 24 * 60 * 60 * 1000;
             db = await (0, db_js_1.getDatabaseConnection)();
             const result = await db.run('DELETE FROM audit_logs WHERE created_at < ?', [cutoffDate]);
-            if (result.changes > 0) {
+            if (result.changes && result.changes > 0) {
                 logger.info('Cleaned up old audit logs', {
                     deleted: result.changes,
                     daysKept: daysToKeep,
