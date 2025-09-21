@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createAuthRouter = void 0;
 const express_1 = require("express");
-const validation_js_1 = require("../../middleware/validation.js");
 const security_js_1 = require("../../middleware/security.js");
+const validation_js_1 = require("../../middleware/validation.js");
 const schemas_js_1 = require("../../utils/schemas.js");
 const handlers_js_1 = require("./handlers.js");
 const templates_js_1 = require("./templates.js");
