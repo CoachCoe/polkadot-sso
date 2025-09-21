@@ -64,5 +64,5 @@ export declare class JWTService {
      */
     isTokenBlacklisted(_tokenId: string): boolean;
 }
-export declare const jwtService: JWTService;
+export declare const getJWTService: () => JWTService;
 //# sourceMappingURL=jwtService.d.ts.map

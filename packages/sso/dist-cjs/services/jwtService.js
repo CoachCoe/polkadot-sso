@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.jwtService = exports.JWTService = void 0;
+exports.getJWTService = exports.JWTService = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 class JWTService {
@@ -196,6 +196,13 @@ class JWTService {
     }
 }
 exports.JWTService = JWTService;
-// Global JWT service instance
-exports.jwtService = new JWTService();
+// Global JWT service instance - lazy loaded
+let _jwtService = null;
+const getJWTService = () => {
+    if (!_jwtService) {
+        _jwtService = new JWTService();
+    }
+    return _jwtService;
+};
+exports.getJWTService = getJWTService;
 //# sourceMappingURL=jwtService.js.map

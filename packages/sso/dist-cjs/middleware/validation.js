@@ -214,6 +214,7 @@ exports.validateContentType = validateContentType;
  * Request size validation
  */
 const validateRequestSize = (maxSize = 1024 * 1024) => {
+    // 1MB default
     return (req, _res, next) => {
         const contentLength = parseInt(req.get('Content-Length') || '0');
         if (contentLength > maxSize) {

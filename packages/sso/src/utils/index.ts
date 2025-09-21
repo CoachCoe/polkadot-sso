@@ -5,5 +5,4 @@ export * from './logger.js';
 export * from './nonce.js';
 export * from './sanitization.js';
 export * from './schemas.js';
-export * from './secrets.js';
 export * from './validation.js';

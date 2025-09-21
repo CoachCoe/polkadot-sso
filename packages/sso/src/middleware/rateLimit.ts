@@ -11,7 +11,6 @@ export const createRateLimiter = (
   return rateLimit({
     windowMs,
     max,
-    keyGenerator: (req: Request) => `${req.ip}:${endpoint}`,
     handler: async (req: Request, res: Response) => {
       await auditService.log({
         type: 'SECURITY_EVENT',

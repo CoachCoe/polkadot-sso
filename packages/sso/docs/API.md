@@ -45,7 +45,7 @@ Generate a challenge for wallet signature verification.
 
 **Example Request:**
 ```bash
-curl "http://localhost:3000/api/auth/challenge?client_id=polkadot-password-manager&address=5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+curl "http://localhost:3000/api/auth/challenge?client_id=demo-client&address=5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
 ```
 
 **Example Response:**
@@ -115,7 +115,7 @@ Initiate the login process with wallet selection.
 
 **Example Request:**
 ```bash
-curl "http://localhost:3000/api/auth/login?client_id=polkadot-password-manager&address=5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY&wallet=polkadot-js"
+curl "http://localhost:3000/api/auth/login?client_id=demo-client&address=5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY&wallet=polkadot-js"
 ```
 
 ### 4. Signature Verification
@@ -152,7 +152,7 @@ Exchange authorization code for access and refresh tokens.
 ```json
 {
   "code": "authorization_code_here",
-  "client_id": "polkadot-password-manager"
+  "client_id": "demo-client"
 }
 ```
 
@@ -166,7 +166,7 @@ Exchange authorization code for access and refresh tokens.
 ```bash
 curl -X POST "http://localhost:3000/api/auth/token" \
   -H "Content-Type: application/json" \
-  -d '{"code": "auth_code_123", "client_id": "polkadot-password-manager"}'
+  -d '{"code": "auth_code_123", "client_id": "demo-client"}'
 ```
 
 **Example Response:**

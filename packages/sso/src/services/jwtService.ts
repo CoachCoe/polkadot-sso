@@ -241,5 +241,12 @@ export class JWTService {
   }
 }
 
-// Global JWT service instance
-export const jwtService = new JWTService();
+// Global JWT service instance - lazy loaded
+let _jwtService: JWTService | null = null;
+
+export const getJWTService = (): JWTService => {
+  if (!_jwtService) {
+    _jwtService = new JWTService();
+  }
+  return _jwtService;
+};
