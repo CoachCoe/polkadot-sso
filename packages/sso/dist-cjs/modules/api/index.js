@@ -1,8 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createTokenRouter = exports.createClientRouter = exports.createAuthRouter = exports.requestIdMiddleware = void 0;
-var requestId_1 = require("../../middleware/requestId");
-Object.defineProperty(exports, "requestIdMiddleware", { enumerable: true, get: function () { return requestId_1.addRequestId; } });
+exports.createTokenRouter = exports.createClientRouter = exports.createAuthRouter = void 0;
 var index_js_1 = require("../../routes/auth/index.js");
 Object.defineProperty(exports, "createAuthRouter", { enumerable: true, get: function () { return index_js_1.createAuthRouter; } });
 var clients_1 = require("../../routes/clients");

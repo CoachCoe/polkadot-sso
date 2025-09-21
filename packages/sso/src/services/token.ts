@@ -1,3 +1,4 @@
+import { Database } from 'sqlite';
 import { JWT_CONFIG } from '../config/auth.js';
 import { getDatabaseConnection, releaseDatabaseConnection } from '../config/db.js';
 import { Session } from '../types/auth.js';
@@ -48,7 +49,7 @@ export class TokenService {
   }
 
   async verifyToken(token: string, type: 'access' | 'refresh') {
-    let db: any = null;
+    let db: Database | null = null;
     try {
       // Use the JWT service to verify the token
       const payload =
@@ -109,7 +110,7 @@ export class TokenService {
   }
 
   async createSession(address: string, client_id: string): Promise<Session | null> {
-    let db: any = null;
+    let db: Database | null = null;
     try {
       const tokens = this.generateTokens(address, client_id);
       const now = Date.now();
@@ -183,7 +184,7 @@ export class TokenService {
   }
 
   async invalidateSession(accessToken: string): Promise<boolean> {
-    let db: any = null;
+    let db: Database | null = null;
     try {
       const result = await this.verifyToken(accessToken, 'access');
       if (!result.valid || !result.session) {
@@ -216,7 +217,7 @@ export class TokenService {
   }
 
   async refreshSession(refreshToken: string): Promise<Session | null> {
-    let db: any = null;
+    let db: Database | null = null;
     try {
       const result = await this.verifyToken(refreshToken, 'refresh');
       if (!result.valid || !result.session) {
@@ -284,7 +285,7 @@ export class TokenService {
   }
 
   async getSessionStats(): Promise<{ active: number; total: number }> {
-    let db: any = null;
+    let db: Database | null = null;
     try {
       db = await getDatabaseConnection();
       const activeResult = await db.get(

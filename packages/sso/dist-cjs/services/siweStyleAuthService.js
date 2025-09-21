@@ -158,7 +158,7 @@ class SIWEStyleAuthService {
             return { isValid: false, error: 'Signature verification failed' };
         }
     }
-    async createSession(address, client_id, parsedMessage) {
+    async createSession(address, client_id, _parsedMessage) {
         const sessionId = crypto_1.default.randomUUID();
         const accessToken = crypto_1.default.randomBytes(32).toString('hex');
         const refreshToken = crypto_1.default.randomBytes(32).toString('hex');

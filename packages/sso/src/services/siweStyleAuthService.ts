@@ -230,7 +230,7 @@ export class SIWEStyleAuthService {
   async createSession(
     address: string,
     client_id: string,
-    parsedMessage: SIWEMessage
+    _parsedMessage: SIWEMessage
   ): Promise<Session> {
     const sessionId = crypto.randomUUID();
     const accessToken = crypto.randomBytes(32).toString('hex');

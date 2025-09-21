@@ -50,7 +50,8 @@ const envSchema = zod_1.z.object({
         .string()
         .transform(val => val === 'true')
         .default('false'),
-    JWT_SECRET: zod_1.z.string().min(32, 'JWT_SECRET must be at least 32 characters').optional(),
+    JWT_ACCESS_SECRET: zod_1.z.string().min(32, 'JWT_ACCESS_SECRET must be at least 32 characters'),
+    JWT_REFRESH_SECRET: zod_1.z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
     JWT_ISSUER: zod_1.z.string().default('polkadot-sso'),
     JWT_ACCESS_TOKEN_EXPIRY: zod_1.z.string().transform(Number).pipe(zod_1.z.number().min(60)).default('900'), // 15 minutes
     JWT_REFRESH_TOKEN_EXPIRY: zod_1.z

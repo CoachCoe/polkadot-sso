@@ -1,5 +1,6 @@
+import RedisStore from 'connect-redis';
 export declare const sessionConfig: {
-    store: any;
+    store: RedisStore | undefined;
     secret: string;
     name: string;
     cookie: {

@@ -17,5 +17,4 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./auth/index.js"), exports);
 __exportStar(require("./clients.js"), exports);
 __exportStar(require("./tokens.js"), exports);
-__exportStar(require("./walletKusama.js"), exports);
 //# sourceMappingURL=index.js.map

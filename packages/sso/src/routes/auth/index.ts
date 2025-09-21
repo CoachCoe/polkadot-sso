@@ -1,5 +1,6 @@
-import { Router } from 'express';
+import { Request, Router } from 'express';
 import { Database } from 'sqlite';
+import { asyncHandler } from '../../middleware/errorHandler.js';
 import { createRateLimiters } from '../../middleware/rateLimit.js';
 import { nonceMiddleware } from '../../middleware/security.js';
 import { sanitizeRequest, validateBody, validateQuery } from '../../middleware/validation.js';
@@ -7,7 +8,8 @@ import { AuditService } from '../../services/auditService.js';
 import { ChallengeService } from '../../services/challengeService.js';
 import { TokenService } from '../../services/token.js';
 import { Client } from '../../types/auth.js';
-import { createLogger } from '../../utils/logger.js';
+import { AuthenticationError, NotFoundError, ValidationError } from '../../utils/errors.js';
+// import { createLogger } from '../../utils/logger.js';
 import { schemas } from '../../utils/schemas.js';
 import { createLoginHandler, createTokenHandler, createVerifyHandler } from './handlers.js';
 import { generateApiDocsPage, generateChallengePage } from './templates.js';
@@ -23,7 +25,7 @@ export const createAuthRouter = (
   rateLimiters: RateLimiters
 ) => {
   const router = Router();
-  const logger = createLogger('auth-router');
+  // const logger = createLogger('auth-router');
 
   const loginHandler = createLoginHandler(
     tokenService,
@@ -39,42 +41,43 @@ export const createAuthRouter = (
     '/challenge',
     rateLimiters.challenge,
     sanitizeRequest(),
-    nonceMiddleware as any,
+    nonceMiddleware,
     validateQuery(schemas.challengeQuery),
-    async (req, res) => {
-      try {
-        const { client_id, address } = req.query;
-        const client = clients.get(client_id as string);
+    asyncHandler(async (req, res) => {
+      const { client_id, address } = req.query;
+      const requestId = (req as Request & { requestId?: string }).requestId;
 
-        if (!client) {
-          return res.status(400).json({ error: 'Invalid client' });
-        }
-
-        const challenge = await challengeService.generateChallenge(
-          client_id as string,
-          address as string
-        );
-
-        const html = generateChallengePage(
-          {
-            address: address as string,
-            message: challenge.message,
-            challengeId: challenge.id,
-            codeVerifier: challenge.code_verifier,
-            state: challenge.state,
-            nonce: res.locals.nonce,
-          },
-          res.locals.nonce
-        );
-
-        res.send(html);
-      } catch (error) {
-        res.status(500).json({ error: 'Failed to generate challenge page' });
+      if (!client_id) {
+        throw new ValidationError('Client ID is required', { field: 'client_id' }, requestId);
       }
-    }
+
+      const client = clients.get(client_id as string);
+      if (!client) {
+        throw new AuthenticationError('Invalid client', { client_id }, requestId);
+      }
+
+      const challenge = await challengeService.generateChallenge(
+        client_id as string,
+        address as string
+      );
+
+      const html = generateChallengePage(
+        {
+          address: address as string,
+          message: challenge.message,
+          challengeId: challenge.id,
+          codeVerifier: challenge.code_verifier,
+          state: challenge.state,
+          nonce: res.locals.nonce,
+        },
+        res.locals.nonce
+      );
+
+      res.send(html);
+    })
   );
 
-  router.get('/docs', (req, res) => {
+  router.get('/docs', (_req, res) => {
     const html = generateApiDocsPage();
     res.send(html);
   });
@@ -83,68 +86,50 @@ export const createAuthRouter = (
     '/status/:challengeId',
     rateLimiters.status,
     sanitizeRequest(),
-    async (req, res) => {
-      try {
-        const { challengeId } = req.params;
+    asyncHandler(async (req, res) => {
+      const { challengeId } = req.params;
+      const requestId = (req as Request & { requestId?: string }).requestId;
 
-        if (!challengeId) {
-          return res.status(400).json({
-            status: 'error',
-            message: 'Challenge ID is required'
-          });
-        }
+      if (!challengeId) {
+        throw new ValidationError('Challenge ID is required', { field: 'challengeId' }, requestId);
+      }
 
-        // Get challenge from database
-        const challenge = await challengeService.getChallenge(challengeId);
+      // Get challenge from database
+      const challenge = await challengeService.getChallenge(challengeId);
 
-        if (!challenge) {
-          return res.status(404).json({
-            status: 'not_found',
-            message: 'Challenge not found'
-          });
-        }
+      if (!challenge) {
+        throw new NotFoundError('Challenge not found', { challengeId }, requestId);
+      }
 
-        // Check if challenge is expired
-        const now = Date.now();
-        const expiresAt = new Date(challenge.expires_at).getTime();
+      // Check if challenge is expired
+      const now = Date.now();
+      const expiresAt = new Date(challenge.expires_at).getTime();
 
-        if (now > expiresAt) {
-          return res.status(200).json({
-            status: 'expired',
-            message: 'Challenge has expired',
-            expiresAt: challenge.expires_at_timestamp
-          });
-        }
-
-        // Check if challenge has been used
-        if (challenge.used) {
-          return res.status(200).json({
-            status: 'used',
-            message: 'Challenge has already been used',
-            expiresAt: challenge.expires_at_timestamp
-          });
-        }
-
-        // Challenge is valid and pending
+      if (now > expiresAt) {
         return res.status(200).json({
-          status: 'pending',
-          message: 'Challenge is pending verification',
-          expiresAt: challenge.expires_at_timestamp,
-          challengeId: challenge.id
-        });
-
-      } catch (error) {
-        logger.error('Failed to get challenge status', {
-          error: error instanceof Error ? error.message : String(error),
-          challengeId: req.params.challengeId,
-        });
-
-        res.status(500).json({
-          status: 'error',
-          message: 'Failed to get challenge status'
+          status: 'expired',
+          message: 'Challenge has expired',
+          expiresAt: challenge.expires_at_timestamp
         });
       }
-    }
+
+      // Check if challenge has been used
+      if (challenge.used) {
+        return res.status(200).json({
+          status: 'used',
+          message: 'Challenge has already been used',
+          expiresAt: challenge.expires_at_timestamp
+        });
+      }
+
+      // Challenge is valid and pending
+      return res.status(200).json({
+        status: 'pending',
+        message: 'Challenge is pending verification',
+        expiresAt: challenge.expires_at_timestamp,
+        challengeId: challenge.id
+      });
+    })
   );
 
   router.get(
@@ -182,7 +167,7 @@ export const createAuthRouter = (
       return res.status(400).json({ error: 'Missing authorization code or state' });
     }
 
-    res.json({
+    return res.json({
       message: 'Authorization successful',
       code,
       state,
@@ -211,9 +196,9 @@ export const createAuthRouter = (
         user_agent: req.get('User-Agent'),
       });
 
-      res.json({ message: 'Logged out successfully' });
+      return res.json({ message: 'Logged out successfully' });
     } catch (error) {
-      res.status(500).json({ error: 'Logout failed' });
+      return res.status(500).json({ error: 'Logout failed' });
     }
   });
 
