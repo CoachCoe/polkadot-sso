@@ -7,6 +7,7 @@ import { AuditService } from '../../services/auditService.js';
 import { ChallengeService } from '../../services/challengeService.js';
 import { TokenService } from '../../services/token.js';
 import { Client } from '../../types/auth.js';
+import { createLogger } from '../../utils/logger.js';
 import { schemas } from '../../utils/schemas.js';
 import { createLoginHandler, createTokenHandler, createVerifyHandler } from './handlers.js';
 import { generateApiDocsPage, generateChallengePage } from './templates.js';
@@ -22,6 +23,7 @@ export const createAuthRouter = (
   rateLimiters: RateLimiters
 ) => {
   const router = Router();
+  const logger = createLogger('auth-router');
 
   const loginHandler = createLoginHandler(
     tokenService,
@@ -76,6 +78,74 @@ export const createAuthRouter = (
     const html = generateApiDocsPage();
     res.send(html);
   });
+
+  router.get(
+    '/status/:challengeId',
+    rateLimiters.status,
+    sanitizeRequest(),
+    async (req, res) => {
+      try {
+        const { challengeId } = req.params;
+
+        if (!challengeId) {
+          return res.status(400).json({
+            status: 'error',
+            message: 'Challenge ID is required'
+          });
+        }
+
+        // Get challenge from database
+        const challenge = await challengeService.getChallenge(challengeId);
+
+        if (!challenge) {
+          return res.status(404).json({
+            status: 'not_found',
+            message: 'Challenge not found'
+          });
+        }
+
+        // Check if challenge is expired
+        const now = Date.now();
+        const expiresAt = new Date(challenge.expires_at).getTime();
+
+        if (now > expiresAt) {
+          return res.status(200).json({
+            status: 'expired',
+            message: 'Challenge has expired',
+            expiresAt: challenge.expires_at_timestamp
+          });
+        }
+
+        // Check if challenge has been used
+        if (challenge.used) {
+          return res.status(200).json({
+            status: 'used',
+            message: 'Challenge has already been used',
+            expiresAt: challenge.expires_at_timestamp
+          });
+        }
+
+        // Challenge is valid and pending
+        return res.status(200).json({
+          status: 'pending',
+          message: 'Challenge is pending verification',
+          expiresAt: challenge.expires_at_timestamp,
+          challengeId: challenge.id
+        });
+
+      } catch (error) {
+        logger.error('Failed to get challenge status', {
+          error: error instanceof Error ? error.message : String(error),
+          challengeId: req.params.challengeId,
+        });
+
+        res.status(500).json({
+          status: 'error',
+          message: 'Failed to get challenge status'
+        });
+      }
+    }
+  );
 
   router.get(
     '/login',

@@ -1,6 +1,6 @@
-# @polkadot-auth/password-manager
+# @polkadot-auth/sso
 
-Secure password and credential management for the Polkadot ecosystem.
+Secure Single Sign-On (SSO) service for the Polkadot ecosystem.
 
 ## 🚀 Quick Start
 
@@ -11,19 +11,19 @@ Secure password and credential management for the Polkadot ecosystem.
 npm install ./packages/sso
 
 # Or install from npm (when published)
-npm install @polkadot-auth/password-manager
+npm install @polkadot-auth/sso
 ```
 
 ### Basic Usage
 
 ```javascript
-import { app } from '@polkadot-auth/password-manager';
+import { app } from '@polkadot-auth/sso';
 
 // Use as Express middleware
 const express = require('express');
 const mainApp = express();
 
-mainApp.use('/auth', app);
+mainApp.use('/api/auth', app);
 
 // Or start as standalone server
 app.listen(3001, () => {
@@ -36,14 +36,15 @@ app.listen(3001, () => {
 ### Core Services
 - ✅ **Logger Service** - Production-ready logging
 - ✅ **Express App** - Configured with security middleware
-- ✅ **API Routes** - RESTful credential management
+- ✅ **API Routes** - RESTful authentication endpoints
 - ✅ **TypeScript Build** - Full type safety
 
-### Credential Management
-- ✅ **Create Credentials** - Store encrypted credentials
-- ✅ **Retrieve Credentials** - Secure credential access
-- ✅ **List Credentials** - Manage multiple credentials
-- ✅ **Update/Delete** - Full CRUD operations
+### Authentication Features
+- ✅ **Challenge Generation** - Create SIWE-style authentication challenges
+- ✅ **Challenge Status** - Check challenge status (pending, expired, used)
+- ✅ **Signature Verification** - Verify Polkadot wallet signatures
+- ✅ **Token Management** - JWT-based session management
+- ✅ **Client Registration** - OAuth-style client management
 
 ### Security Features
 - ✅ **Helmet.js** - Security headers
@@ -85,7 +86,7 @@ npm run test:coverage
 
 ```javascript
 import express from 'express';
-import { app as ssoApp } from '@polkadot-auth/password-manager';
+import { app as ssoApp } from '@polkadot-auth/sso';
 
 const app = express();
 
@@ -101,7 +102,7 @@ app.listen(3000, () => {
 
 ```javascript
 // pages/api/auth/[...auth].js
-import { app as ssoApp } from '@polkadot-auth/password-manager';
+import { app as ssoApp } from '@polkadot-auth/sso';
 
 export default ssoApp;
 ```
@@ -110,7 +111,7 @@ export default ssoApp;
 
 ```javascript
 // server.js
-import { app } from '@polkadot-auth/password-manager';
+import { app } from '@polkadot-auth/sso';
 
 const PORT = process.env.PORT || 3001;
 
@@ -119,6 +120,17 @@ app.listen(PORT, () => {
   console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
   console.log(`🏥 Health Check: http://localhost:${PORT}/health`);
 });
+```
+
+### 4. Challenge Status Check
+
+```javascript
+// Check challenge status
+const response = await fetch('http://localhost:3001/api/auth/status/your-challenge-id');
+const status = await response.json();
+
+console.log(status);
+// Output: { "status": "pending", "message": "Challenge is pending verification", "expiresAt": 1234567890 }
 ```
 
 ## 🛠️ Development
@@ -148,23 +160,26 @@ npm run lint
 ### Health Check
 - `GET /health` - Service health status
 
-### Credential Management
-- `POST /api/credentials` - Create credential
-- `GET /api/credentials/:id` - Get credential
-- `GET /api/credentials` - List credentials
-- `PUT /api/credentials/:id` - Update credential
-- `DELETE /api/credentials/:id` - Delete credential
+### Authentication
+- `GET /api/auth/challenge` - Create authentication challenge
+- `GET /api/auth/status/:challengeId` - Check challenge status
+- `GET /api/auth/login` - Initiate login flow
+- `POST /api/auth/verify` - Verify signature and create session
+- `POST /api/auth/token` - Exchange authorization code for tokens
+- `POST /api/auth/logout` - Sign out and destroy session
+- `GET /api/auth/callback` - OAuth callback handler
 
 ### Documentation
 - `GET /api-docs` - Swagger API documentation
 
 ## 🔒 Security
 
-- **Encryption**: All credentials are encrypted at rest
-- **Rate Limiting**: Built-in protection against abuse
+- **Rate Limiting**: Built-in protection against abuse (30 requests/minute for status endpoint)
 - **CORS**: Configurable cross-origin policies
 - **Helmet**: Security headers for all responses
 - **Input Validation**: Comprehensive data sanitization
+- **JWT Tokens**: Secure session management
+- **Challenge Expiration**: Time-limited authentication challenges
 
 ## 📝 Environment Variables
 
@@ -187,19 +202,19 @@ ALLOWED_ORIGINS=https://yourdomain.com,https://app.yourdomain.com
 - Express Application
 - TypeScript Compilation
 - Package Structure
-- API Routes
+- Authentication API Routes
 - Security Middleware
-
-### 🔄 In Progress
-- Wallet Integration (browser environment)
-- Full credential service (import resolution)
-- Database integration
+- Challenge Status Endpoint
+- Rate Limiting
+- Database Integration
 
 ### 🚀 Ready for Production
-- Core infrastructure
+- Core SSO infrastructure
 - Security features
 - API framework
 - Logging system
+- Challenge management
+- Token management
 
 ## 📞 Support
 
