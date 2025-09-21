@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.securityMiddleware = exports.securityAuditMiddleware = exports.rateLimitHeaders = exports.ipWhitelistMiddleware = exports.apiSecurityHeaders = exports.requestIdMiddleware = exports.nonceMiddleware = exports.corsConfig = exports.securityHeaders = void 0;
 const cors_1 = __importDefault(require("cors"));
+const crypto_1 = __importDefault(require("crypto"));
 const helmet_1 = __importDefault(require("helmet"));
 const logger_js_1 = require("../utils/logger.js");
 const logger = (0, logger_js_1.createLogger)('security-middleware');
@@ -35,17 +36,8 @@ exports.securityHeaders = (0, helmet_1.default)({
                 'https://cdn.jsdelivr.net',
                 'https://fonts.googleapis.com',
             ],
-            fontSrc: [
-                "'self'",
-                'https://fonts.gstatic.com',
-                'https://cdn.jsdelivr.net',
-            ],
-            imgSrc: [
-                "'self'",
-                'data:',
-                'https:',
-                'blob:',
-            ],
+            fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'],
+            imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
             frameAncestors: ["'none'"],
             objectSrc: ["'none'"],
             formAction: ["'self'"],
@@ -106,7 +98,7 @@ exports.corsConfig = (0, cors_1.default)({
  * Nonce generation middleware
  */
 const nonceMiddleware = (_req, res, next) => {
-    const nonce = require('crypto').randomBytes(16).toString('base64');
+    const nonce = crypto_1.default.randomBytes(16).toString('base64');
     res.locals.nonce = nonce;
     res.set('X-Nonce', nonce);
     next();
@@ -116,7 +108,7 @@ exports.nonceMiddleware = nonceMiddleware;
  * Request ID middleware for tracking
  */
 const requestIdMiddleware = (req, res, next) => {
-    const requestId = require('crypto').randomUUID();
+    const requestId = crypto_1.default.randomUUID();
     req.requestId = requestId;
     res.set('X-Request-ID', requestId);
     next();
@@ -130,8 +122,8 @@ const apiSecurityHeaders = (req, res, next) => {
     if (req.path.startsWith('/api/auth/')) {
         res.set({
             'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
+            Pragma: 'no-cache',
+            Expires: '0',
             'Surrogate-Control': 'no-store',
         });
     }
@@ -213,7 +205,8 @@ const securityAuditMiddleware = (req, _res, next) => {
     // Log response time for performance monitoring
     _res.on('finish', () => {
         const duration = Date.now() - startTime;
-        if (duration > 5000) { // Log slow requests
+        if (duration > 5000) {
+            // Log slow requests
             logger.warn('Slow request detected', {
                 method: req.method,
                 url: req.url,

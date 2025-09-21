@@ -21,6 +21,5 @@ __exportStar(require("./logger.js"), exports);
 __exportStar(require("./nonce.js"), exports);
 __exportStar(require("./sanitization.js"), exports);
 __exportStar(require("./schemas.js"), exports);
-__exportStar(require("./secrets.js"), exports);
 __exportStar(require("./validation.js"), exports);
 //# sourceMappingURL=index.js.map

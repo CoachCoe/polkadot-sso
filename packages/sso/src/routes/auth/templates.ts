@@ -370,27 +370,22 @@ export function generateApiDocsPage(): string {
             </div>
 
             <div class="section">
-                <h2>🔑 Credential Management</h2>
-                <p>Store and retrieve credentials on Kusama blockchain</p>
+                <h2>🔑 Session Management</h2>
+                <p>Manage user sessions and tokens</p>
 
                 <div class="endpoint">
-                    <h3><span class="method post">POST</span> /api/credentials/types</h3>
-                    <p>Create credential type</p>
+                    <h3><span class="method get">GET</span> /api/auth/session</h3>
+                    <p>Get current session information</p>
                 </div>
 
                 <div class="endpoint">
-                    <h3><span class="method get">GET</span> /api/credentials/types</h3>
-                    <p>List credential types</p>
+                    <h3><span class="method post">POST</span> /api/auth/refresh</h3>
+                    <p>Refresh access token</p>
                 </div>
 
                 <div class="endpoint">
-                    <h3><span class="method post">POST</span> /api/credentials</h3>
-                    <p>Store credentials</p>
-                </div>
-
-                <div class="endpoint">
-                    <h3><span class="method get">GET</span> /api/credentials/:id</h3>
-                    <p>Retrieve credentials</p>
+                    <h3><span class="method post">POST</span> /api/auth/logout</h3>
+                    <p>Logout and invalidate session</p>
                 </div>
             </div>
 
@@ -403,10 +398,11 @@ Supported Wallets: polkadot-js, nova-wallet, subwallet</code></pre>
             </div>
 
             <div class="section">
-                <h2>🔗 Blockchain Integration</h2>
-                <p>Store and retrieve credentials on Kusama:</p>
-                <pre><code>GET /kusama-credentials?action=store  - Store credentials
-GET /kusama-credentials?action=retrieve - Retrieve credentials</code></pre>
+                <h2>🔗 Client Integration</h2>
+                <p>Integrate with your application using OAuth 2.0 flow:</p>
+                <pre><code>GET /api/auth/challenge?client_id={client_id}&address={address}
+POST /api/auth/verify - Verify signature and get tokens
+GET /api/auth/status/{challenge_id} - Check challenge status</code></pre>
             </div>
         </div>
     </div>

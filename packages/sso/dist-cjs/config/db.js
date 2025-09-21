@@ -167,7 +167,8 @@ class DatabasePool {
             return false;
         });
         // Ensure we don't go below minimum connections
-        const maxRemovable = Math.max(0, connectionsToRemove.length - Math.max(0, DB_POOL_CONFIG.min - (this.pool.length - connectionsToRemove.length)));
+        const maxRemovable = Math.max(0, connectionsToRemove.length -
+            Math.max(0, DB_POOL_CONFIG.min - (this.pool.length - connectionsToRemove.length)));
         const toRemove = connectionsToRemove.slice(0, maxRemovable);
         for (const connection of toRemove) {
             const index = this.pool.indexOf(connection);

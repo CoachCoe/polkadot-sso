@@ -70,11 +70,11 @@ const tokenService = new token_js_1.TokenService();
 const challengeService = new challengeService_js_1.ChallengeService();
 const auditService = new auditService_js_1.AuditService();
 const clients = new Map(); // Empty clients map for now
-// Add default client for password manager
-clients.set('polkadot-password-manager', {
-    client_id: 'polkadot-password-manager',
+// Add default client for demo purposes
+clients.set('demo-client', {
+    client_id: 'demo-client',
     client_secret: process.env.DEFAULT_CLIENT_SECRET || 'default-client-secret-for-development-only',
-    name: 'Polkadot Password Manager',
+    name: 'Demo Client Application',
     redirect_url: 'http://localhost:3000/callback',
     allowed_origins: ['http://localhost:3000', 'http://localhost:3001']
 });

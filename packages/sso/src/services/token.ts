@@ -5,7 +5,7 @@ import { Session } from '../types/auth.js';
 import { randomBytes } from '../utils/crypto.js';
 import { createLogger } from '../utils/logger.js';
 import { getCacheStrategies } from './cacheService.js';
-import { jwtService } from './jwtService.js';
+import { getJWTService } from './jwtService.js';
 
 const logger = createLogger('token-service');
 
@@ -35,7 +35,7 @@ export class TokenService {
     };
 
     // Generate token pair using the JWT service
-    const tokenPair = jwtService.generateTokenPair(tempSession);
+    const tokenPair = getJWTService().generateTokenPair(tempSession);
 
     return {
       accessToken: tokenPair.accessToken,
@@ -54,18 +54,18 @@ export class TokenService {
       // Use the JWT service to verify the token
       const payload =
         type === 'access'
-          ? jwtService.verifyAccessToken(token)
-          : jwtService.verifyRefreshToken(token);
+          ? getJWTService().verifyAccessToken(token)
+          : getJWTService().verifyRefreshToken(token);
 
       if (!payload) {
         throw new Error('Invalid or expired token');
       }
 
-      if (jwtService.isTokenExpired(payload)) {
+      if (getJWTService().isTokenExpired(payload)) {
         throw new Error('Token has expired');
       }
 
-      if (jwtService.isTokenBlacklisted(payload.jti)) {
+      if (getJWTService().isTokenBlacklisted(payload.jti)) {
         throw new Error('Token has been revoked');
       }
 

@@ -1,4 +1,5 @@
 import cors from 'cors';
+import crypto from 'crypto';
 import { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import { createLogger } from '../utils/logger.js';
@@ -110,7 +111,7 @@ export const nonceMiddleware = (
   res: ResponseWithLocals,
   next: NextFunction
 ): void => {
-  const nonce = require('crypto').randomBytes(16).toString('base64');
+  const nonce = crypto.randomBytes(16).toString('base64');
   res.locals.nonce = nonce;
   res.set('X-Nonce', nonce);
   next();
@@ -120,7 +121,7 @@ export const nonceMiddleware = (
  * Request ID middleware for tracking
  */
 export const requestIdMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-  const requestId = require('crypto').randomUUID();
+  const requestId = crypto.randomUUID();
   (req as Request & { requestId: string }).requestId = requestId;
   res.set('X-Request-ID', requestId);
   next();

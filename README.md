@@ -41,7 +41,6 @@ ssoServer.start();
 
 - **`@polkadot-auth/sso`** - Main SSO server implementation
 - **`@polkadot-auth/core`** - Core authentication logic and types
-- **`@polkadot-auth/telegram`** - Telegram authentication provider
 
 ## 🔗 Related Projects
 

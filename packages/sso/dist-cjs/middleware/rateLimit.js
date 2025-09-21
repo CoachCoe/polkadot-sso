@@ -9,7 +9,6 @@ const createRateLimiter = (windowMs, max, endpoint, auditService) => {
     return (0, express_rate_limit_1.default)({
         windowMs,
         max,
-        keyGenerator: (req) => `${req.ip}:${endpoint}`,
         handler: async (req, res) => {
             await auditService.log({
                 type: 'SECURITY_EVENT',
