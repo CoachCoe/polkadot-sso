@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
 import { AuditService } from '../services/auditService.js';
 
 export const createRateLimiter = (
@@ -80,5 +80,22 @@ export const createRateLimiters = (auditService: AuditService) => {
       'api',
       auditService
     ),
+    status: createRateLimiter(
+      60 * 1000, // 1 minute window
+      30, // 30 requests per minute
+      'status',
+      auditService
+    ),
   };
+};
+
+export type RateLimiters = {
+  login: RateLimitRequestHandler;
+  challenge: RateLimitRequestHandler;
+  verify: RateLimitRequestHandler;
+  token: RateLimitRequestHandler;
+  refresh: RateLimitRequestHandler;
+  logout: RateLimitRequestHandler;
+  api: RateLimitRequestHandler;
+  status: RateLimitRequestHandler;
 };

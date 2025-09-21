@@ -48,6 +48,9 @@ const createRateLimiters = (auditService) => {
         logout: (0, exports.createRateLimiter)(isProduction ? 60 * 1000 : 30 * 1000, isProduction ? 3 : 5, 'logout', auditService),
         api: (0, exports.createRateLimiter)(isProduction ? 60 * 1000 : 30 * 1000, isProduction ? 20 : 30, // Stricter in production
         'api', auditService),
+        status: (0, exports.createRateLimiter)(60 * 1000, // 1 minute window
+        30, // 30 requests per minute
+        'status', auditService),
     };
 };
 exports.createRateLimiters = createRateLimiters;
