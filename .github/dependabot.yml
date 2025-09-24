@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directories: ["./", "./apps/*", "./packages/*"]
+    labels: [ "dependencies" ]
+    assignees: [ "CoachCoe" ]
+    reviewers: [ "CoachCoe" ]
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: github-actions
+    directory: '/'
+    labels: ["dependencies"]
+    assignees: ["CoachCoe"]
+    reviewers: ["CoachCoe"]
+    schedule:
+      interval: weekly
