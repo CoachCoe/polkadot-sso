@@ -1,6 +1,9 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
+  "remoteCache": {
+    "signature": true
+  },
   "tasks": {
     "build": {
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
