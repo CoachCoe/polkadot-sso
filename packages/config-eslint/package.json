@@ -4,11 +4,7 @@
   "type": "module",
   "private": true,
   "exports": {
-    ".": "./index.js",
-    "./next": "./next.js",
-    "./react": "./react.js",
-    "./remix": "./remix.js",
-    "./vite": "./vite.js"
+    ".": "./index.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",
