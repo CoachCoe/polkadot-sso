@@ -20,32 +20,9 @@ A comprehensive Single Sign-On (SSO) service designed specifically for Polkadot 
 ### Installation
 
 ```bash
-npm install @polkadot-auth/sso
+bun install
+bun run dev
 ```
-
-### Basic Usage
-
-```typescript
-import { createSSOServer } from '@polkadot-auth/sso';
-
-const ssoServer = createSSOServer({
-  port: 3001,
-  cors: { origin: ['http://localhost:3000'] },
-  database: { type: 'sqlite', path: './data/sso.db' },
-});
-
-ssoServer.start();
-```
-
-## 📦 Packages
-
-- **`@polkadot-auth/sso`** - Main SSO server implementation
-- **`@polkadot-auth/core`** - Core authentication logic and types
-
-## 🔗 Related Projects
-
-- **`@polkadot-auth/password-manager`** - Separate password management system
-- **`@polkadot-auth/shared`** - Shared authentication components
 
 ## 📚 API Endpoints
 
@@ -56,22 +33,6 @@ ssoServer.start();
 - `GET /api/auth/session` - Get current session info
 - `GET /health` - Health check endpoint
 - `GET /api-docs` - API documentation
-
-## 🛠️ Development
-
-```bash
-# Install dependencies
-npm install
-
-# Build all packages
-npm run build
-
-# Run tests
-npm test
-
-# Start development server
-npm run sso:dev
-```
 
 ## 🔧 Configuration
 
@@ -84,13 +45,6 @@ JWT_SECRET=your-secret-key
 DATABASE_URL=sqlite:./data/sso.db
 REDIS_URL=redis://localhost:6379
 ```
-
-## 📖 Documentation
-
-- [API Documentation](http://localhost:3001/api-docs) - Interactive API docs
-- [Security Guide](docs/SECURITY.md) - Security best practices
-- [Deployment Guide](docs/PRODUCTION_DEPLOYMENT.md) - Production deployment
-- [Integration Examples](examples/) - Framework integration examples
 
 ## 🤝 Contributing
 
