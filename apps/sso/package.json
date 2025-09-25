@@ -50,7 +50,7 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.6",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
+    "@typescript-eslint/parser": "^8.44.1",
     "@vitest/coverage-v8": "^1.6.1",
     "eslint": "^8.55.0",
     "eslint-plugin-jest": "^27.9.0",
