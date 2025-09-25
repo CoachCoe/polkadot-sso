@@ -82,7 +82,7 @@ clients.set('demo-client', {
   client_id: 'demo-client',
   client_secret: process.env.DEFAULT_CLIENT_SECRET || 'default-client-secret-for-development-only',
   name: 'Demo Client Application',
-  redirect_url: process.env.DEMO_CLIENT_REDIRECT_URL || 'http://localhost:5173/callback',
+  redirect_url: process.env.DEMO_CLIENT_REDIRECT_URL || 'http://localhost:3000/callback',
   allowed_origins: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173']
 });
 
@@ -110,7 +110,9 @@ app.use('/api/auth', (req, res, next) => {
 });
 
 // 404 handler (must be before error handler)
-app.use('*', notFoundHandler);
+app.use((req, res, next) => {
+  notFoundHandler(req, res, next);
+});
 
 // Global error handling middleware (must be last)
 app.use(globalErrorHandler);

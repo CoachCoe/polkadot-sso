@@ -148,7 +148,10 @@ export const auditLogCreateSchema = z.object({
   action: z.string().min(1, 'Action is required').max(200, 'Action too long'),
   status: z.enum(['success', 'failure', 'pending']),
   details: z.string().max(1000, 'Details too long').optional(),
-  ip_address: z.string().ip('Invalid IP address'),
+  ip_address: z.string().regex(
+    /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}$/,
+    'Invalid IP address'
+  ),
   user_agent: z.string().max(500, 'User agent too long').optional(),
 });
 
