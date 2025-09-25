@@ -1,26 +1,40 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: '2025-09-11',
   extends: ['docus'],
-  modules: ['@nuxt/ui-pro', '@nuxtjs/seo', '@nuxt/content', 'nuxt-llms', '@nuxthub/core'],
+  modules: ['@nuxt/ui', 'nuxt-llms', '@nuxthub/core'],
+  css: ['~/assets/css/main.css'],
   devtools: { enabled: false },
   ogImage: {
     enabled: false
   },
   site: {
-    name: '',
+    name: 'Polkadot Auth',
   },
   llms: {
-    domain: '',
-    title: '',
-    description: '',
+    domain: process.env.NUXT_PUBLIC_SITE_URL || 'https://dotsso-docs.nuxt.dev',
+    title: 'Polkadot Auth',
+    description: 'A simple, secure, and open-source authentication solution for Polkadot',
     full: {
-      title: '',
-      description: ''
+      title: 'Polkadot Auth',
+      description: 'A simple, secure, and open-source authentication solution for Polkadot'
     }
   },
+  fonts: {
+    families: [
+      {
+        name: 'Unbounded',
+        provider: 'google',
+        weights: [200, 300, 400, 500, 600, 700, 800, 900]
+      },
+      {
+        name: 'Inter',
+        provider: 'google',
+        weights: [100, 200, 300, 400, 500, 600, 700, 800, 900]
+      }
+    ]
+  },
   hub: {
-    database: true,
+    database: false,
     analytics: false,
     blob: false,
     cache: false,
