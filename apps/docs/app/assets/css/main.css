@@ -1,0 +1,86 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme static {
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* Polkadot Brand Colors */
+    --color-polkadot-pink: #FF2670;
+    --color-black: #000000;
+    --color-white: #FFFFFF;
+    --color-lime: #E4FF07;
+    --color-cyan: #07FFFF;
+    --color-violet: #7916F3;
+
+    /* Gray color palette */
+    --color-gray-50: #f9fafb;
+    --color-gray-100: #f3f4f6;
+    --color-gray-200: #e5e7eb;
+    --color-gray-300: #d1d5db;
+    --color-gray-400: #9ca3af;
+    --color-gray-500: #6b7280;
+    --color-gray-600: #4b5563;
+    --color-gray-700: #374151;
+    --color-gray-800: #1f2937;
+    --color-gray-900: #111827;
+    --color-gray-950: #030712;
+
+    /* Override pink color palette with Polkadot Pink */
+    --color-pink-50: #fef2f7;
+    --color-pink-100: #fde6ef;
+    --color-pink-200: #fccde1;
+    --color-pink-300: #faa5c8;
+    --color-pink-400: #f672a7;
+    --color-pink-500: #FF2670;
+    --color-pink-600: #e91e64;
+    --color-pink-700: #c41654;
+    --color-pink-800: #a31447;
+    --color-pink-900: #8a143e;
+    --color-pink-950: #5c0a2e;
+
+    /* Primary color ramp using Polkadot Pink */
+    --color-primary-50: #fef2f7;
+    --color-primary-100: #fde6ef;
+    --color-primary-200: #fccde1;
+    --color-primary-300: #faa5c8;
+    --color-primary-400: #f672a7;
+    --color-primary-500: #FF2670;
+    --color-primary-600: #e91e64;
+    --color-primary-700: #c41654;
+    --color-primary-800: #a31447;
+    --color-primary-900: #8a143e;
+
+    /* Secondary color ramp using Violet */
+    --color-secondary-50: #f3f0ff;
+    --color-secondary-100: #e9e3ff;
+    --color-secondary-200: #d6ccff;
+    --color-secondary-300: #b8a6ff;
+    --color-secondary-400: #9575ff;
+    --color-secondary-500: #7916F3;
+    --color-secondary-600: #6b14db;
+    --color-secondary-700: #5c12b8;
+    --color-secondary-800: #4d1096;
+    --color-secondary-900: #410f7a;
+
+    /* Accent colors */
+    --color-accent-lime: #E4FF07;
+    --color-accent-cyan: #07FFFF;
+
+    /* Storm grays */
+    --color-storm-50: #f8f9fb;
+    --color-storm-100: #f1f3f6;
+    --color-storm-200: #DCE2E9;
+    --color-storm-300: #c7d0dc;
+    --color-storm-400: #AEB7CB;
+    --color-storm-500: #95a0b8;
+    --color-storm-600: #7c89a5;
+    --color-storm-700: #6E7391;
+    --color-storm-800: #5a6177;
+    --color-storm-900: #4a5063;
+}
+
+/* Use Unbounded font for h1 headings */
+h1 {
+    font-family: 'Unbounded', system-ui, -apple-system, sans-serif !important;
+    font-weight: 600;
+}
