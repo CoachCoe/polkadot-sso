@@ -45,7 +45,7 @@
     "@types/express-session": "^1.17.10",
     "@types/jest": "^29.5.8",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^20.10.0",
+    "@types/node": "^24.5.2",
     "@types/supertest": "^2.0.16",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.6",
