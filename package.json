@@ -33,5 +33,10 @@
     "polkadot-js"
   ],
   "author": "Polkadot Auth Team",
-  "license": "MIT"
+  "license": "MIT",
+  "trustedDependencies": [
+    "@parcel/watcher",
+    "@tailwindcss/oxide",
+    "unrs-resolver"
+  ]
 }
