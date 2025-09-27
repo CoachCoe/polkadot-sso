@@ -190,10 +190,12 @@ export function generateChallengePage(data: ChallengeTemplateData, nonce: string
                         throw new Error("No accounts found in wallet");
                     }
 
-                    // Find the account that matches the challenge address
-                    const account = accounts.find(acc => acc.address === window.CHALLENGE_DATA.address);
+                    // Use the first available account or find the specific one if it exists
+                    let account = accounts.find(acc => acc.address === window.CHALLENGE_DATA.address);
                     if (!account) {
-                        throw new Error("Account not found in wallet");
+                        // Fall back to the first available account
+                        account = accounts[0];
+                        console.log('Using first available account: ' + account.address + ' instead of requested: ' + window.CHALLENGE_DATA.address);
                     }
 
                     updateStatus("Signing message...", "info");
@@ -211,7 +213,7 @@ export function generateChallengePage(data: ChallengeTemplateData, nonce: string
                     const response = await fetch('/api/auth/verify?' + new URLSearchParams({
                         signature: signature.signature,
                         challenge_id: window.CHALLENGE_DATA.challengeId,
-                        address: window.CHALLENGE_DATA.address,
+                        address: account.address, // Use the actual account that signed
                         code_verifier: window.CHALLENGE_DATA.codeVerifier,
                         state: window.CHALLENGE_DATA.state
                     }), {
@@ -222,6 +224,7 @@ export function generateChallengePage(data: ChallengeTemplateData, nonce: string
 
                     if (response.ok) {
                         const result = await response.json();
+                        console.log("Server response:", result);
                         if (result.success && result.redirectUrl) {
                             updateStatus("Authentication successful! Redirecting...", "success");
                             // Redirect to the callback URL with the auth code
@@ -229,10 +232,12 @@ export function generateChallengePage(data: ChallengeTemplateData, nonce: string
                                 window.location.href = result.redirectUrl;
                             }, 500);
                         } else {
-                            throw new Error("Invalid response from server");
+                            console.error("Invalid response format:", result);
+                            throw new Error("Invalid response from server: " + JSON.stringify(result));
                         }
                     } else {
                         const error = await response.text();
+                        console.error("Server error response:", error);
                         throw new Error("Verification failed: " + error);
                     }
 
@@ -406,7 +411,7 @@ export function generateApiDocsPage(): string {
                 <p>To use the API, you'll need to register a client application:</p>
                 <pre><code>Client ID: default-client
 Redirect URI: http://localhost:3000/callback
-Supported Wallets: polkadot-js, nova-wallet, subwallet</code></pre>
+Supported Wallets: polkadot-js</code></pre>
             </div>
 
             <div class="section">

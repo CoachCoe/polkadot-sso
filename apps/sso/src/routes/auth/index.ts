@@ -168,19 +168,79 @@ export const createAuthRouter = (
     const { code, state, error } = req.query;
 
     if (error) {
-      return res.status(400).json({ error: 'Authorization failed', details: error });
+      return res.status(400).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Authentication Failed</title>
+          <style>
+            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+            .error { color: #d32f2f; background: #ffebee; padding: 20px; border-radius: 8px; }
+          </style>
+        </head>
+        <body>
+          <h1>Authentication Failed</h1>
+          <div class="error">
+            <p>Error: ${error}</p>
+            <p><a href="/api-docs/">Return to API Documentation</a></p>
+          </div>
+        </body>
+        </html>
+      `);
     }
 
     if (!code || !state) {
-      return res.status(400).json({ error: 'Missing authorization code or state' });
+      return res.status(400).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Authentication Error</title>
+          <style>
+            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+            .error { color: #d32f2f; background: #ffebee; padding: 20px; border-radius: 8px; }
+          </style>
+        </head>
+        <body>
+          <h1>Authentication Error</h1>
+          <div class="error">
+            <p>Missing authorization code or state</p>
+            <p><a href="/api-docs/">Return to API Documentation</a></p>
+          </div>
+        </body>
+        </html>
+      `);
     }
 
-    return res.json({
-      message: 'Authorization successful',
-      code,
-      state,
-      next_step: 'Exchange code for tokens using POST /token',
-    });
+    return res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Authentication Successful</title>
+        <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+          .success { color: #2e7d32; background: #e8f5e8; padding: 20px; border-radius: 8px; }
+          .code { background: #f5f5f5; padding: 10px; border-radius: 4px; font-family: monospace; word-break: break-all; }
+        </style>
+      </head>
+      <body>
+        <h1>🎉 Authentication Successful!</h1>
+        <div class="success">
+          <p>Your Polkadot.js authentication was successful!</p>
+          <p><strong>Authorization Code:</strong></p>
+          <div class="code">${code}</div>
+          <p><strong>State:</strong> ${state}</p>
+          <hr>
+          <p><strong>Next Steps:</strong></p>
+          <p>1. Use the authorization code above to exchange for tokens</p>
+          <p>2. Make a POST request to <code>/api/auth/token</code> with the code</p>
+          <p>3. Use the returned access token for authenticated requests</p>
+          <hr>
+          <p><a href="/api-docs/">📚 View API Documentation</a></p>
+          <p><a href="/api/auth/challenge?client_id=demo-client">🔄 Try Another Authentication</a></p>
+        </div>
+      </body>
+      </html>
+    `);
   });
 
   router.get('/session', rateLimiters.status, sanitizeRequest(), async (req, res) => {

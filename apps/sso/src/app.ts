@@ -59,7 +59,63 @@ const swaggerOptions = {
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Serve the OpenAPI spec as JSON
+app.get('/api-docs/swagger.json', (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+
+// Serve a simple Swagger UI page
+app.get('/api-docs', (_req: Request, res: Response) => {
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Polkadot SSO API Documentation</title>
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
+  <style>
+    html {
+      box-sizing: border-box;
+      overflow: -moz-scrollbars-vertical;
+      overflow-y: scroll;
+    }
+    *, *:before, *:after {
+      box-sizing: inherit;
+    }
+    body {
+      margin:0;
+      background: #fafafa;
+    }
+    .swagger-ui .topbar { display: none; }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.onload = function() {
+      const ui = SwaggerUIBundle({
+        url: '/api-docs/swagger.json',
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "StandaloneLayout"
+      });
+    };
+  </script>
+</body>
+</html>`;
+  res.send(html);
+});
 
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {
@@ -82,7 +138,7 @@ clients.set('demo-client', {
   client_id: 'demo-client',
   client_secret: process.env.DEFAULT_CLIENT_SECRET || 'default-client-secret-for-development-only',
   name: 'Demo Client Application',
-  redirect_url: process.env.DEMO_CLIENT_REDIRECT_URL || 'http://localhost:3000/callback',
+  redirect_url: process.env.DEMO_CLIENT_REDIRECT_URL || 'http://localhost:3001/api/auth/callback',
   allowed_origins: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173']
 });
 
@@ -110,8 +166,8 @@ app.use('/api/auth', (req, res, next) => {
 });
 
 // 404 handler (must be before error handler)
-app.use((req, res, next) => {
-  notFoundHandler(req, res, next);
+app.use((req, res) => {
+  notFoundHandler(req, res);
 });
 
 // Global error handling middleware (must be last)
