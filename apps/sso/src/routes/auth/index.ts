@@ -15,8 +15,6 @@ import { createLoginHandler, createTokenHandler, createVerifyHandler } from './h
 import { generateApiDocsPage, generateChallengePage } from './templates.js';
 import { createGoogleRouter, initializeGoogleAuth } from './googleRoutes.js';
 import { generateGoogleChallengePage } from './googleTemplate.js';
-import { createTalismanMobileRouter, initializeTalismanMobile } from './talismanMobileRoutes.js';
-import { generateTalismanMobileChallengePage } from './talismanMobileTemplate.js';
 import { createPapiRouter, initializePapi } from './papiRoutes.js';
 
 type RateLimiters = ReturnType<typeof createRateLimiters>;
@@ -54,29 +52,13 @@ export const createAuthRouter = (
     }
   }
 
-  // Initialize Talisman Mobile if configured
-  const talismanDeepLinkScheme = process.env.TALISMAN_DEEP_LINK_SCHEME || 'talisman://';
-  const talismanCallbackUrl = process.env.TALISMAN_CALLBACK_URL || 'http://localhost:3001/api/auth/mobile/callback';
-
-  try {
-    initializeTalismanMobile({
-      deepLinkScheme: talismanDeepLinkScheme,
-      callbackUrl: talismanCallbackUrl,
-      qrCodePollingInterval: 2000,
-      qrCodeTimeout: 300000, // 5 minutes
-    }, jwtSecret);
-    
-    // Mount Talisman Mobile routes
-    router.use('/mobile', createTalismanMobileRouter(rateLimiters));
-  } catch (error) {
-    // Talisman Mobile initialization failed - service will be unavailable
-  }
 
   // Initialize PAPI if configured
   const papiPolkadotRpc = process.env.PAPI_POLKADOT_RPC || 'wss://polkadot-rpc.polkadot.io';
   const papiKusamaRpc = process.env.PAPI_KUSAMA_RPC || 'wss://kusama-rpc.polkadot.io';
   const papiLightClientEnabled = process.env.PAPI_LIGHT_CLIENT_ENABLED === 'true';
   const papiFallbackToPolkadotJs = process.env.PAPI_FALLBACK_TO_POLKADOT_JS !== 'false';
+  const papiPreferredMethod = (process.env.PAPI_PREFERRED_METHOD as 'papi' | 'polkadot-js') || 'papi';
 
   try {
     initializePapi({
@@ -91,7 +73,7 @@ export const createAuthRouter = (
         },
       },
       fallbackToPolkadotJs: papiFallbackToPolkadotJs,
-      preferredMethod: 'papi',
+      preferredMethod: papiPreferredMethod,
     });
     
     // Mount PAPI routes
@@ -139,15 +121,6 @@ export const createAuthRouter = (
         return res.redirect(`/api/auth/google/challenge?client_id=${client_id}`);
       }
 
-      // Handle Talisman Mobile challenge
-      if (wallet === 'talisman-mobile') {
-        if (!address) {
-          throw new ValidationError('Address is required for Talisman Mobile', { field: 'address' }, requestId);
-        }
-
-        // Redirect to Talisman Mobile challenge endpoint
-        return res.redirect(`/api/auth/mobile/challenge?provider=talisman-mobile&address=${address}&client_id=${client_id}`);
-      }
 
       // Handle Polkadot.js Extension challenge
       const challenge = await challengeService.generateChallenge(
@@ -218,52 +191,6 @@ export const createAuthRouter = (
     })
   );
 
-  // Talisman Mobile challenge page route
-  router.get('/talisman-mobile-challenge', 
-    rateLimiters.challenge,
-    sanitizeRequest(),
-    nonceMiddleware,
-    asyncHandler(async (req, res) => {
-      const { provider, address, client_id } = req.query;
-      const requestId = (req as Request & { requestId?: string }).requestId;
-
-      if (!provider || provider !== 'talisman-mobile') {
-        throw new ValidationError('Provider must be talisman-mobile', { field: 'provider' }, requestId);
-      }
-
-      if (!address) {
-        throw new ValidationError('Address is required', { field: 'address' }, requestId);
-      }
-
-      if (!client_id) {
-        throw new ValidationError('Client ID is required', { field: 'client_id' }, requestId);
-      }
-
-      // Generate Talisman Mobile challenge
-      const { TalismanMobileService } = await import('../../services/talismanMobileService.js');
-      const talismanMobile = new TalismanMobileService({
-        deepLinkScheme: talismanDeepLinkScheme,
-        callbackUrl: talismanCallbackUrl,
-        qrCodePollingInterval: 2000,
-        qrCodeTimeout: 300000,
-      }, jwtSecret);
-
-      const challenge = talismanMobile.generateChallenge(address as string, client_id as string);
-
-      const html = generateTalismanMobileChallengePage({
-        challengeId: challenge.challengeId,
-        deepLinkUrl: challenge.deepLinkUrl,
-        qrCodeData: challenge.qrCodeData,
-        pollingToken: challenge.pollingToken,
-        expiresAt: challenge.expiresAt,
-        address: address as string,
-        clientId: client_id as string,
-        nonce: res.locals.nonce,
-      });
-
-      res.send(html);
-    })
-  );
 
   router.get(
     '/status/:challengeId',

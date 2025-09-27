@@ -79,6 +79,19 @@ const envSchema = z.object({
   KUSAMA_ENDPOINT: z.string().url().optional(),
   KUSAMA_ACCOUNT_TYPE: z.enum(['sr25519', 'ed25519', 'ecdsa']).default('sr25519'),
 
+  // PAPI Configuration
+  PAPI_POLKADOT_RPC: z.string().url().default('wss://polkadot-rpc.polkadot.io'),
+  PAPI_KUSAMA_RPC: z.string().url().default('wss://kusama-rpc.polkadot.io'),
+  PAPI_LIGHT_CLIENT_ENABLED: z
+    .string()
+    .transform(val => val === 'true')
+    .default('false'),
+  PAPI_FALLBACK_TO_POLKADOT_JS: z
+    .string()
+    .transform(val => val !== 'false')
+    .default('true'),
+  PAPI_PREFERRED_METHOD: z.enum(['papi', 'polkadot-js']).default('papi'),
+
   DEFAULT_CLIENT_SECRET: z.string().min(32).optional(),
 
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),

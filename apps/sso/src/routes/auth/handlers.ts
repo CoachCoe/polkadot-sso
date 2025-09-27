@@ -8,6 +8,8 @@ import { Client } from '../../types/auth.js';
 import { secureQueries } from '../../utils/db.js';
 import { createLogger, logError, logRequest } from '../../utils/logger.js';
 import { validateAuthRequest, validateClientCredentials } from '../../utils/validation.js';
+import { signatureVerify } from '@polkadot/util-crypto';
+import { u8aToHex, hexToU8a, stringToU8a } from '@polkadot/util';
 
 const logger = createLogger('auth-handlers');
 
@@ -29,6 +31,7 @@ function generateCodeChallenge(verifier: string): string {
 function verifySignature(message: string, signature: string, address: string): boolean {
   try {
     if (signature.length < 64) {
+      logger.warn('Signature too short', { signatureLength: signature.length });
       return false;
     }
 
@@ -38,10 +41,40 @@ function verifySignature(message: string, signature: string, address: string): b
       address,
     });
 
-    return true;
+    // Validate signature format
+    if (!/^0x[a-fA-F0-9]+$/.test(signature)) {
+      logger.warn('Invalid signature format', { signature: signature.substring(0, 20) });
+      return false;
+    }
+
+    // Convert message to bytes
+    const messageBytes = stringToU8a(message);
+    
+    // Convert signature from hex to Uint8Array
+    const signatureBytes = hexToU8a(signature);
+    
+    // Verify the signature using Polkadot's cryptographic verification
+    const isValid = signatureVerify(messageBytes, signatureBytes, address);
+    
+    if (isValid) {
+      logger.info('Signature verification successful', {
+        address,
+        signatureLength: signature.length,
+        messageLength: message.length,
+      });
+      return true;
+    } else {
+      logger.warn('Signature verification failed', {
+        address,
+        signaturePreview: signature.substring(0, 20),
+      });
+      return false;
+    }
   } catch (error) {
     logger.error('Signature verification error', {
       error: error instanceof Error ? error.message : String(error),
+      address,
+      signaturePreview: signature.substring(0, 20),
     });
     return false;
   }
@@ -169,11 +202,35 @@ export const createVerifyHandler = (
         return res.status(400).send('Invalid code verifier');
       }
 
-      if (!verifySignature(challenge.message, signature as string, String(address))) {
+      logger.info('Starting signature verification', {
+        challengeId: challenge_id,
+        address,
+        signaturePreview: (signature as string).substring(0, 20),
+      });
+
+      const signatureValid = verifySignature(challenge.message, signature as string, String(address));
+      
+      if (!signatureValid) {
+        logger.warn('Signature verification failed', {
+          challengeId: challenge_id,
+          address,
+          signaturePreview: (signature as string).substring(0, 20),
+        });
         return res.status(401).send('Invalid signature');
       }
 
+      logger.info('Signature verification passed, marking challenge as used', {
+        challengeId: challenge_id,
+        address,
+      });
+
       await challengeService.markChallengeUsed(challenge_id as string);
+
+      logger.info('Challenge marked as used, generating auth code', {
+        challengeId: challenge_id,
+        clientId: challenge.client_id,
+        address,
+      });
 
       const authCode = crypto.randomBytes(32).toString('hex');
       await db.run(
@@ -183,10 +240,25 @@ export const createVerifyHandler = (
         [authCode, address, challenge.client_id, Date.now(), Date.now() + 5 * 60 * 1000]
       );
 
+      logger.info('Auth code generated and stored', {
+        authCodePreview: authCode.substring(0, 10) + '...',
+        clientId: challenge.client_id,
+        address,
+      });
+
       const client = clients.get(challenge.client_id);
       if (!client) {
+        logger.error('Client not found in clients map', {
+          clientId: challenge.client_id,
+          availableClients: Array.from(clients.keys()),
+        });
         return res.status(400).send('Invalid client');
       }
+
+      logger.info('Client found, proceeding with audit log', {
+        clientId: challenge.client_id,
+        clientName: client.name,
+      });
 
       await auditService.log({
         type: 'CHALLENGE_VERIFIED',
@@ -203,12 +275,22 @@ export const createVerifyHandler = (
       // This avoids issues with HTTPS upgrades in development
       const redirectUrl = `${client.redirect_url}?code=${authCode}&state=${state}`;
 
+      logger.info('Authentication completed successfully', {
+        challengeId: challenge_id,
+        clientId: challenge.client_id,
+        address,
+        redirectUrl,
+        isAjaxRequest: req.headers.accept?.includes('application/json'),
+      });
+
       // Check if this is an AJAX request (from the signing page)
       if (req.headers.accept?.includes('application/json')) {
+        logger.info('Returning JSON response for AJAX request', { redirectUrl });
         return res.json({ success: true, redirectUrl });
       }
 
       // Otherwise do a normal redirect
+      logger.info('Performing redirect', { redirectUrl });
       return res.redirect(redirectUrl);
     } catch (error) {
       logError(req, error as Error);

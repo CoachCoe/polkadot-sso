@@ -1,9 +1,18 @@
 {
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
-    "lib": ["ES2015"],
-    "outDir": "./dist"
+    "lib": ["ES2020", "DOM"],
+    "target": "ES2020",
+    "outDir": "./dist",
+    "downlevelIteration": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true
   },
-  "exclude": ["node_modules"],
-  "include": ["."]
+  "exclude": ["node_modules", "dist"],
+  "include": ["src/**/*"]
 }

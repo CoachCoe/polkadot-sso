@@ -148,8 +148,7 @@ export function generateChallengePage(data: ChallengeTemplateData, nonce: string
             const loadingSpinner = document.getElementById("loadingSpinner");
 
             // Challenge data loaded successfully
-            if (!window.CHALLENGE_DATA || !window.CHALLENGE_DATA.address) {
-                throw new Error('Challenge data not properly initialized');
+            if (!window.CHALLENGE_DATA) {
                 updateStatus("Error: Challenge data not loaded", "error");
                 return;
             }
@@ -190,10 +189,20 @@ export function generateChallengePage(data: ChallengeTemplateData, nonce: string
                         throw new Error("No accounts found in wallet");
                     }
 
-                    // Find the account that matches the challenge address
-                    const account = accounts.find(acc => acc.address === window.CHALLENGE_DATA.address);
-                    if (!account) {
-                        throw new Error("Account not found in wallet");
+                    // Find the account that matches the challenge address (if provided)
+                    let account;
+                    if (window.CHALLENGE_DATA.address) {
+                        account = accounts.find(acc => acc.address === window.CHALLENGE_DATA.address);
+                        if (!account) {
+                            throw new Error("Account not found in wallet");
+                        }
+                    } else {
+                        // If no specific address provided, use the first available account
+                        account = accounts[0];
+                        if (!account) {
+                            throw new Error("No accounts found in wallet");
+                        }
+                        updateStatus("Using account: " + account.address, "info");
                     }
 
                     updateStatus("Signing message...", "info");
@@ -211,7 +220,7 @@ export function generateChallengePage(data: ChallengeTemplateData, nonce: string
                     const response = await fetch('/api/auth/verify?' + new URLSearchParams({
                         signature: signature.signature,
                         challenge_id: window.CHALLENGE_DATA.challengeId,
-                        address: window.CHALLENGE_DATA.address,
+                        address: account.address,
                         code_verifier: window.CHALLENGE_DATA.codeVerifier,
                         state: window.CHALLENGE_DATA.state
                     }), {
@@ -441,7 +450,7 @@ export function generateApiDocsPage(): string {
                 <p>To use the API, you'll need to register a client application:</p>
                 <pre><code>Client ID: default-client
 Redirect URI: http://localhost:3000/callback
-Supported Providers: polkadot-js, google, talisman-mobile
+Supported Providers: polkadot-js, google
 PAPI Integration: Enhanced blockchain client support</code></pre>
             </div>
 
@@ -457,11 +466,6 @@ PAPI Integration: Enhanced blockchain client support</code></pre>
                         <h3>🔍 Google OAuth2</h3>
                         <p>Google account authentication</p>
                         <code>GET /api/auth/google/challenge</code>
-                    </div>
-                    <div class="provider-card">
-                        <h3>📱 Talisman Mobile</h3>
-                        <p>Mobile wallet with QR codes</p>
-                        <code>GET /api/auth/mobile/challenge</code>
                     </div>
                     <div class="provider-card">
                         <h3>⚡ PAPI Integration</h3>

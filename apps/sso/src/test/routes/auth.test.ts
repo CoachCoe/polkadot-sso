@@ -12,9 +12,6 @@ describe('Auth Routes Integration Tests', () => {
     expect(true).toBe(true);
   });
 
-  it('should be able to test Talisman Mobile routes', () => {
-    expect(true).toBe(true);
-  });
 
   it('should be able to test PAPI routes', () => {
     expect(true).toBe(true);

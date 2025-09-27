@@ -202,6 +202,172 @@ export class PapiService {
   }
 
   /**
+   * Get chain metadata
+   */
+  async getChainMetadata(chain: string = 'polkadot'): Promise<any> {
+    try {
+      const api = this.apis.get(chain);
+      if (!api) {
+        throw new Error(`API not available for chain: ${chain}`);
+      }
+
+      const metadata = api.runtimeMetadata;
+      const version = await api.rpc.state.getRuntimeVersion();
+
+      logger.info('PAPI chain metadata retrieved', {
+        chain,
+        metadataVersion: metadata.version,
+        runtimeVersion: version.specVersion.toNumber(),
+      });
+
+      return {
+        metadata: metadata.toJSON(),
+        runtimeVersion: version.toHuman(),
+      };
+    } catch (error) {
+      logger.error('Failed to get chain metadata from PAPI', {
+        chain,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get chain health status
+   */
+  async getChainHealth(chain: string = 'polkadot'): Promise<any> {
+    try {
+      const api = this.apis.get(chain);
+      if (!api) {
+        throw new Error(`API not available for chain: ${chain}`);
+      }
+
+      const health = await api.rpc.system.health();
+      const chain = await api.rpc.system.chain();
+      const version = await api.rpc.system.version();
+
+      logger.info('PAPI chain health retrieved', {
+        chain,
+        health: health.toHuman(),
+      });
+
+      return {
+        health: health.toHuman(),
+        chain: chain.toString(),
+        version: version.toString(),
+      };
+    } catch (error) {
+      logger.error('Failed to get chain health from PAPI', {
+        chain,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get account balance
+   */
+  async getAccountBalance(address: string, chain: string = 'polkadot'): Promise<any> {
+    try {
+      const api = this.apis.get(chain);
+      if (!api) {
+        throw new Error(`API not available for chain: ${chain}`);
+      }
+
+      const accountInfo = await api.query.system.account(address);
+      const balance = accountInfo.data.free;
+
+      logger.info('PAPI account balance retrieved', {
+        address,
+        chain,
+        balance: balance.toHuman(),
+      });
+
+      return {
+        address,
+        chain,
+        balance: balance.toHuman(),
+        accountInfo: accountInfo.toHuman(),
+      };
+    } catch (error) {
+      logger.error('Failed to get account balance from PAPI', {
+        address,
+        chain,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get block information
+   */
+  async getBlockInfo(blockHash: string, chain: string = 'polkadot'): Promise<any> {
+    try {
+      const api = this.apis.get(chain);
+      if (!api) {
+        throw new Error(`API not available for chain: ${chain}`);
+      }
+
+      const block = await api.rpc.chain.getBlock(blockHash);
+
+      logger.info('PAPI block info retrieved', {
+        blockHash,
+        chain,
+        blockNumber: block.block.header.number.toNumber(),
+      });
+
+      return {
+        blockHash,
+        chain,
+        block: block.toHuman(),
+      };
+    } catch (error) {
+      logger.error('Failed to get block info from PAPI', {
+        blockHash,
+        chain,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get latest block
+   */
+  async getLatestBlock(chain: string = 'polkadot'): Promise<any> {
+    try {
+      const api = this.apis.get(chain);
+      if (!api) {
+        throw new Error(`API not available for chain: ${chain}`);
+      }
+
+      const blockHash = await api.rpc.chain.getFinalizedHead();
+      const block = await api.rpc.chain.getBlock(blockHash);
+
+      logger.info('PAPI latest block retrieved', {
+        chain,
+        blockNumber: block.block.header.number.toNumber(),
+        blockHash: blockHash.toString(),
+      });
+
+      return {
+        chain,
+        blockHash: blockHash.toString(),
+        block: block.toHuman(),
+      };
+    } catch (error) {
+      logger.error('Failed to get latest block from PAPI', {
+        chain,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  }
+
+  /**
    * Check if PAPI is available for a chain
    */
   isChainAvailable(chain: string): boolean {

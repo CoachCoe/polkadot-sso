@@ -21,6 +21,15 @@ const papiAccountInfoSchema = z.object({
   chain: z.string().optional().default('polkadot'),
 });
 
+const papiBlockInfoSchema = z.object({
+  blockHash: z.string().min(1, 'Block hash is required'),
+  chain: z.string().optional().default('polkadot'),
+});
+
+const papiChainSchema = z.object({
+  chain: z.string().optional().default('polkadot'),
+});
+
 // Initialize PAPI Service
 let signatureVerificationService: SignatureVerificationService | null = null;
 
@@ -248,26 +257,317 @@ router.get('/chains',
   }
 );
 
+/**
+ * GET /api/auth/papi/balance/:address
+ * Get account balance using PAPI
+ */
+router.get('/balance/:address',
+  sanitizeRequest(),
+  async (req: Request, res: Response) => {
+    try {
+      if (!signatureVerificationService) {
+        return res.status(503).json({
+          error: 'PAPI service not configured',
+          message: 'PAPI account balance is not available',
+        });
+      }
+
+      const { address } = req.params;
+      const { chain } = papiAccountInfoSchema.parse({ address, ...req.query });
+
+      const papiService = (signatureVerificationService as any).papiService;
+      if (!papiService) {
+        return res.status(503).json({
+          error: 'PAPI service not available',
+          message: 'PAPI service is not initialized',
+        });
+      }
+
+      const balanceInfo = await papiService.getAccountBalance(address, chain);
+
+      logger.info('PAPI account balance retrieved', {
+        address,
+        chain,
+        requestId: res.locals.requestId,
+      });
+
+      res.json({
+        ...balanceInfo,
+        method: 'papi',
+      });
+    } catch (error) {
+      logger.error('Failed to get account balance with PAPI', {
+        error: error instanceof Error ? error.message : String(error),
+        requestId: res.locals.requestId,
+      });
+
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'Invalid request parameters',
+          details: error.errors,
+        });
+      }
+
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to get account balance with PAPI',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/auth/papi/health/:chain
+ * Get chain health status using PAPI
+ */
+router.get('/health/:chain',
+  sanitizeRequest(),
+  async (req: Request, res: Response) => {
+    try {
+      if (!signatureVerificationService) {
+        return res.status(503).json({
+          error: 'PAPI service not configured',
+          message: 'PAPI health check is not available',
+        });
+      }
+
+      const { chain } = papiChainSchema.parse({ chain: req.params.chain || 'polkadot' });
+
+      const papiService = (signatureVerificationService as any).papiService;
+      if (!papiService) {
+        return res.status(503).json({
+          error: 'PAPI service not available',
+          message: 'PAPI service is not initialized',
+        });
+      }
+
+      const healthInfo = await papiService.getChainHealth(chain);
+
+      logger.info('PAPI chain health retrieved', {
+        chain,
+        requestId: res.locals.requestId,
+      });
+
+      res.json({
+        ...healthInfo,
+        method: 'papi',
+      });
+    } catch (error) {
+      logger.error('Failed to get chain health with PAPI', {
+        error: error instanceof Error ? error.message : String(error),
+        requestId: res.locals.requestId,
+      });
+
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'Invalid request parameters',
+          details: error.errors,
+        });
+      }
+
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to get chain health with PAPI',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/auth/papi/metadata/:chain
+ * Get chain metadata using PAPI
+ */
+router.get('/metadata/:chain',
+  sanitizeRequest(),
+  async (req: Request, res: Response) => {
+    try {
+      if (!signatureVerificationService) {
+        return res.status(503).json({
+          error: 'PAPI service not configured',
+          message: 'PAPI metadata is not available',
+        });
+      }
+
+      const { chain } = papiChainSchema.parse({ chain: req.params.chain || 'polkadot' });
+
+      const papiService = (signatureVerificationService as any).papiService;
+      if (!papiService) {
+        return res.status(503).json({
+          error: 'PAPI service not available',
+          message: 'PAPI service is not initialized',
+        });
+      }
+
+      const metadataInfo = await papiService.getChainMetadata(chain);
+
+      logger.info('PAPI chain metadata retrieved', {
+        chain,
+        requestId: res.locals.requestId,
+      });
+
+      res.json({
+        ...metadataInfo,
+        method: 'papi',
+      });
+    } catch (error) {
+      logger.error('Failed to get chain metadata with PAPI', {
+        error: error instanceof Error ? error.message : String(error),
+        requestId: res.locals.requestId,
+      });
+
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'Invalid request parameters',
+          details: error.errors,
+        });
+      }
+
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to get chain metadata with PAPI',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/auth/papi/block/:blockHash
+ * Get block information using PAPI
+ */
+router.get('/block/:blockHash',
+  sanitizeRequest(),
+  async (req: Request, res: Response) => {
+    try {
+      if (!signatureVerificationService) {
+        return res.status(503).json({
+          error: 'PAPI service not configured',
+          message: 'PAPI block info is not available',
+        });
+      }
+
+      const { blockHash } = req.params;
+      const { chain } = papiBlockInfoSchema.parse({ blockHash, ...req.query });
+
+      const papiService = (signatureVerificationService as any).papiService;
+      if (!papiService) {
+        return res.status(503).json({
+          error: 'PAPI service not available',
+          message: 'PAPI service is not initialized',
+        });
+      }
+
+      const blockInfo = await papiService.getBlockInfo(blockHash, chain);
+
+      logger.info('PAPI block info retrieved', {
+        blockHash,
+        chain,
+        requestId: res.locals.requestId,
+      });
+
+      res.json({
+        ...blockInfo,
+        method: 'papi',
+      });
+    } catch (error) {
+      logger.error('Failed to get block info with PAPI', {
+        error: error instanceof Error ? error.message : String(error),
+        requestId: res.locals.requestId,
+      });
+
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'Invalid request parameters',
+          details: error.errors,
+        });
+      }
+
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to get block info with PAPI',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/auth/papi/latest/:chain
+ * Get latest block using PAPI
+ */
+router.get('/latest/:chain',
+  sanitizeRequest(),
+  async (req: Request, res: Response) => {
+    try {
+      if (!signatureVerificationService) {
+        return res.status(503).json({
+          error: 'PAPI service not configured',
+          message: 'PAPI latest block is not available',
+        });
+      }
+
+      const { chain } = papiChainSchema.parse({ chain: req.params.chain || 'polkadot' });
+
+      const papiService = (signatureVerificationService as any).papiService;
+      if (!papiService) {
+        return res.status(503).json({
+          error: 'PAPI service not available',
+          message: 'PAPI service is not initialized',
+        });
+      }
+
+      const latestBlock = await papiService.getLatestBlock(chain);
+
+      logger.info('PAPI latest block retrieved', {
+        chain,
+        requestId: res.locals.requestId,
+      });
+
+      res.json({
+        ...latestBlock,
+        method: 'papi',
+      });
+    } catch (error) {
+      logger.error('Failed to get latest block with PAPI', {
+        error: error instanceof Error ? error.message : String(error),
+        requestId: res.locals.requestId,
+      });
+
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'Invalid request parameters',
+          details: error.errors,
+        });
+      }
+
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to get latest block with PAPI',
+      });
+    }
+  }
+);
+
 export function createPapiRouter(rateLimiters: ReturnType<typeof createRateLimiters>): Router {
   // Create a new router with rate limiters applied to each route
   const rateLimitedRouter = Router();
   
   // Mount each route with its rate limiter
-  rateLimitedRouter.post('/verify', rateLimiters.verify, sanitizeRequest(), async (req, res) => {
-    return router.handle(req, res);
-  });
-  
-  rateLimitedRouter.get('/account/:address', rateLimiters.api, sanitizeRequest(), async (req, res) => {
-    return router.handle(req, res);
-  });
-  
-  rateLimitedRouter.get('/status', rateLimiters.api, sanitizeRequest(), async (req, res) => {
-    return router.handle(req, res);
-  });
-  
-  rateLimitedRouter.get('/chains', rateLimiters.api, sanitizeRequest(), async (req, res) => {
-    return router.handle(req, res);
-  });
+  rateLimitedRouter.post('/verify', rateLimiters.verify, sanitizeRequest(), router);
+  rateLimitedRouter.get('/account/:address', rateLimiters.api, sanitizeRequest(), router);
+  rateLimitedRouter.get('/balance/:address', rateLimiters.api, sanitizeRequest(), router);
+  rateLimitedRouter.get('/status', rateLimiters.api, sanitizeRequest(), router);
+  rateLimitedRouter.get('/chains', rateLimiters.api, sanitizeRequest(), router);
+  rateLimitedRouter.get('/health', rateLimiters.api, sanitizeRequest(), router);
+  rateLimitedRouter.get('/health/:chain', rateLimiters.api, sanitizeRequest(), router);
+  rateLimitedRouter.get('/metadata', rateLimiters.api, sanitizeRequest(), router);
+  rateLimitedRouter.get('/metadata/:chain', rateLimiters.api, sanitizeRequest(), router);
+  rateLimitedRouter.get('/block/:blockHash', rateLimiters.api, sanitizeRequest(), router);
+  rateLimitedRouter.get('/latest', rateLimiters.api, sanitizeRequest(), router);
+  rateLimitedRouter.get('/latest/:chain', rateLimiters.api, sanitizeRequest(), router);
   
   return rateLimitedRouter;
 }

@@ -6,7 +6,7 @@ A comprehensive Single Sign-On (SSO) service designed specifically for Polkadot 
 
 ## ✨ Features
 
-- 🔐 **Multiple Provider Support**: Polkadot.js Extension, Google OAuth2, Talisman Mobile
+- 🔐 **Multiple Provider Support**: Polkadot.js Extension, Google OAuth2
 - 🛡️ **SIWE-Style Authentication**: Secure, standardized authentication flow
 - 📱 **Mobile Support**: QR code authentication for mobile wallets
 - 🔄 **Session Management**: JWT-based session handling with refresh tokens
@@ -31,11 +31,6 @@ A comprehensive Single Sign-On (SSO) service designed specifically for Polkadot 
 - **Use Case**: Web applications, zero setup for users
 - **Setup**: Configure Google OAuth2 credentials
 
-### 3. **Talisman Mobile** (Mobile)
-- **Type**: Mobile wallet app
-- **Flow**: Deep linking + QR code authentication
-- **Use Case**: Mobile applications, cross-device authentication
-- **Setup**: Users install Talisman Mobile app
 
 ### 4. **PAPI Integration** (Blockchain)
 - **Type**: Alternative blockchain client
@@ -68,11 +63,6 @@ bun run dev
 - `GET /api/auth/google/callback` - Handle Google OAuth2 callback
 - `POST /api/auth/google/verify` - Verify Google OAuth2 authorization code
 
-### Talisman Mobile
-- `GET /api/auth/mobile/challenge` - Generate Talisman Mobile challenge
-- `GET /api/auth/mobile/poll/:pollingToken` - Poll for challenge completion
-- `POST /api/auth/mobile/verify` - Verify Talisman Mobile signature
-- `GET /api/auth/mobile/qr/:challengeId` - Generate QR code for challenge
 
 ### PAPI Integration
 - `POST /api/auth/papi/verify` - Verify signature using PAPI
@@ -104,11 +94,6 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 GOOGLE_REDIRECT_URI=http://localhost:3001/api/auth/google/callback
 ```
 
-### Talisman Mobile Configuration
-```bash
-TALISMAN_DEEP_LINK_SCHEME=talisman://
-TALISMAN_CALLBACK_URL=http://localhost:3001/api/auth/mobile/callback
-```
 
 ### PAPI Configuration
 ```bash
@@ -133,26 +118,6 @@ window.location.href = auth_url;
 // User will be redirected to /api/auth/google/callback with authorization code
 ```
 
-### Talisman Mobile Authentication
-```javascript
-// Generate Talisman Mobile challenge
-const response = await fetch('/api/auth/mobile/challenge?provider=talisman-mobile&address=5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY&client_id=demo-client');
-const { deep_link_url, qr_code_data, polling_token } = await response.json();
-
-// Open Talisman Mobile app
-window.location.href = deep_link_url;
-
-// Poll for completion
-const pollInterval = setInterval(async () => {
-  const pollResponse = await fetch(`/api/auth/mobile/poll/${polling_token}?challenge_id=${challenge_id}`);
-  const result = await pollResponse.json();
-  
-  if (result.status === 'completed') {
-    clearInterval(pollInterval);
-    console.log('Authentication successful:', result.access_token);
-  }
-}, 2000);
-```
 
 ### PAPI Signature Verification
 ```javascript
