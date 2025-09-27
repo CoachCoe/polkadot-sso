@@ -43,6 +43,10 @@ export const tokenRequestSchema = z.object({
   redirect_uri: z.string().url('Invalid redirect URI'),
 });
 
+export const refreshRequestSchema = z.object({
+  refresh_token: z.string().min(1, 'Refresh token is required'),
+});
+
 export const tokenResponseSchema = z.object({
   access_token: z.string(),
   token_type: z.literal('Bearer'),
@@ -235,6 +239,7 @@ export const schemas = {
 
   tokenRequest: tokenRequestSchema,
   tokenResponse: tokenResponseSchema,
+  refreshRequest: refreshRequestSchema,
 
   clientCreate: clientCreateSchema,
   clientUpdate: clientUpdateSchema,

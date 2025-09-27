@@ -347,6 +347,52 @@ export const createAuthRouter = (
     tokenHandler
   );
 
+  router.post(
+    '/refresh',
+    rateLimiters.refresh,
+    sanitizeRequest(),
+    validateBody(schemas.refreshRequest),
+    async (req, res) => {
+      try {
+        const { refresh_token } = req.body;
+
+        if (!refresh_token || typeof refresh_token !== 'string') {
+          return res.status(400).json({ error: 'Invalid refresh token' });
+        }
+
+        const session = await tokenService.refreshSession(refresh_token);
+        if (!session) {
+          return res.status(401).json({ error: 'Invalid or expired refresh token' });
+        }
+
+        await auditService.log({
+          type: 'TOKEN_REFRESH',
+          user_address: session.address,
+          client_id: session.client_id,
+          action: 'token_refreshed',
+          status: 'success',
+          details: { sessionId: session.id },
+          ip_address: req.ip || 'unknown',
+          user_agent: req.get('User-Agent'),
+        });
+
+        return res.json({
+          access_token: session.access_token,
+          token_type: 'Bearer',
+          expires_in: 900, // 15 minutes
+          refresh_token: session.refresh_token,
+        });
+      } catch (error) {
+        logger.error('Failed to refresh token', {
+          error: error instanceof Error ? error.message : String(error),
+          requestId: res.locals.requestId,
+        });
+
+        return res.status(500).json({ error: 'Failed to refresh token' });
+      }
+    }
+  );
+
   router.get('/callback', (req, res) => {
     const { code, state, error } = req.query;
 
