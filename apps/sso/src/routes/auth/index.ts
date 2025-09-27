@@ -50,7 +50,7 @@ export const createAuthRouter = (
       // Mount Google OAuth2 routes
       router.use('/google', createGoogleRouter(rateLimiters));
     } catch (error) {
-      console.error('Failed to initialize Google OAuth2:', error);
+      // Google OAuth2 initialization failed - service will be unavailable
     }
   }
 
@@ -69,7 +69,7 @@ export const createAuthRouter = (
     // Mount Talisman Mobile routes
     router.use('/mobile', createTalismanMobileRouter(rateLimiters));
   } catch (error) {
-    console.error('Failed to initialize Talisman Mobile:', error);
+    // Talisman Mobile initialization failed - service will be unavailable
   }
 
   // Initialize PAPI if configured
@@ -97,7 +97,7 @@ export const createAuthRouter = (
     // Mount PAPI routes
     router.use('/papi', createPapiRouter(rateLimiters));
   } catch (error) {
-    console.error('Failed to initialize PAPI:', error);
+    // PAPI initialization failed - service will be unavailable
   }
 
   const loginHandler = createLoginHandler(

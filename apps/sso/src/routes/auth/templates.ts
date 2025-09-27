@@ -147,9 +147,9 @@ export function generateChallengePage(data: ChallengeTemplateData, nonce: string
             const buttonText = document.getElementById("buttonText");
             const loadingSpinner = document.getElementById("loadingSpinner");
 
-            console.log('CHALLENGE_DATA:', window.CHALLENGE_DATA);
+            // Challenge data loaded successfully
             if (!window.CHALLENGE_DATA || !window.CHALLENGE_DATA.address) {
-                console.error('CHALLENGE_DATA not properly set:', window.CHALLENGE_DATA);
+                throw new Error('Challenge data not properly initialized');
                 updateStatus("Error: Challenge data not loaded", "error");
                 return;
             }
@@ -237,7 +237,7 @@ export function generateChallengePage(data: ChallengeTemplateData, nonce: string
                     }
 
                 } catch (error) {
-                    console.error("Authentication error:", error);
+                    // Authentication error handled by updateStatus
                     updateStatus("Error: " + error.message, "error");
                     setLoading(false);
                 }

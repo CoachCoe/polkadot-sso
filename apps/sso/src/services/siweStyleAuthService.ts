@@ -149,7 +149,7 @@ export class SIWEStyleAuthService {
 
       return parsed as SIWEMessage;
     } catch (error) {
-      console.error('Error parsing SIWE message:', error);
+      logger.error('Error parsing SIWE message', { error: error instanceof Error ? error.message : String(error) });
       return null;
     }
   }
@@ -222,7 +222,7 @@ export class SIWEStyleAuthService {
         parsedMessage,
       };
     } catch (error) {
-      console.error('Error verifying SIWE signature:', error);
+      logger.error('Error verifying SIWE signature', { error: error instanceof Error ? error.message : String(error) });
       return { isValid: false, error: 'Signature verification failed' };
     }
   }

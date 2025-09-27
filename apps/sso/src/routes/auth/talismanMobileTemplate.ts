@@ -500,7 +500,7 @@ export function generateTalismanMobileChallengePage(data: TalismanMobileChalleng
                             showError('Challenge not found. Please refresh the page to generate a new one.');
                         }
                     } catch (err) {
-                        console.error('Polling error:', err);
+                        // Polling error handled by status update
                     }
                 }, 2000); // Poll every 2 seconds
             }

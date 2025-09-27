@@ -131,7 +131,7 @@ export class JWTService {
 
       return payload;
     } catch (error) {
-      console.error('Access token verification failed:', error);
+      logger.error('Access token verification failed', { error: error instanceof Error ? error.message : String(error) });
       return null;
     }
   }
@@ -148,7 +148,7 @@ export class JWTService {
 
       return payload;
     } catch (error) {
-      console.error('Refresh token verification failed:', error);
+      logger.error('Refresh token verification failed', { error: error instanceof Error ? error.message : String(error) });
       return null;
     }
   }
@@ -229,7 +229,7 @@ export class JWTService {
   blacklistToken(tokenId: string, expiresAt: number): void {
     // In a real implementation, you would store the blacklisted token ID
     // in Redis with an expiration time
-    console.log(`Token ${tokenId} blacklisted until ${new Date(expiresAt)}`);
+    logger.info('Token blacklisted', { tokenId, expiresAt: new Date(expiresAt) });
   }
 
   /**
