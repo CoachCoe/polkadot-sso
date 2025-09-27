@@ -236,7 +236,7 @@ export const createAuthRouter = (
           <p>3. Use the returned access token for authenticated requests</p>
           <hr>
           <p><a href="/api-docs/">📚 View API Documentation</a></p>
-          <p><a href="/api/auth/challenge?client_id=demo-client">🔄 Try Another Authentication</a></p>
+          <p><a href="/api/auth/challenge?client_id=demo-client&address=5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY">🔄 Try Another Authentication</a></p>
         </div>
       </body>
       </html>

@@ -10,7 +10,7 @@ export const timestampSchema = z.number().int().positive('Timestamp must be a po
 export const challengeQuerySchema = z.object({
   client_id: z.string().min(1, 'Client ID is required'),
   address: addressSchema.optional(),
-  wallet: z.enum(['polkadot-js']).optional(),
+  wallet: z.enum(['polkadot-js', 'telegram']).optional(),
 });
 
 export const challengeResponseSchema = z.object({

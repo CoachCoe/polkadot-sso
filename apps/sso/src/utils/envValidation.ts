@@ -83,6 +83,15 @@ const envSchema = z.object({
 
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
   LOG_FILE: z.string().optional(),
+
+  // Telegram Bot Configuration
+  TELEGRAM_BOT_TOKEN: z.string().min(1, 'TELEGRAM_BOT_TOKEN is required').optional(),
+  TELEGRAM_BOT_USERNAME: z.string().min(1, 'TELEGRAM_BOT_USERNAME is required').optional(),
+  TELEGRAM_AUTH_TIMEOUT: z.string().transform(Number).pipe(z.number().min(60).max(3600)).default('300'), // 5 minutes
+  TELEGRAM_ALLOWED_DOMAINS: z
+    .string()
+    .transform(val => val.split(',').map(s => s.trim()))
+    .default('localhost'),
 });
 
 export type ValidatedEnv = z.infer<typeof envSchema>;
@@ -110,6 +119,10 @@ export function validateEnvironment(): EnvValidationResult {
 
       if (!env.KUSAMA_ENDPOINT) {
         warnings.push('KUSAMA_ENDPOINT not configured - Kusama integration will be disabled');
+      }
+
+      if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_BOT_USERNAME) {
+        warnings.push('TELEGRAM_BOT_TOKEN or TELEGRAM_BOT_USERNAME not configured - Telegram authentication will be disabled');
       }
 
       if (env.COOKIE_SECURE === false) {
@@ -148,6 +161,7 @@ export function validateEnvironment(): EnvValidationResult {
       allowedOrigins: env.ALLOWED_ORIGINS.length,
       hasRedis: !!env.REDIS_URL,
       hasKusama: !!env.KUSAMA_ENDPOINT,
+      hasTelegram: !!(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_BOT_USERNAME),
       dbPoolMin: env.DB_POOL_MIN,
       dbPoolMax: env.DB_POOL_MAX,
       compressionLevel: env.COMPRESSION_LEVEL,
@@ -162,7 +176,7 @@ export function validateEnvironment(): EnvValidationResult {
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      errors.push(...error.errors.map(err => `${err.path.join('.')}: ${err.message}`));
+      errors.push(...error.issues.map(err => `${err.path.join('.')}: ${err.message}`));
     } else {
       errors.push('Unknown validation error');
     }

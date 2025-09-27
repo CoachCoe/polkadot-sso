@@ -515,6 +515,44 @@ async function initializeSchema(db: Database): Promise<void> {
       FOREIGN KEY (revoked_by_address) REFERENCES user_profiles(address)
     );
 
+    -- Telegram Authentication tables
+    CREATE TABLE IF NOT EXISTS telegram_challenges (
+      challenge_id TEXT PRIMARY KEY,
+      client_id TEXT NOT NULL,
+      state TEXT NOT NULL,
+      code_verifier TEXT NOT NULL,
+      telegram_id INTEGER NOT NULL,
+      first_name TEXT NOT NULL,
+      last_name TEXT,
+      username TEXT,
+      photo_url TEXT,
+      auth_date INTEGER NOT NULL,
+      hash TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL,
+      used BOOLEAN NOT NULL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS telegram_sessions (
+      id TEXT PRIMARY KEY,
+      telegram_id INTEGER NOT NULL,
+      username TEXT,
+      first_name TEXT NOT NULL,
+      last_name TEXT,
+      photo_url TEXT,
+      client_id TEXT NOT NULL,
+      access_token TEXT NOT NULL,
+      refresh_token TEXT NOT NULL,
+      access_token_id TEXT NOT NULL,
+      refresh_token_id TEXT NOT NULL,
+      fingerprint TEXT NOT NULL,
+      access_token_expires_at INTEGER NOT NULL,
+      refresh_token_expires_at INTEGER NOT NULL,
+      created_at INTEGER NOT NULL,
+      last_used_at INTEGER NOT NULL,
+      is_active BOOLEAN DEFAULT 1
+    );
+
     -- Create indexes for performance
     CREATE INDEX IF NOT EXISTS idx_challenges_id ON challenges(id);
     CREATE INDEX IF NOT EXISTS idx_sessions_address ON sessions(address);
@@ -542,6 +580,14 @@ async function initializeSchema(db: Database): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_issuance_requests_status ON issuance_requests(status);
     CREATE INDEX IF NOT EXISTS idx_credential_revocations_credential ON credential_revocations(credential_id);
     CREATE INDEX IF NOT EXISTS idx_credential_revocations_revoked_by ON credential_revocations(revoked_by_address);
+
+    -- Telegram authentication indexes
+    CREATE INDEX IF NOT EXISTS idx_telegram_challenges_id ON telegram_challenges(challenge_id);
+    CREATE INDEX IF NOT EXISTS idx_telegram_challenges_client ON telegram_challenges(client_id);
+    CREATE INDEX IF NOT EXISTS idx_telegram_challenges_expires ON telegram_challenges(expires_at);
+    CREATE INDEX IF NOT EXISTS idx_telegram_sessions_telegram_id ON telegram_sessions(telegram_id);
+    CREATE INDEX IF NOT EXISTS idx_telegram_sessions_client ON telegram_sessions(client_id);
+    CREATE INDEX IF NOT EXISTS idx_telegram_sessions_refresh_token ON telegram_sessions(refresh_token);
   `);
 
   // Migration: Add missing columns to existing challenges table

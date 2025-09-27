@@ -11,6 +11,7 @@ import { createRateLimiters } from './middleware/rateLimit.js';
 import { securityMiddleware } from './middleware/security.js';
 import { validationMiddleware } from './middleware/validation.js';
 import { createAuthRouter } from './routes/auth/index.js';
+import { createTelegramAuthRouter } from './routes/telegramAuth.js';
 import { AuditService } from './services/auditService.js';
 import { ChallengeService } from './services/challengeService.js';
 import { TokenService } from './services/token.js';
@@ -20,6 +21,9 @@ import { createLogger } from './utils/logger.js';
 const logger = createLogger('polkadot-sso-app');
 
 const app = express();
+
+// Trust proxy for rate limiting (needed for ngrok)
+app.set('trust proxy', 1);
 
 // Body parsing middleware MUST come first so req.body is available
 app.use(express.json({ limit: '10mb' }));
@@ -163,6 +167,16 @@ app.use('/api/auth', (req, res, next) => {
   }
   const authRouter = createAuthRouter(tokenService, challengeService, auditService, clients, db, rateLimiters);
   authRouter(req, res, next);
+});
+
+// Telegram authentication routes
+app.use('/api/auth/telegram', (req, res, next) => {
+  if (!db) {
+    const error = new ServiceUnavailableError('Database not initialized', undefined, (req as Request & { requestId?: string }).requestId);
+    return next(error);
+  }
+  const telegramAuthRouter = createTelegramAuthRouter(tokenService, auditService, clients, db, rateLimiters);
+  telegramAuthRouter(req, res, next);
 });
 
 // 404 handler (must be before error handler)
