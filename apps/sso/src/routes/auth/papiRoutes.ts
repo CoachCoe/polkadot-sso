@@ -33,9 +33,10 @@ const papiChainSchema = z.object({
 // Initialize PAPI Service
 let signatureVerificationService: SignatureVerificationService | null = null;
 
-export function initializePapi(config: SignatureVerificationConfig): void {
+export async function initializePapi(config: SignatureVerificationConfig): Promise<void> {
   try {
     signatureVerificationService = new SignatureVerificationService(config);
+    await signatureVerificationService.initialize();
     logger.info('PAPI service initialized successfully');
   } catch (error) {
     logger.error('Failed to initialize PAPI service', {

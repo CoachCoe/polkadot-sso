@@ -194,7 +194,9 @@ export function generateChallengePage(data: ChallengeTemplateData, nonce: string
                     if (window.CHALLENGE_DATA.address) {
                         account = accounts.find(acc => acc.address === window.CHALLENGE_DATA.address);
                         if (!account) {
-                            throw new Error("Account not found in wallet");
+                            // If the specific address isn't found, use the first available account
+                            account = accounts[0];
+                            updateStatus("Using available account: " + account.address, "info");
                         }
                     } else {
                         // If no specific address provided, use the first available account

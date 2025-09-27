@@ -21,7 +21,7 @@ import { createPapiRouter, initializePapi } from './papiRoutes.js';
 
 type RateLimiters = ReturnType<typeof createRateLimiters>;
 
-export const createAuthRouter = (
+export const createAuthRouter = async (
   tokenService: TokenService,
   challengeService: ChallengeService,
   auditService: AuditService,
@@ -63,7 +63,7 @@ export const createAuthRouter = (
   const papiPreferredMethod = (process.env.PAPI_PREFERRED_METHOD as 'papi' | 'polkadot-js') || 'papi';
 
   try {
-    initializePapi({
+    await initializePapi({
       papi: {
         polkadotRpc: papiPolkadotRpc,
         kusamaRpc: papiKusamaRpc,
@@ -82,6 +82,9 @@ export const createAuthRouter = (
     router.use('/papi', createPapiRouter(rateLimiters));
   } catch (error) {
     // PAPI initialization failed - service will be unavailable
+    logger.warn('PAPI initialization failed, service will be unavailable', {
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 
   const loginHandler = createLoginHandler(

@@ -208,12 +208,12 @@ initializeDatabase().then(database => {
 });
 
 // API routes
-app.use('/api/auth', (req, res, next) => {
+app.use('/api/auth', async (req, res, next) => {
   if (!db) {
     const error = new ServiceUnavailableError('Database not initialized', undefined, (req as Request & { requestId?: string }).requestId);
     return next(error);
   }
-  const authRouter = createAuthRouter(tokenService, challengeService, auditService, clients, db, rateLimiters, process.env.JWT_SECRET || 'fallback-secret');
+  const authRouter = await createAuthRouter(tokenService, challengeService, auditService, clients, db, rateLimiters, process.env.JWT_SECRET || 'fallback-secret');
   authRouter(req, res, next);
 });
 
