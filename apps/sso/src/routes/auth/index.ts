@@ -13,6 +13,11 @@ import { AuthenticationError, NotFoundError, ValidationError } from '../../utils
 import { schemas } from '../../utils/schemas.js';
 import { createLoginHandler, createTokenHandler, createVerifyHandler } from './handlers.js';
 import { generateApiDocsPage, generateChallengePage } from './templates.js';
+import { createGoogleRouter, initializeGoogleAuth } from './googleRoutes.js';
+import { generateGoogleChallengePage } from './googleTemplate.js';
+import { createTalismanMobileRouter, initializeTalismanMobile } from './talismanMobileRoutes.js';
+import { generateTalismanMobileChallengePage } from './talismanMobileTemplate.js';
+import { createPapiRouter, initializePapi } from './papiRoutes.js';
 
 type RateLimiters = ReturnType<typeof createRateLimiters>;
 
@@ -22,10 +27,78 @@ export const createAuthRouter = (
   auditService: AuditService,
   clients: Map<string, Client>,
   db: Database,
-  rateLimiters: RateLimiters
+  rateLimiters: RateLimiters,
+  jwtSecret: string
 ) => {
   const router = Router();
   // const logger = createLogger('auth-router');
+
+  // Initialize Google OAuth2 if configured
+  const googleClientId = process.env.GOOGLE_CLIENT_ID;
+  const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const googleRedirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3001/api/auth/google/callback';
+
+  if (googleClientId && googleClientSecret) {
+    try {
+      initializeGoogleAuth({
+        clientId: googleClientId,
+        clientSecret: googleClientSecret,
+        redirectUri: googleRedirectUri,
+        scopes: ['openid', 'email', 'profile'],
+      }, jwtSecret);
+      
+      // Mount Google OAuth2 routes
+      router.use('/google', createGoogleRouter(rateLimiters));
+    } catch (error) {
+      console.error('Failed to initialize Google OAuth2:', error);
+    }
+  }
+
+  // Initialize Talisman Mobile if configured
+  const talismanDeepLinkScheme = process.env.TALISMAN_DEEP_LINK_SCHEME || 'talisman://';
+  const talismanCallbackUrl = process.env.TALISMAN_CALLBACK_URL || 'http://localhost:3001/api/auth/mobile/callback';
+
+  try {
+    initializeTalismanMobile({
+      deepLinkScheme: talismanDeepLinkScheme,
+      callbackUrl: talismanCallbackUrl,
+      qrCodePollingInterval: 2000,
+      qrCodeTimeout: 300000, // 5 minutes
+    }, jwtSecret);
+    
+    // Mount Talisman Mobile routes
+    router.use('/mobile', createTalismanMobileRouter(rateLimiters));
+  } catch (error) {
+    console.error('Failed to initialize Talisman Mobile:', error);
+  }
+
+  // Initialize PAPI if configured
+  const papiPolkadotRpc = process.env.PAPI_POLKADOT_RPC || 'wss://polkadot-rpc.polkadot.io';
+  const papiKusamaRpc = process.env.PAPI_KUSAMA_RPC || 'wss://kusama-rpc.polkadot.io';
+  const papiLightClientEnabled = process.env.PAPI_LIGHT_CLIENT_ENABLED === 'true';
+  const papiFallbackToPolkadotJs = process.env.PAPI_FALLBACK_TO_POLKADOT_JS !== 'false';
+
+  try {
+    initializePapi({
+      papi: {
+        polkadotRpc: papiPolkadotRpc,
+        kusamaRpc: papiKusamaRpc,
+        lightClientEnabled: papiLightClientEnabled,
+        fallbackToPolkadotJs: papiFallbackToPolkadotJs,
+        typeDescriptors: {
+          polkadot: '',
+          kusama: '',
+        },
+      },
+      fallbackToPolkadotJs: papiFallbackToPolkadotJs,
+      preferredMethod: 'papi',
+    });
+    
+    // Mount PAPI routes
+    router.use('/papi', createPapiRouter(rateLimiters));
+  } catch (error) {
+    console.error('Failed to initialize PAPI:', error);
+  }
 
   const loginHandler = createLoginHandler(
     tokenService,
@@ -44,7 +117,7 @@ export const createAuthRouter = (
     nonceMiddleware,
     validateQuery(schemas.challengeQuery),
     asyncHandler(async (req, res) => {
-      const { client_id, address } = req.query;
+      const { client_id, address, wallet } = req.query;
       const requestId = (req as Request & { requestId?: string }).requestId;
 
       if (!client_id) {
@@ -56,6 +129,27 @@ export const createAuthRouter = (
         throw new AuthenticationError('Invalid client', { client_id }, requestId);
       }
 
+      // Handle Google OAuth2 challenge
+      if (wallet === 'google') {
+        if (!googleClientId || !googleClientSecret) {
+          throw new AuthenticationError('Google OAuth2 not configured', { client_id }, requestId);
+        }
+
+        // Redirect to Google OAuth2 challenge endpoint
+        return res.redirect(`/api/auth/google/challenge?client_id=${client_id}`);
+      }
+
+      // Handle Talisman Mobile challenge
+      if (wallet === 'talisman-mobile') {
+        if (!address) {
+          throw new ValidationError('Address is required for Talisman Mobile', { field: 'address' }, requestId);
+        }
+
+        // Redirect to Talisman Mobile challenge endpoint
+        return res.redirect(`/api/auth/mobile/challenge?provider=talisman-mobile&address=${address}&client_id=${client_id}`);
+      }
+
+      // Handle Polkadot.js Extension challenge
       const challenge = await challengeService.generateChallenge(
         client_id as string,
         address as string
@@ -81,6 +175,95 @@ export const createAuthRouter = (
     const html = generateApiDocsPage();
     res.send(html);
   });
+
+  // Google OAuth2 challenge page route
+  router.get('/google-challenge', 
+    rateLimiters.challenge,
+    sanitizeRequest(),
+    nonceMiddleware,
+    asyncHandler(async (req, res) => {
+      const { client_id } = req.query;
+      const requestId = (req as Request & { requestId?: string }).requestId;
+
+      if (!client_id) {
+        throw new ValidationError('Client ID is required', { field: 'client_id' }, requestId);
+      }
+
+      if (!googleClientId || !googleClientSecret) {
+        throw new AuthenticationError('Google OAuth2 not configured', { client_id }, requestId);
+      }
+
+      // Generate Google OAuth2 challenge
+      const { GoogleAuthService } = await import('../../services/googleAuthService.js');
+      const googleAuth = new GoogleAuthService({
+        clientId: googleClientId,
+        clientSecret: googleClientSecret,
+        redirectUri: googleRedirectUri,
+        scopes: ['openid', 'email', 'profile'],
+      }, jwtSecret);
+
+      const challenge = googleAuth.generateChallenge();
+
+      const html = generateGoogleChallengePage({
+        challengeId: challenge.challengeId,
+        authUrl: challenge.authUrl,
+        state: challenge.state,
+        nonce: challenge.nonce,
+        expiresAt: challenge.expiresAt,
+        clientId: client_id as string,
+        nonce: res.locals.nonce,
+      });
+
+      res.send(html);
+    })
+  );
+
+  // Talisman Mobile challenge page route
+  router.get('/talisman-mobile-challenge', 
+    rateLimiters.challenge,
+    sanitizeRequest(),
+    nonceMiddleware,
+    asyncHandler(async (req, res) => {
+      const { provider, address, client_id } = req.query;
+      const requestId = (req as Request & { requestId?: string }).requestId;
+
+      if (!provider || provider !== 'talisman-mobile') {
+        throw new ValidationError('Provider must be talisman-mobile', { field: 'provider' }, requestId);
+      }
+
+      if (!address) {
+        throw new ValidationError('Address is required', { field: 'address' }, requestId);
+      }
+
+      if (!client_id) {
+        throw new ValidationError('Client ID is required', { field: 'client_id' }, requestId);
+      }
+
+      // Generate Talisman Mobile challenge
+      const { TalismanMobileService } = await import('../../services/talismanMobileService.js');
+      const talismanMobile = new TalismanMobileService({
+        deepLinkScheme: talismanDeepLinkScheme,
+        callbackUrl: talismanCallbackUrl,
+        qrCodePollingInterval: 2000,
+        qrCodeTimeout: 300000,
+      }, jwtSecret);
+
+      const challenge = talismanMobile.generateChallenge(address as string, client_id as string);
+
+      const html = generateTalismanMobileChallengePage({
+        challengeId: challenge.challengeId,
+        deepLinkUrl: challenge.deepLinkUrl,
+        qrCodeData: challenge.qrCodeData,
+        pollingToken: challenge.pollingToken,
+        expiresAt: challenge.expiresAt,
+        address: address as string,
+        clientId: client_id as string,
+        nonce: res.locals.nonce,
+      });
+
+      res.send(html);
+    })
+  );
 
   router.get(
     '/status/:challengeId',

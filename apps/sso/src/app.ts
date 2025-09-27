@@ -105,7 +105,7 @@ app.use('/api/auth', (req, res, next) => {
     const error = new ServiceUnavailableError('Database not initialized', undefined, (req as Request & { requestId?: string }).requestId);
     return next(error);
   }
-  const authRouter = createAuthRouter(tokenService, challengeService, auditService, clients, db, rateLimiters);
+  const authRouter = createAuthRouter(tokenService, challengeService, auditService, clients, db, rateLimiters, process.env.JWT_SECRET || 'fallback-secret');
   authRouter(req, res, next);
 });
 

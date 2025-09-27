@@ -300,6 +300,41 @@ export function generateApiDocsPage(): string {
             color: #2d3748;
             margin-top: 0;
             border-bottom: 2px solid #e2e8f0;
+        }
+
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .provider-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .provider-card h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .provider-card p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .provider-card code {
+            background: #e9ecef;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #495057;
             padding-bottom: 10px;
         }
         .endpoint {
@@ -406,7 +441,34 @@ export function generateApiDocsPage(): string {
                 <p>To use the API, you'll need to register a client application:</p>
                 <pre><code>Client ID: default-client
 Redirect URI: http://localhost:3000/callback
-Supported Wallets: polkadot-js, nova-wallet, subwallet</code></pre>
+Supported Providers: polkadot-js, google, talisman-mobile
+PAPI Integration: Enhanced blockchain client support</code></pre>
+            </div>
+
+            <div class="section">
+                <h2>🔐 Authentication Providers</h2>
+                <div class="provider-grid">
+                    <div class="provider-card">
+                        <h3>🔌 Polkadot.js Extension</h3>
+                        <p>Browser extension wallet authentication</p>
+                        <code>GET /api/auth/challenge?wallet=polkadot-js</code>
+                    </div>
+                    <div class="provider-card">
+                        <h3>🔍 Google OAuth2</h3>
+                        <p>Google account authentication</p>
+                        <code>GET /api/auth/google/challenge</code>
+                    </div>
+                    <div class="provider-card">
+                        <h3>📱 Talisman Mobile</h3>
+                        <p>Mobile wallet with QR codes</p>
+                        <code>GET /api/auth/mobile/challenge</code>
+                    </div>
+                    <div class="provider-card">
+                        <h3>⚡ PAPI Integration</h3>
+                        <p>Enhanced blockchain client</p>
+                        <code>POST /api/auth/papi/verify</code>
+                    </div>
+                </div>
             </div>
 
             <div class="section">
