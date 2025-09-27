@@ -6,14 +6,13 @@ A comprehensive Single Sign-On (SSO) service designed specifically for Polkadot 
 
 ## ✨ Features
 
-- 🔐 **Multiple Wallet Support**: Polkadot.js, Talisman, SubWallet, Nova Wallet, Telegram
-- 🛡️ **SIWE-Style Authentication**: Secure, standardized authentication flow
-- 📱 **Mobile Support**: QR code authentication for mobile wallets
+- 🔐 **Polkadot.js Integration**: Secure wallet-based authentication
+- 🛡️ **Challenge-Response Authentication**: Secure, standardized authentication flow
 - 🔄 **Session Management**: JWT-based session handling with refresh tokens
-- 🗄️ **Database Integration**: SQLite and Redis support
+- 🗄️ **Database Integration**: SQLite with connection pooling
 - 📊 **Audit Logging**: Comprehensive security audit trails
-- 🔒 **Security Features**: Rate limiting, CSRF protection, encryption
-- 🌐 **Framework Adapters**: Express, Next.js, Remix support
+- 🔒 **Security Features**: Rate limiting, CSP, encryption, validation
+- 🌐 **Production Ready**: Stateless, scalable, and secure
 
 ## 🚀 Quick Start
 
@@ -26,11 +25,12 @@ bun run dev
 
 ## 📚 API Endpoints
 
-- `POST /api/auth/challenge` - Create authentication challenge
-- `GET /api/auth/status/:challengeId` - Check challenge status
-- `POST /api/auth/verify` - Verify signature and create session
-- `POST /api/auth/signout` - Sign out and destroy session
+- `GET /api/auth/challenge` - Create authentication challenge
+- `GET /api/auth/verify` - Verify signature and create session
+- `POST /api/auth/token` - Exchange authorization code for tokens
 - `GET /api/auth/session` - Get current session info
+- `POST /api/auth/logout` - Sign out and destroy session
+- `GET /api/auth/callback` - OAuth callback endpoint
 - `GET /health` - Health check endpoint
 - `GET /api-docs` - API documentation
 
@@ -41,9 +41,11 @@ The SSO service can be configured through environment variables:
 ```bash
 PORT=3001
 NODE_ENV=development
-JWT_SECRET=your-secret-key
-DATABASE_URL=sqlite:./data/sso.db
-REDIS_URL=redis://localhost:6379
+JWT_ACCESS_SECRET=your-access-secret-key
+JWT_REFRESH_SECRET=your-refresh-secret-key
+SESSION_SECRET=your-session-secret-key
+DATABASE_ENCRYPTION_KEY=your-32-character-encryption-key
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
 ```
 
 ## 🤝 Contributing

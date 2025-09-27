@@ -32,7 +32,6 @@ export { app };
 
 // SSO Services
   export { ChallengeService } from './services/challengeService.js';
-  export { SIWEStyleAuthService } from './services/siweStyleAuthService.js';
   export { TokenService } from './services/token.js';
 
 // SSO Routes
