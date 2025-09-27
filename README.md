@@ -6,7 +6,7 @@ A comprehensive Single Sign-On (SSO) service designed specifically for Polkadot 
 
 ## ✨ Features
 
-- 🔐 **Multiple Wallet Support**: Polkadot.js, Talisman, SubWallet, Nova Wallet, Telegram
+- 🔐 **Multiple Wallet Support**: Polkadot.js, Talisman, SubWallet, Nova Wallet
 - 🛡️ **SIWE-Style Authentication**: Secure, standardized authentication flow
 - 📱 **Mobile Support**: QR code authentication for mobile wallets
 - 🔄 **Session Management**: JWT-based session handling with refresh tokens
