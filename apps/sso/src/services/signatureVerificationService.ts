@@ -176,7 +176,7 @@ export class SignatureVerificationService {
       const keyring = new Keyring({ type: 'sr25519' });
       const keyringPair = keyring.addFromAddress(address);
 
-      const isValid = keyringPair.verify(message, signature, keyringPair.publicKey);
+      const isValid = keyringPair.verify(new TextEncoder().encode(message), new TextEncoder().encode(signature), keyringPair.publicKey);
 
       logger.info('Polkadot.js signature verification completed', {
         address,

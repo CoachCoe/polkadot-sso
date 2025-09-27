@@ -9,7 +9,9 @@ import { ChallengeService } from '../../services/challengeService.js';
 import { TokenService } from '../../services/token.js';
 import { Client } from '../../types/auth.js';
 import { AuthenticationError, NotFoundError, ValidationError } from '../../utils/errors.js';
-// import { createLogger } from '../../utils/logger.js';
+import { createLogger } from '../../utils/logger.js';
+
+const logger = createLogger('auth-routes');
 import { schemas } from '../../utils/schemas.js';
 import { createLoginHandler, createTokenHandler, createVerifyHandler } from './handlers.js';
 import { generateApiDocsPage, generateChallengePage } from './templates.js';
@@ -181,10 +183,9 @@ export const createAuthRouter = (
         challengeId: challenge.challengeId,
         authUrl: challenge.authUrl,
         state: challenge.state,
-        nonce: challenge.nonce,
+        nonce: res.locals.nonce,
         expiresAt: challenge.expiresAt,
         clientId: client_id as string,
-        nonce: res.locals.nonce,
       });
 
       res.send(html);

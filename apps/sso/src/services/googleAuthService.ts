@@ -131,7 +131,7 @@ export class GoogleAuthService {
 
       return {
         accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
+        refreshToken: tokens.refresh_token || undefined,
         expiresIn: tokens.expiry_date ? Math.floor((tokens.expiry_date - Date.now()) / 1000) : 3600,
         user: userInfo,
       };

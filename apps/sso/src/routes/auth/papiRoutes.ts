@@ -94,7 +94,7 @@ router.post('/verify',
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request parameters',
-          details: error.errors,
+          details: error.issues,
         });
       }
 
@@ -157,7 +157,7 @@ router.get('/account/:address',
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request parameters',
-          details: error.errors,
+          details: error.issues,
         });
       }
 
@@ -305,7 +305,7 @@ router.get('/balance/:address',
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request parameters',
-          details: error.errors,
+          details: error.issues,
         });
       }
 
@@ -363,7 +363,7 @@ router.get('/health/:chain',
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request parameters',
-          details: error.errors,
+          details: error.issues,
         });
       }
 
@@ -421,7 +421,7 @@ router.get('/metadata/:chain',
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request parameters',
-          details: error.errors,
+          details: error.issues,
         });
       }
 
@@ -481,7 +481,7 @@ router.get('/block/:blockHash',
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request parameters',
-          details: error.errors,
+          details: error.issues,
         });
       }
 
@@ -539,7 +539,7 @@ router.get('/latest/:chain',
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request parameters',
-          details: error.errors,
+          details: error.issues,
         });
       }
 

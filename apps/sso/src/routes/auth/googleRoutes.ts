@@ -91,7 +91,7 @@ router.get('/challenge',
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request parameters',
-          details: error.errors,
+          details: error.issues,
         });
       }
 
@@ -172,7 +172,7 @@ router.get('/callback',
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request parameters',
-          details: error.errors,
+          details: error.issues,
         });
       }
 
@@ -244,7 +244,7 @@ router.post('/verify',
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request parameters',
-          details: error.errors,
+          details: error.issues,
         });
       }
 

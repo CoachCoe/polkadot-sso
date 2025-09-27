@@ -1,4 +1,4 @@
-import RedisStore from 'connect-redis';
+import { RedisStore } from 'connect-redis';
 import { randomBytes } from 'crypto';
 import { createClient } from 'redis';
 import { createLogger } from '../utils/logger.js';

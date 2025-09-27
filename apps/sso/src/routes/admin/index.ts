@@ -3,8 +3,8 @@ import { createLogger } from '../../utils/logger.js';
 import { createRateLimiters } from '../../middleware/rateLimit.js';
 import { sanitizeRequest } from '../../middleware/validation.js';
 import { monitoringService } from '../../services/monitoringService.js';
-import { securityService } from '../../services/securityService.js';
-import { backupService } from '../../services/backupService.js';
+import { SecurityService } from '../../services/securityService.js';
+import { BackupService } from '../../services/backupService.js';
 import { z } from 'zod';
 
 const logger = createLogger('admin-routes');
@@ -224,7 +224,7 @@ router.post('/security/block',
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request parameters',
-          details: error.errors,
+          details: error.issues,
         });
       }
 
@@ -274,7 +274,7 @@ router.post('/security/unblock',
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request parameters',
-          details: error.errors,
+          details: error.issues,
         });
       }
 
@@ -371,7 +371,7 @@ router.post('/backups',
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request parameters',
-          details: error.errors,
+          details: error.issues,
         });
       }
 
@@ -427,7 +427,7 @@ router.post('/backups/:backupId/restore',
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid request parameters',
-          details: error.errors,
+          details: error.issues,
         });
       }
 

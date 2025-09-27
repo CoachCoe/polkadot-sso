@@ -1,6 +1,9 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import type { Session } from '../types/index.js';
+import { createLogger } from '../utils/logger.js';
+
+const logger = createLogger('jwt-service');
 
 export interface JWTPayload {
   sub: string; // subject (user address)

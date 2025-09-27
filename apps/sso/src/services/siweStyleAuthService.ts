@@ -1,6 +1,9 @@
 import crypto from 'crypto';
 import { Database } from 'sqlite';
 import { Challenge, Session } from '../types/auth';
+import { createLogger } from '../utils/logger.js';
+
+const logger = createLogger('siwe-auth-service');
 
 export interface SIWEMessage {
   domain: string;

@@ -9,7 +9,6 @@ export interface GoogleChallengeTemplateData {
   nonce: string;
   expiresAt: number;
   clientId: string;
-  nonce: string;
 }
 
 export function generateGoogleChallengePage(data: GoogleChallengeTemplateData): string {

@@ -123,7 +123,11 @@ describe('PapiService', () => {
       expect(result.isValid).toBe(false);
       expect(result.address).toBe(testAddress);
       expect(result.chain).toBe(testChain);
-      expect(mockPair.verify).toHaveBeenCalledWith(testMessage, testSignature, mockPair.publicKey);
+      expect(mockPair.verify).toHaveBeenCalledWith(
+        new TextEncoder().encode(testMessage), 
+        new TextEncoder().encode(testSignature), 
+        mockPair.publicKey
+      );
     });
 
     it('should handle error for unavailable chain', async () => {

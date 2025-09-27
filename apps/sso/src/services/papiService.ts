@@ -114,7 +114,7 @@ export class PapiService {
       const keyringPair = this.keyring.addFromAddress(address);
 
       // Verify signature
-      const isValid = keyringPair.verify(message, signature, keyringPair.publicKey);
+      const isValid = keyringPair.verify(new TextEncoder().encode(message), new TextEncoder().encode(signature), keyringPair.publicKey);
 
       logger.info('PAPI signature verification completed', {
         address,
@@ -244,7 +244,7 @@ export class PapiService {
       }
 
       const health = await api.rpc.system.health();
-      const chain = await api.rpc.system.chain();
+      const chainName = await api.rpc.system.chain();
       const version = await api.rpc.system.version();
 
       logger.info('PAPI chain health retrieved', {
@@ -254,7 +254,7 @@ export class PapiService {
 
       return {
         health: health.toHuman(),
-        chain: chain.toString(),
+        chain: chainName.toString(),
         version: version.toString(),
       };
     } catch (error) {
@@ -277,7 +277,7 @@ export class PapiService {
       }
 
       const accountInfo = await api.query.system.account(address);
-      const balance = accountInfo.data.free;
+      const balance = (accountInfo as any).data.free;
 
       logger.info('PAPI account balance retrieved', {
         address,
