@@ -6,6 +6,7 @@
     "outDir": "./dist",
     "downlevelIteration": true,
     "noEmit": false,
+    "allowImportingTsExtensions": false,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true
