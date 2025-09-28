@@ -12,7 +12,7 @@ import { AuthenticationError, NotFoundError, ValidationError } from '../../utils
 // import { createLogger } from '../../utils/logger.js';
 import { schemas } from '../../utils/schemas.js';
 import { createLoginHandler, createTokenHandler, createVerifyHandler } from './handlers.js';
-import { generateApiDocsPage, generateChallengePage } from './templates.js';
+import { generateApiDocsPage, generateAuthSelectionPage, generateChallengePage } from './templates.js';
 
 type RateLimiters = ReturnType<typeof createRateLimiters>;
 
@@ -36,6 +36,31 @@ export const createAuthRouter = (
   );
   const verifyHandler = createVerifyHandler(challengeService, auditService, clients, db);
   const tokenHandler = createTokenHandler(tokenService, auditService, db, clients);
+
+  // Authentication method selection page
+  router.get(
+    '/select',
+    rateLimiters.challenge,
+    sanitizeRequest(),
+    nonceMiddleware,
+    validateQuery(schemas.challengeQuery),
+    asyncHandler(async (req, res) => {
+      const { client_id } = req.query;
+      const requestId = (req as Request & { requestId?: string }).requestId;
+      const nonce = (req as Request & { nonce?: string }).nonce;
+
+      if (!client_id) {
+        throw new ValidationError('client_id is required', undefined, requestId);
+      }
+
+      const client = clients.get(client_id as string);
+      if (!client) {
+        throw new NotFoundError(`Client '${client_id}' not found`, undefined, requestId);
+      }
+
+      res.send(generateAuthSelectionPage(client_id as string, nonce || ''));
+    })
+  );
 
   router.get(
     '/challenge',

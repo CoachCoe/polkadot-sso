@@ -46,7 +46,7 @@ export const validateBody = (schema: z.ZodSchema) => {
         const error = new ValidationError(
           'Request validation failed',
           {
-            errors: result.error.errors,
+            errors: result.error.issues,
             path: req.path,
             method: req.method,
           },
@@ -57,7 +57,7 @@ export const validateBody = (schema: z.ZodSchema) => {
           requestId,
           path: req.path,
           method: req.method,
-          errors: result.error.errors,
+          errors: result.error.issues,
         });
 
         return next(error);
@@ -91,7 +91,7 @@ export const validateQuery = (schema: z.ZodSchema) => {
         const error = new ValidationError(
           'Query validation failed',
           {
-            errors: result.error.errors,
+            errors: result.error.issues,
             query: req.query,
             path: req.path,
             method: req.method,
@@ -104,13 +104,13 @@ export const validateQuery = (schema: z.ZodSchema) => {
           path: req.path,
           method: req.method,
           query: req.query,
-          errors: result.error.errors,
+          errors: result.error.issues,
         });
 
         return next(error);
       }
 
-      req.query = result.data;
+      req.query = result.data as any;
       next();
     } catch (error) {
       logger.error('Query validation middleware error', {
@@ -136,7 +136,7 @@ export const validateParams = (schema: z.ZodSchema) => {
         const error = new ValidationError(
           'Parameter validation failed',
           {
-            errors: result.error.errors,
+            errors: result.error.issues,
             params: req.params,
             path: req.path,
             method: req.method,
@@ -149,13 +149,13 @@ export const validateParams = (schema: z.ZodSchema) => {
           path: req.path,
           method: req.method,
           params: req.params,
-          errors: result.error.errors,
+          errors: result.error.issues,
         });
 
         return next(error);
       }
 
-      req.params = result.data;
+      req.params = result.data as any;
       next();
     } catch (error) {
       logger.error('Parameter validation middleware error', {

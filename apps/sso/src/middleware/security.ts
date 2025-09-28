@@ -25,6 +25,7 @@ export const securityHeaders = helmet({
         'https://cdn.jsdelivr.net',
         'https://polkadot.js.org',
         'https://unpkg.com',
+        'https://telegram.org', // Allow Telegram widget script
       ],
       connectSrc: [
         "'self'",
@@ -42,6 +43,7 @@ export const securityHeaders = helmet({
       ],
       fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'],
       imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
+      frameSrc: ["'self'", 'https://oauth.telegram.org'], // Allow Telegram OAuth iframe
       frameAncestors: ["'none'"],
       objectSrc: ["'none'"],
       formAction: ["'self'"],

@@ -205,7 +205,7 @@ export class CacheService {
     try {
       const fullKey = this.getKey(key, options.prefix);
       const result = await this.client.expire(fullKey, ttl);
-      return result;
+      return result === 1;
     } catch (error) {
       logger.error('Cache expire error', {
         key,

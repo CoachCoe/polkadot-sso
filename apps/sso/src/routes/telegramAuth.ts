@@ -201,10 +201,10 @@ export const createTelegramAuthRouter = (
         throw new AuthenticationError('Invalid client', { client_id }, requestId);
       }
 
-      const redirectUrl = `${client.redirect_uri}?code=${authCode}&state=webapp`;
+      const redirectUrl = `${client.redirect_url}?code=${authCode}&state=webapp`;
 
       await auditService.log({
-        type: 'AUTH_SUCCESS',
+        type: 'AUTH_ATTEMPT',
         user_address: `telegram:${authData.id}`,
         client_id,
         action: 'telegram_webapp_authentication',
@@ -212,7 +212,7 @@ export const createTelegramAuthRouter = (
         details: { 
           telegram_id: authData.id,
           username: authData.username,
-          session_id: session.session_id 
+          session_id: session.id 
         },
         ip_address: req.ip || 'unknown',
         user_agent: req.get('User-Agent'),
@@ -222,8 +222,8 @@ export const createTelegramAuthRouter = (
         success: true,
         redirectUrl,
         session: {
-          sessionId: session.session_id,
-          expiresAt: session.expires_at,
+          sessionId: session.id,
+          expiresAt: session.access_token_expires_at,
         },
         user: {
           id: authData.id,
@@ -425,6 +425,65 @@ export const createTelegramAuthRouter = (
       });
 
       res.json({ message: 'Logged out successfully' });
+    })
+  );
+
+  /**
+   * GET /api/auth/telegram/callback
+   * Handle Telegram login widget callback
+   */
+  router.get(
+    '/callback',
+    rateLimiters.verify,
+    sanitizeRequest(),
+    asyncHandler(async (req, res) => {
+      const requestId = (req as Request & { requestId?: string }).requestId;
+      
+      logger.info('Telegram callback received', {
+        query: req.query,
+        requestId,
+      });
+
+      // Telegram sends auth data as query parameters
+      const { id, first_name, last_name, username, photo_url, auth_date, hash } = req.query;
+
+      if (!id || !auth_date || !hash) {
+        throw new AuthenticationError('Missing required Telegram auth parameters', undefined, requestId);
+      }
+
+      // Create auth data object
+      const authData = {
+        id: parseInt(id as string),
+        first_name: first_name as string,
+        last_name: last_name as string,
+        username: username as string,
+        photo_url: photo_url as string,
+        auth_date: parseInt(auth_date as string),
+        hash: hash as string,
+      };
+
+      // Verify Telegram authentication data
+      if (!telegramAuthService.verifyTelegramAuth(authData)) {
+        await auditService.log({
+          type: 'AUTH_ATTEMPT',
+          user_address: `telegram:${authData.id}`,
+          client_id: 'unknown',
+          action: 'telegram_callback_verification',
+          status: 'failure',
+          details: { 
+            telegram_id: authData.id,
+            username: authData.username,
+            reason: 'invalid_signature'
+          },
+          ip_address: req.ip || 'unknown',
+          user_agent: req.get('User-Agent'),
+        });
+        throw new AuthenticationError('Invalid Telegram authentication data', undefined, requestId);
+      }
+
+      // For now, redirect to a success page
+      // In a real implementation, you'd want to create a session and redirect to the client
+      res.redirect(`/api/auth/success?telegram_id=${authData.id}&username=${authData.username}`);
     })
   );
 

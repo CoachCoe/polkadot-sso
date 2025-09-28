@@ -202,8 +202,8 @@ export const errorResponseSchema = z.object({
 });
 
 export const paginationQuerySchema = z.object({
-  page: z.string().transform(Number).pipe(z.number().int().min(1)).default('1'),
-  limit: z.string().transform(Number).pipe(z.number().int().min(1).max(100)).default('20'),
+  page: z.string().transform(Number).pipe(z.number().int().min(1)).default(1),
+  limit: z.string().transform(Number).pipe(z.number().int().min(1).max(100)).default(20),
   sort_by: z.string().optional(),
   sort_order: z.enum(['asc', 'desc']).default('desc'),
 });

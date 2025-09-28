@@ -149,7 +149,7 @@ export function generateChallengePage(data: ChallengeTemplateData, nonce: string
             const loadingSpinner = document.getElementById("loadingSpinner");
 
             console.log('CHALLENGE_DATA:', window.CHALLENGE_DATA);
-            if (!window.CHALLENGE_DATA || !window.CHALLENGE_DATA.address) {
+            if (!window.CHALLENGE_DATA) {
                 console.error('CHALLENGE_DATA not properly set:', window.CHALLENGE_DATA);
                 updateStatus("Error: Challenge data not loaded", "error");
                 return;
@@ -192,11 +192,18 @@ export function generateChallengePage(data: ChallengeTemplateData, nonce: string
                     }
 
                     // Use the first available account or find the specific one if it exists
-                    let account = accounts.find(acc => acc.address === window.CHALLENGE_DATA.address);
-                    if (!account) {
-                        // Fall back to the first available account
+                    let account;
+                    if (window.CHALLENGE_DATA.address && window.CHALLENGE_DATA.address.trim() !== '') {
+                        account = accounts.find(acc => acc.address === window.CHALLENGE_DATA.address);
+                        if (!account) {
+                            // Fall back to the first available account
+                            account = accounts[0];
+                            console.log('Requested account not found, using first available account: ' + account.address + ' instead of requested: ' + window.CHALLENGE_DATA.address);
+                        }
+                    } else {
+                        // No specific address requested, use the first available account
                         account = accounts[0];
-                        console.log('Using first available account: ' + account.address + ' instead of requested: ' + window.CHALLENGE_DATA.address);
+                        console.log('No specific address requested, using first available account: ' + account.address);
                     }
 
                     updateStatus("Signing message...", "info");
@@ -255,6 +262,177 @@ export function generateChallengePage(data: ChallengeTemplateData, nonce: string
   `;
 }
 
+export function generateAuthSelectionPage(clientId: string, nonce: string): string {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polkadot SSO - Choose Authentication Method</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        .auth-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .auth-option {
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        .auth-option:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+        .auth-option-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .auth-option-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .auth-option-description {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .polkadot-option {
+            border-color: #E6007A;
+        }
+        .polkadot-option:hover {
+            border-color: #E6007A;
+            background: #fdf2f8;
+            box-shadow: 0 8px 25px rgba(230, 0, 122, 0.15);
+        }
+        .telegram-option {
+            border-color: #0088cc;
+        }
+        .telegram-option:hover {
+            border-color: #0088cc;
+            background: #f0f8ff;
+            box-shadow: 0 8px 25px rgba(0, 136, 204, 0.15);
+        }
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        .info-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .info-text {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        @media (max-width: 768px) {
+            .auth-options {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🔐 Polkadot SSO</div>
+            <div class="subtitle">Choose your authentication method</div>
+        </div>
+
+        <div class="auth-options">
+            <div class="auth-option polkadot-option" id="polkadot-option">
+                <div class="auth-option-icon">🟣</div>
+                <div class="auth-option-title">Polkadot.js</div>
+                <div class="auth-option-description">
+                    Sign with your Polkadot wallet using the browser extension
+                </div>
+            </div>
+
+            <div class="auth-option telegram-option" id="telegram-option">
+                <div class="auth-option-icon">📱</div>
+                <div class="auth-option-title">Telegram</div>
+                <div class="auth-option-description">
+                    Authenticate using your Telegram account
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-title">About Authentication Methods</div>
+            <div class="info-text">
+                <strong>Polkadot.js:</strong> Requires the Polkadot.js browser extension. Perfect for users who want to authenticate with their blockchain wallet.<br><br>
+                <strong>Telegram:</strong> Uses Telegram's secure authentication system. Great for users who prefer social login without blockchain complexity.
+            </div>
+        </div>
+    </div>
+
+    <script nonce="${nonce}">
+        document.addEventListener('DOMContentLoaded', function() {
+            const polkadotOption = document.getElementById('polkadot-option');
+            const telegramOption = document.getElementById('telegram-option');
+
+            polkadotOption.addEventListener('click', function() {
+                window.location.href = '/api/auth/challenge?client_id=${escapeHtml(clientId)}&wallet=polkadot-js';
+            });
+
+            telegramOption.addEventListener('click', function() {
+                window.location.href = '/api/auth/telegram/challenge?client_id=${escapeHtml(clientId)}';
+            });
+        });
+    </script>
+</body>
+</html>`;
+}
+
 export function generateTelegramWidgetPage(data: TelegramWidgetTemplateData, nonce: string): string {
   return `
 <!DOCTYPE html>
@@ -263,9 +441,6 @@ export function generateTelegramWidgetPage(data: TelegramWidgetTemplateData, non
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polkadot SSO - Telegram Authentication</title>
-    <meta name="telegram-web-app" content="true">
-    <meta name="telegram-bot" content="@polkadot_sso_bot">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -404,19 +579,21 @@ export function generateTelegramWidgetPage(data: TelegramWidgetTemplateData, non
         </div>
 
         <div class="instructions">
-            <strong>How to authenticate:</strong>
+            <strong>Instructions:</strong>
             <ol>
-                <li>Click the "Authenticate with Telegram" button below</li>
-                <li>You'll be redirected to Telegram</li>
-                <li>Click "Start" in the bot chat</li>
-                <li>You'll be redirected back here automatically</li>
+                <li>Click the "Login with Telegram" button below</li>
+                <li>You'll be redirected to Telegram to confirm your identity</li>
+                <li>After confirmation, you'll be redirected back to complete the process</li>
             </ol>
         </div>
 
-        <button id="authButton" class="btn">
-            <span id="buttonText">Authenticate with Telegram</span>
-            <span id="loadingSpinner" class="loading" style="display: none;"></span>
-        </button>
+        <!-- Telegram Login Widget -->
+        <script async src="https://telegram.org/js/telegram-widget.js?22"
+                data-telegram-login="${escapeHtml(data.botUsername)}"
+                data-size="large"
+                data-auth-url="https://griffin-sporotrichotic-matthias.ngrok-free.dev/api/auth/telegram/callback"
+                data-request-access="write">
+        </script>
 
         <div id="status" class="status"></div>
     </div>
@@ -435,17 +612,8 @@ export function generateTelegramWidgetPage(data: TelegramWidgetTemplateData, non
     <script nonce="${nonce}">
         document.addEventListener('DOMContentLoaded', function() {
             const statusDiv = document.getElementById("status");
-            const authButton = document.getElementById("authButton");
-            const buttonText = document.getElementById("buttonText");
-            const loadingSpinner = document.getElementById("loadingSpinner");
 
             console.log('TELEGRAM_AUTH_DATA:', window.TELEGRAM_AUTH_DATA);
-
-            function setLoading(isLoading) {
-                authButton.disabled = isLoading;
-                buttonText.textContent = isLoading ? "Authenticating..." : "Authenticate with Telegram";
-                loadingSpinner.style.display = isLoading ? "inline-block" : "none";
-            }
 
             function updateStatus(message, type) {
                 statusDiv.textContent = message;
@@ -453,170 +621,14 @@ export function generateTelegramWidgetPage(data: TelegramWidgetTemplateData, non
                 statusDiv.style.display = "block";
             }
 
-            authButton.addEventListener("click", async function() {
-                setLoading(true);
-                updateStatus("Authenticating with Telegram...", "info");
-
-                try {
-                    // Check if we're in a Telegram Web App environment
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        const tg = window.Telegram.WebApp;
-                        console.log("Telegram Web App detected:", tg);
-                        console.log("Init data:", tg.initData);
-                        console.log("Init data unsafe:", tg.initDataUnsafe);
-                        
-                        // Get user data from Telegram Web App
-                        const user = tg.initDataUnsafe?.user;
-                        
-                        if (user && tg.initData) {
-                            // User is authenticated and we have init data
-                            updateStatus("User authenticated, verifying...", "info");
-                            
-                            // Parse the init data to extract authentication information
-                            const urlParams = new URLSearchParams(tg.initData);
-                            const authData = {
-                                id: user.id,
-                                first_name: user.first_name,
-                                last_name: user.last_name,
-                                username: user.username,
-                                photo_url: user.photo_url,
-                                auth_date: parseInt(urlParams.get('auth_date') || '0'),
-                                hash: urlParams.get('hash') || ''
-                            };
-                            
-                            console.log("Auth data:", authData);
-                            
-                            // Submit Web App authentication request
-                            const response = await fetch('/api/auth/telegram/webapp', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    client_id: window.TELEGRAM_AUTH_DATA.clientId,
-                                    auth_data: authData
-                                })
-                            });
-
-                            if (response.ok) {
-                                const result = await response.json();
-                                console.log("Server response:", result);
-                                if (result.success && result.redirectUrl) {
-                                    updateStatus("Authentication successful! Redirecting...", "success");
-                                    // Close the Web App and redirect
-                                    tg.close();
-                                    setTimeout(() => {
-                                        window.location.href = result.redirectUrl;
-                                    }, 500);
-                                } else {
-                                    console.error("Invalid response format:", result);
-                                    throw new Error("Invalid response from server: " + JSON.stringify(result));
-                                }
-                            } else {
-                                const error = await response.text();
-                                console.error("Server error response:", error);
-                                throw new Error("Verification failed: " + error);
-                            }
-                        } else {
-                            // No user data or init data available
-                            updateStatus("No authentication data available. Please try again.", "error");
-                            setLoading(false);
-                        }
-                    } else {
-                        // Fallback to bot redirect for non-Telegram environments
-                        updateStatus("Redirecting to Telegram...", "info");
-                        const botUrl = \`https://t.me/\${window.TELEGRAM_AUTH_DATA.botUsername}?start=\${window.TELEGRAM_AUTH_DATA.challengeId}\`;
-                        window.location.href = botUrl;
-                    }
-                    
-                } catch (error) {
-                    console.error("Telegram authentication error:", error);
-                    updateStatus("Error: " + error.message, "error");
-                    setLoading(false);
-                }
-            });
-
-            // Debug Telegram Web App environment
-            if (window.Telegram && window.Telegram.WebApp) {
-                const tg = window.Telegram.WebApp;
-                console.log("Telegram Web App environment detected");
-                console.log("WebApp object:", tg);
-                console.log("Init data:", tg.initData);
-                console.log("Init data unsafe:", tg.initDataUnsafe);
-                
-                const user = tg.initDataUnsafe?.user;
-                if (user) {
-                    console.log("User data available:", user);
-                    updateStatus("Ready to authenticate. Click the button below.", "info");
-                } else {
-                    console.log("No user data available");
-                    updateStatus("Please click the button to authenticate", "info");
-                }
-            } else {
-                console.log("Not in Telegram Web App environment");
-                updateStatus("Please click the button to authenticate", "info");
-            }
-
-            // Check if we're returning from Telegram with auth data
-            const urlParams = new URLSearchParams(window.location.search);
-            const telegramAuthData = urlParams.get('tgAuthData');
-            
-            if (telegramAuthData) {
-                (async function() {
-                    setLoading(true);
-                    updateStatus("Verifying authentication...", "info");
-                    
-                    try {
-                        // Parse Telegram auth data
-                        const authData = JSON.parse(decodeURIComponent(telegramAuthData));
-                        
-                        // Submit verification request
-                        const response = await fetch('/api/auth/telegram/verify?' + new URLSearchParams({
-                            challenge_id: window.TELEGRAM_AUTH_DATA.challengeId,
-                            code_verifier: window.TELEGRAM_AUTH_DATA.codeVerifier,
-                            state: window.TELEGRAM_AUTH_DATA.state
-                        }), {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify(authData)
-                        });
-
-                        if (response.ok) {
-                            const result = await response.json();
-                            console.log("Server response:", result);
-                            if (result.success && result.redirectUrl) {
-                                updateStatus("Authentication successful! Redirecting...", "success");
-                                // Redirect to the callback URL with the auth code
-                                setTimeout(() => {
-                                    window.location.href = result.redirectUrl;
-                                }, 500);
-                            } else {
-                                console.error("Invalid response format:", result);
-                                throw new Error("Invalid response from server: " + JSON.stringify(result));
-                            }
-                        } else {
-                            const error = await response.text();
-                            console.error("Server error response:", error);
-                            throw new Error("Verification failed: " + error);
-                        }
-
-                    } catch (error) {
-                        console.error("Telegram verification error:", error);
-                        updateStatus("Error: " + error.message, "error");
-                        setLoading(false);
-                    }
-                })();
-            }
+            updateStatus("Please use the Telegram login widget above to authenticate", "info");
         });
     </script>
 </body>
 </html>
   `;
 }
+
 
 export function generateApiDocsPage(): string {
   return `
