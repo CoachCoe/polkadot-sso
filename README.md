@@ -20,9 +20,26 @@ A comprehensive Single Sign-On (SSO) service designed specifically for Polkadot 
 ### Installation
 
 ```bash
-bun install
-bun run dev
+npm install
+npm run dev
 ```
+
+### Development Standards
+
+- **TypeScript**: Strict type checking enabled
+- **Security**: Comprehensive input validation and sanitization  
+- **Architecture**: Modular, stateless design
+- **Error Handling**: Consistent error patterns with proper logging
+- **Testing**: Unit and integration tests for all components
+
+### Security Features
+
+- **Signature Verification**: Cryptographic signature validation (development mode)
+- **Rate Limiting**: Protection against brute force attacks
+- **Input Sanitization**: XSS and injection attack prevention
+- **CORS**: Configurable cross-origin resource sharing
+- **CSP**: Content Security Policy headers
+- **Audit Logging**: Comprehensive security event tracking
 
 ## 📚 API Endpoints
 
@@ -46,6 +63,28 @@ bun run dev
 ### System
 - `GET /health` - Health check endpoint
 - `GET /api-docs` - API documentation
+
+## 🏆 Recent Improvements
+
+### Code Quality Enhancements
+- **Standardized Response Format**: Consistent API response structure across all endpoints
+- **Configuration Constants**: Centralized configuration management
+- **Enhanced Error Handling**: Comprehensive error patterns with proper logging
+- **Modular Architecture**: Clean separation of concerns and reusable components
+- **Type Safety**: Full TypeScript coverage with strict type checking
+
+### Security Improvements
+- **Cryptographic Utilities**: Comprehensive crypto functions with security warnings
+- **Enhanced Security Middleware**: Improved CSP, CORS, and security headers
+- **Database Security**: Proper connection management and SQL injection prevention
+- **Security Audit Logging**: Suspicious pattern detection and monitoring
+- **Input Validation**: Comprehensive sanitization and validation
+
+### Production Readiness
+- **Resource Management**: Proper connection cleanup and leak prevention
+- **Performance Optimization**: Efficient database connection pooling
+- **Monitoring**: Comprehensive logging and error tracking
+- **Documentation**: Detailed code review and improvement documentation
 
 ## 🔧 Configuration
 

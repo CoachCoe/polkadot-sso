@@ -41,6 +41,6 @@ export { createAuthRouter } from './routes/auth/index.js';
 export { createLogger } from './utils/index.js';
 
 // Configuration
-export { corsConfig, initializeDatabase, sessionConfig } from './config/index.js';
+export { initializeDatabase, sessionConfig } from './config/index.js';
 
 export default app;

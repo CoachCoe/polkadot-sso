@@ -1,5 +1,6 @@
 import { escapeHtml } from '../../utils/sanitization.js';
 import type { TelegramWidgetTemplateData } from '../../types/telegram.js';
+import { AUTH_CONFIG } from '../../constants/config.js';
 
 export interface ChallengeTemplateData {
   address?: string;
@@ -238,7 +239,7 @@ export function generateChallengePage(data: ChallengeTemplateData, nonce: string
                             // Redirect to the callback URL with the auth code
                             setTimeout(() => {
                                 window.location.href = result.redirectUrl;
-                            }, 500);
+                            }, ${AUTH_CONFIG.REDIRECT_DELAY});
                         } else {
                             console.error("Invalid response format:", result);
                             throw new Error("Invalid response from server: " + JSON.stringify(result));

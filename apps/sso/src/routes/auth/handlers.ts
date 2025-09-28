@@ -8,6 +8,7 @@ import { Client } from '../../types/auth.js';
 import { secureQueries } from '../../utils/db.js';
 import { createLogger, logError, logRequest } from '../../utils/logger.js';
 import { validateAuthRequest, validateClientCredentials } from '../../utils/validation.js';
+import { verifySignature as cryptoVerifySignature } from '../../utils/crypto.js';
 
 const logger = createLogger('auth-handlers');
 
@@ -27,24 +28,7 @@ function generateCodeChallenge(verifier: string): string {
 }
 
 function verifySignature(message: string, signature: string, address: string): boolean {
-  try {
-    if (signature.length < 64) {
-      return false;
-    }
-
-    logger.info('Signature verification attempt', {
-      messageLength: message.length,
-      signaturePreview: signature.substring(0, 16),
-      address,
-    });
-
-    return true;
-  } catch (error) {
-    logger.error('Signature verification error', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return false;
-  }
+  return cryptoVerifySignature(message, signature, address);
 }
 
 export const createLoginHandler = (

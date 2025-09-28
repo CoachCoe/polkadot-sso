@@ -1,16 +1,19 @@
-import cors from 'cors';
-import crypto from 'crypto';
 import { NextFunction, Request, Response } from 'express';
+import cors from 'cors';
 import helmet from 'helmet';
+import { v4 as uuidv4 } from 'uuid';
 import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('security-middleware');
 
-export interface ResponseWithLocals extends Response {
-  locals: {
-    nonce?: string;
-  };
-}
+/**
+ * Generate a secure nonce for CSP
+ */
+export const nonceMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+  const nonce = Buffer.from(uuidv4()).toString('base64');
+  res.locals.nonce = nonce;
+  next();
+};
 
 /**
  * Enhanced security headers middleware
@@ -78,55 +81,34 @@ export const corsConfig = cors({
     ];
 
     // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin) {
-      return callback(null, true);
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      logger.warn('CORS blocked request', { origin, allowedOrigins });
+      callback(new Error('Not allowed by CORS'));
     }
-
-    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    logger.warn('CORS blocked request', {
-      origin,
-      allowedOrigins,
-    });
-
-    return callback(new Error('Not allowed by CORS policy'), false);
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
-  maxAge: 86400, // 24 hours
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
-    'Content-Type',
-    'Authorization',
+    'Origin',
     'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization',
     'X-Request-ID',
-    'X-CSRF-Token',
   ],
-  exposedHeaders: ['X-Request-ID', 'X-Rate-Limit-Remaining'],
-  optionsSuccessStatus: 200,
+  exposedHeaders: ['X-Request-ID'],
 });
 
 /**
- * Nonce generation middleware
- */
-export const nonceMiddleware = (
-  _req: Request,
-  res: ResponseWithLocals,
-  next: NextFunction
-): void => {
-  const nonce = crypto.randomBytes(16).toString('base64');
-  res.locals.nonce = nonce;
-  res.set('X-Nonce', nonce);
-  next();
-};
-
-/**
- * Request ID middleware for tracking
+ * Request ID middleware for tracing
  */
 export const requestIdMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-  const requestId = crypto.randomUUID();
-  (req as Request & { requestId: string }).requestId = requestId;
+  const requestId = (req as any).requestId || uuidv4();
+  (req as any).requestId = requestId;
   res.set('X-Request-ID', requestId);
   next();
 };
@@ -163,36 +145,26 @@ export const apiSecurityHeaders = (req: Request, res: Response, next: NextFuncti
  */
 export const ipWhitelistMiddleware = (allowedIPs: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
-
-    if (allowedIPs.length > 0 && !allowedIPs.includes(clientIP)) {
-      logger.warn('IP not in whitelist', {
-        ip: clientIP,
-        allowedIPs,
-        path: req.path,
-      });
-
-      res.status(403).json({
-        error: 'Forbidden',
-        message: 'Your IP address is not allowed',
-        code: 'IP_NOT_ALLOWED',
-      });
+    const clientIP = req.ip || req.connection.remoteAddress;
+    
+    if (!clientIP || !allowedIPs.includes(clientIP)) {
+      logger.warn('IP not in whitelist', { ip: clientIP, allowedIPs });
+      res.status(403).json({ error: 'Access denied' });
       return;
     }
-
+    
     next();
   };
 };
 
 /**
- * Rate limiting headers middleware
+ * Rate limiting headers
  */
-export const rateLimitHeaders = (_req: Request, res: Response, next: NextFunction): void => {
-  // These will be set by the rate limiter
+export const rateLimitHeaders = (req: Request, res: Response, next: NextFunction): void => {
   res.set({
     'X-RateLimit-Limit': '100',
     'X-RateLimit-Remaining': '99',
-    'X-RateLimit-Reset': new Date(Date.now() + 900000).toISOString(), // 15 minutes
+    'X-RateLimit-Reset': new Date(Date.now() + 15 * 60 * 1000).toISOString(), // 15 minutes
   });
 
   next();
