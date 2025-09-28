@@ -12,6 +12,7 @@ import { securityMiddleware } from './middleware/security.js';
 import { validationMiddleware } from './middleware/validation.js';
 import { createAuthRouter } from './routes/auth/index.js';
 import { createTelegramAuthRouter } from './routes/telegramAuth.js';
+import { createGoogleAuthRouter } from './routes/googleAuth.js';
 import { AuditService } from './services/auditService.js';
 import { ChallengeService } from './services/challengeService.js';
 import { TokenService } from './services/token.js';
@@ -177,6 +178,16 @@ app.use('/api/auth/telegram', (req, res, next) => {
   }
   const telegramAuthRouter = createTelegramAuthRouter(tokenService, auditService, clients, db, rateLimiters);
   telegramAuthRouter(req, res, next);
+});
+
+// Google OAuth authentication routes
+app.use('/api/auth/google', (req, res, next) => {
+  if (!db) {
+    const error = new ServiceUnavailableError('Database not initialized', undefined, (req as Request & { requestId?: string }).requestId);
+    return next(error);
+  }
+  const googleAuthRouter = createGoogleAuthRouter(tokenService, auditService, clients, db, rateLimiters);
+  googleAuthRouter(req, res, next);
 });
 
 // 404 handler (must be before error handler)

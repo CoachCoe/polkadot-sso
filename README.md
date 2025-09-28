@@ -8,6 +8,7 @@ A comprehensive Single Sign-On (SSO) service designed specifically for Polkadot 
 
 - 🔐 **Polkadot.js Integration**: Secure wallet-based authentication
 - 📱 **Telegram Authentication**: Bot-based authentication with signature verification
+- 🔍 **Google OAuth 2.0**: Standard OAuth 2.0 authentication with PKCE security
 - 🛡️ **Challenge-Response Authentication**: Secure, standardized authentication flow
 - 🔄 **Session Management**: JWT-based session handling with refresh tokens
 - 🗄️ **Database Integration**: SQLite with connection pooling
@@ -60,6 +61,13 @@ npm run dev
 - `POST /api/auth/telegram/logout` - Logout Telegram session
 - `GET /api/auth/telegram/callback` - Telegram login widget callback
 
+### Google OAuth 2.0 Authentication
+- `GET /api/auth/google/challenge` - Create Google OAuth challenge with PKCE
+- `POST /api/auth/google/challenge` - Create Google OAuth challenge (JSON response)
+- `GET /api/auth/google/callback` - Handle Google OAuth callback
+- `POST /api/auth/google/verify` - Alternative verification endpoint
+- `GET /api/auth/google/status/:challengeId` - Check Google OAuth challenge status
+
 ### System
 - `GET /health` - Health check endpoint
 - `GET /api-docs` - API documentation
@@ -104,6 +112,13 @@ TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 TELEGRAM_BOT_USERNAME=your_bot_username
 TELEGRAM_AUTH_TIMEOUT=300
 TELEGRAM_ALLOWED_DOMAINS=localhost,yourdomain.com
+
+# Google OAuth Configuration (optional)
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REDIRECT_URI=http://localhost:3001/api/auth/google/callback
+GOOGLE_AUTH_TIMEOUT=300
+GOOGLE_SCOPES=openid,email,profile
 ```
 
 ## 🎯 Unified Authentication Experience
@@ -116,6 +131,7 @@ Visit `/api/auth/select?client_id=your_client` to access the unified authenticat
 
 - **🟣 Polkadot.js**: For users with the browser extension
 - **📱 Telegram**: For users who prefer social login
+- **🔍 Google**: For users who want standard OAuth 2.0 authentication
 
 This provides a seamless user experience with a modern, responsive interface that works on both desktop and mobile devices.
 
@@ -156,6 +172,58 @@ Your bot should be configured to:
 3. User clicks "Start" in the bot chat
 4. Bot redirects user back with authentication data
 5. Server verifies the authentication data and creates a session
+
+## 🔍 Google OAuth 2.0 Setup
+
+To enable Google OAuth authentication, you need to create a Google Cloud project and configure OAuth 2.0 credentials:
+
+### 1. Create Google Cloud Project
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google+ API or Google Identity services
+4. Go to "Credentials" in the API & Services section
+
+### 2. Create OAuth 2.0 Credentials
+
+1. Click "Create Credentials" → "OAuth 2.0 Client IDs"
+2. Choose "Web application" as the application type
+3. Add authorized redirect URIs:
+   - `http://localhost:3001/api/auth/google/callback` (for development)
+   - `https://yourdomain.com/api/auth/google/callback` (for production)
+4. Save the client ID and client secret
+
+### 3. Configure Environment Variables
+
+Add the following environment variables to your `.env` file:
+
+```bash
+GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REDIRECT_URI=http://localhost:3001/api/auth/google/callback
+GOOGLE_AUTH_TIMEOUT=300
+GOOGLE_SCOPES=openid,email,profile
+```
+
+### 4. Google OAuth Flow
+
+The Google OAuth authentication flow works as follows:
+
+1. User visits `/api/auth/google/challenge?client_id=your_client`
+2. User is redirected to Google OAuth consent screen
+3. User grants permissions to your application
+4. Google redirects back with authorization code
+5. Server exchanges code for tokens and creates a session
+
+### 5. Security Features
+
+- **PKCE (Proof Key for Code Exchange)**: Enhanced security for public clients
+- **State Parameter**: CSRF protection with random state tokens
+- **Nonce Validation**: Replay attack prevention
+- **Token Verification**: Proper validation of Google ID tokens using official Google Auth Library
+- **Scope Management**: Minimal required scopes (openid, email, profile)
+- **Database Connection Pooling**: Efficient database operations with proper connection management
+- **Stateless Design**: No server-side session storage, JWT-based authentication
 
 ## 🤝 Contributing
 

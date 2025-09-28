@@ -553,6 +553,38 @@ async function initializeSchema(db: Database): Promise<void> {
       is_active BOOLEAN DEFAULT 1
     );
 
+    -- Google OAuth tables
+    CREATE TABLE IF NOT EXISTS google_challenges (
+      challenge_id TEXT PRIMARY KEY,
+      client_id TEXT NOT NULL,
+      state TEXT NOT NULL,
+      code_verifier TEXT NOT NULL,
+      code_challenge TEXT NOT NULL,
+      nonce TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL,
+      used BOOLEAN NOT NULL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS google_sessions (
+      id TEXT PRIMARY KEY,
+      google_id TEXT NOT NULL,
+      email TEXT NOT NULL,
+      name TEXT NOT NULL,
+      picture TEXT,
+      client_id TEXT NOT NULL,
+      access_token TEXT NOT NULL,
+      refresh_token TEXT,
+      access_token_id TEXT NOT NULL,
+      refresh_token_id TEXT,
+      fingerprint TEXT NOT NULL,
+      access_token_expires_at INTEGER NOT NULL,
+      refresh_token_expires_at INTEGER,
+      created_at INTEGER NOT NULL,
+      last_used_at INTEGER NOT NULL,
+      is_active BOOLEAN DEFAULT 1
+    );
+
     -- Create indexes for performance
     CREATE INDEX IF NOT EXISTS idx_challenges_id ON challenges(id);
     CREATE INDEX IF NOT EXISTS idx_sessions_address ON sessions(address);
@@ -588,6 +620,15 @@ async function initializeSchema(db: Database): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_telegram_sessions_telegram_id ON telegram_sessions(telegram_id);
     CREATE INDEX IF NOT EXISTS idx_telegram_sessions_client ON telegram_sessions(client_id);
     CREATE INDEX IF NOT EXISTS idx_telegram_sessions_refresh_token ON telegram_sessions(refresh_token);
+
+    -- Google OAuth indexes
+    CREATE INDEX IF NOT EXISTS idx_google_challenges_id ON google_challenges(challenge_id);
+    CREATE INDEX IF NOT EXISTS idx_google_challenges_client ON google_challenges(client_id);
+    CREATE INDEX IF NOT EXISTS idx_google_challenges_expires ON google_challenges(expires_at);
+    CREATE INDEX IF NOT EXISTS idx_google_sessions_google_id ON google_sessions(google_id);
+    CREATE INDEX IF NOT EXISTS idx_google_sessions_email ON google_sessions(email);
+    CREATE INDEX IF NOT EXISTS idx_google_sessions_client ON google_sessions(client_id);
+    CREATE INDEX IF NOT EXISTS idx_google_sessions_refresh_token ON google_sessions(refresh_token);
   `);
 
   // Migration: Add missing columns to existing challenges table

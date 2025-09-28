@@ -92,6 +92,16 @@ const envSchema = z.object({
     .string()
     .transform(val => val.split(',').map(s => s.trim()))
     .default(['localhost']),
+
+  // Google OAuth Configuration
+  GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required').optional(),
+  GOOGLE_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CLIENT_SECRET is required').optional(),
+  GOOGLE_REDIRECT_URI: z.string().url('GOOGLE_REDIRECT_URI must be a valid URL').optional(),
+  GOOGLE_AUTH_TIMEOUT: z.string().transform(Number).pipe(z.number().min(60).max(3600)).default(300), // 5 minutes
+  GOOGLE_SCOPES: z
+    .string()
+    .transform(val => val.split(',').map(s => s.trim()))
+    .default(['openid', 'email', 'profile']),
 });
 
 export type ValidatedEnv = z.infer<typeof envSchema>;
@@ -123,6 +133,10 @@ export function validateEnvironment(): EnvValidationResult {
 
       if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_BOT_USERNAME) {
         warnings.push('TELEGRAM_BOT_TOKEN or TELEGRAM_BOT_USERNAME not configured - Telegram authentication will be disabled');
+      }
+
+      if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
+        warnings.push('GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not configured - Google OAuth will be disabled');
       }
 
       if (env.COOKIE_SECURE === false) {
@@ -162,6 +176,7 @@ export function validateEnvironment(): EnvValidationResult {
       hasRedis: !!env.REDIS_URL,
       hasKusama: !!env.KUSAMA_ENDPOINT,
       hasTelegram: !!(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_BOT_USERNAME),
+      hasGoogle: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
       dbPoolMin: env.DB_POOL_MIN,
       dbPoolMax: env.DB_POOL_MAX,
       compressionLevel: env.COMPRESSION_LEVEL,

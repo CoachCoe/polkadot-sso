@@ -356,6 +356,14 @@ export function generateAuthSelectionPage(clientId: string, nonce: string): stri
             background: #f0f8ff;
             box-shadow: 0 8px 25px rgba(0, 136, 204, 0.15);
         }
+        .google-option {
+            border-color: #4285f4;
+        }
+        .google-option:hover {
+            border-color: #4285f4;
+            background: #e8f0fe;
+            box-shadow: 0 8px 25px rgba(66, 133, 244, 0.15);
+        }
         .info-section {
             background: #f8f9fa;
             border-radius: 8px;
@@ -405,13 +413,22 @@ export function generateAuthSelectionPage(clientId: string, nonce: string): stri
                     Authenticate using your Telegram account
                 </div>
             </div>
+
+            <div class="auth-option google-option" id="google-option">
+                <div class="auth-option-icon">🔍</div>
+                <div class="auth-option-title">Google</div>
+                <div class="auth-option-description">
+                    Sign in with your Google account
+                </div>
+            </div>
         </div>
 
         <div class="info-section">
             <div class="info-title">About Authentication Methods</div>
             <div class="info-text">
                 <strong>Polkadot.js:</strong> Requires the Polkadot.js browser extension. Perfect for users who want to authenticate with their blockchain wallet.<br><br>
-                <strong>Telegram:</strong> Uses Telegram's secure authentication system. Great for users who prefer social login without blockchain complexity.
+                <strong>Telegram:</strong> Uses Telegram's secure authentication system. Great for users who prefer social login without blockchain complexity.<br><br>
+                <strong>Google:</strong> Standard OAuth 2.0 authentication with Google. Ideal for users who want familiar, secure authentication.
             </div>
         </div>
     </div>
@@ -420,6 +437,7 @@ export function generateAuthSelectionPage(clientId: string, nonce: string): stri
         document.addEventListener('DOMContentLoaded', function() {
             const polkadotOption = document.getElementById('polkadot-option');
             const telegramOption = document.getElementById('telegram-option');
+            const googleOption = document.getElementById('google-option');
 
             polkadotOption.addEventListener('click', function() {
                 window.location.href = '/api/auth/challenge?client_id=${escapeHtml(clientId)}&wallet=polkadot-js';
@@ -427,6 +445,10 @@ export function generateAuthSelectionPage(clientId: string, nonce: string): stri
 
             telegramOption.addEventListener('click', function() {
                 window.location.href = '/api/auth/telegram/challenge?client_id=${escapeHtml(clientId)}';
+            });
+
+            googleOption.addEventListener('click', function() {
+                window.location.href = '/api/auth/google/challenge?client_id=${escapeHtml(clientId)}';
             });
         });
     </script>
@@ -800,6 +822,182 @@ GET /api/auth/status/{challenge_id} - Check challenge status</code></pre>
             </div>
         </div>
     </div>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Generate Google OAuth authentication page
+ */
+export function generateGoogleAuthPage(authUrl: string, clientId: string, nonce: string): string {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polkadot SSO - Google Authentication</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        .header {
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        .google-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        .auth-button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+        }
+        .auth-button:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(66, 133, 244, 0.3);
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .status.info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #d32f2f;
+            border: 1px solid #ffcdd2;
+        }
+        .status.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4285f4;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .back-link {
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .back-link a:hover {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="google-icon">🔐</div>
+            <div class="logo">Google Authentication</div>
+            <div class="subtitle">Sign in with your Google account</div>
+        </div>
+
+        <div id="status" class="status info">
+            Click the button below to authenticate with Google
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Redirecting to Google...</div>
+        </div>
+
+        <a href="${escapeHtml(authUrl)}" class="auth-button" id="google-auth-btn">
+            Continue with Google
+        </a>
+
+        <div class="back-link">
+            <a href="/api/auth/select?client_id=${escapeHtml(clientId)}">← Back to authentication options</a>
+        </div>
+    </div>
+
+    <script nonce="${nonce}">
+        document.addEventListener('DOMContentLoaded', function() {
+            const authButton = document.getElementById('google-auth-btn');
+            const status = document.getElementById('status');
+            const loading = document.getElementById('loading');
+
+            authButton.addEventListener('click', function(e) {
+                // Show loading state
+                loading.style.display = 'block';
+                status.style.display = 'none';
+                authButton.style.display = 'none';
+                
+                // The page will redirect to Google OAuth
+            });
+
+            // Check for any error parameters in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            const errorDescription = urlParams.get('error_description');
+
+            if (error) {
+                status.className = 'status error';
+                status.textContent = errorDescription || 'Authentication failed. Please try again.';
+                loading.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
   `;
