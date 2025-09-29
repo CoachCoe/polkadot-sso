@@ -69,6 +69,7 @@ npm run dev
 - `POST /api/auth/google/verify` - Alternative verification endpoint
 - `GET /api/auth/google/status/:challengeId` - Check Google OAuth challenge status
 
+
 ### PAPI (Polkadot API) Integration
 - `GET /api/papi/status` - Get PAPI service status
 - `GET /api/papi/chains` - List all available chains
@@ -243,6 +244,7 @@ The Google OAuth authentication flow works as follows:
 - **Database Connection Pooling**: Efficient database operations with proper connection management
 - **Stateless Design**: No server-side session storage, JWT-based authentication
 
+
 ## ⛓️ PAPI (Polkadot API) Integration
 
 The PAPI integration provides blockchain connectivity and data access for multiple Polkadot ecosystem chains.
@@ -285,6 +287,7 @@ ASSET_HUB_RPC_URL=wss://polkadot-asset-hub-rpc.polkadot.io
 - **Connection Pooling**: Efficient WebSocket connection management
 - **Error Handling**: Comprehensive error handling with proper logging
 - **Security**: Rate limiting and audit logging for all PAPI requests
+
 
 ### PAPI Usage Examples
 

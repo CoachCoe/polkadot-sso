@@ -103,6 +103,7 @@ const envSchema = z.object({
     .transform(val => val.split(',').map(s => s.trim()))
     .default(['openid', 'email', 'profile']),
 
+
   // PAPI (Polkadot API) Configuration
   PAPI_ENABLED: z
     .string()
@@ -161,6 +162,7 @@ export function validateEnvironment(): EnvValidationResult {
       if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
         warnings.push('GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not configured - Google OAuth will be disabled');
       }
+
 
       if (!env.PAPI_ENABLED) {
         warnings.push('PAPI_ENABLED is false - Polkadot API integration will be disabled');

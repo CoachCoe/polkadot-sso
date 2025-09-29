@@ -177,6 +177,7 @@ app.use('/api/auth/google', (req, res, next) => {
   googleAuthRouter(req, res, next);
 });
 
+
 app.use('/api/papi', async (req, res, next) => {
   if (!db) {
     const error = new ServiceUnavailableError('Database not initialized', undefined, (req as Request & { requestId?: string }).requestId);

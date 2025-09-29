@@ -619,6 +619,7 @@ async function initializeSchema(db: Database): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_google_sessions_client ON google_sessions(client_id);
     CREATE INDEX IF NOT EXISTS idx_google_sessions_refresh_token ON google_sessions(refresh_token);
 
+
     -- PAPI (Polkadot API) tables
     CREATE TABLE IF NOT EXISTS papi_chains (
       id TEXT PRIMARY KEY,

@@ -2,6 +2,7 @@ import { escapeHtml } from '../../utils/sanitization.js';
 import type { TelegramWidgetTemplateData } from '../../types/telegram.js';
 import { AUTH_CONFIG } from '../../constants/config.js';
 
+
 export interface ChallengeTemplateData {
   address?: string;
   message: string;
@@ -421,6 +422,7 @@ export function generateAuthSelectionPage(clientId: string, nonce: string): stri
                     Sign in with your Google account
                 </div>
             </div>
+
         </div>
 
         <div class="info-section">
@@ -428,7 +430,7 @@ export function generateAuthSelectionPage(clientId: string, nonce: string): stri
             <div class="info-text">
                 <strong>Polkadot.js:</strong> Requires the Polkadot.js browser extension. Perfect for users who want to authenticate with their blockchain wallet.<br><br>
                 <strong>Telegram:</strong> Uses Telegram's secure authentication system. Great for users who prefer social login without blockchain complexity.<br><br>
-                <strong>Google:</strong> Standard OAuth 2.0 authentication with Google. Ideal for users who want familiar, secure authentication.
+                <strong>Google:</strong> Standard OAuth 2.0 authentication with Google. Ideal for users who want familiar, secure authentication.<br><br>
             </div>
         </div>
     </div>
@@ -438,7 +440,6 @@ export function generateAuthSelectionPage(clientId: string, nonce: string): stri
             const polkadotOption = document.getElementById('polkadot-option');
             const telegramOption = document.getElementById('telegram-option');
             const googleOption = document.getElementById('google-option');
-
             polkadotOption.addEventListener('click', function() {
                 window.location.href = '/api/auth/challenge?client_id=${escapeHtml(clientId)}&wallet=polkadot-js';
             });
@@ -1002,3 +1003,4 @@ export function generateGoogleAuthPage(authUrl: string, clientId: string, nonce:
 </html>
   `;
 }
+
