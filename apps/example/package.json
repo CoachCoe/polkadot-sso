@@ -14,7 +14,7 @@
     "@iconify-json/lucide": "^1.2.68",
     "@iconify-json/simple-icons": "^1.2.53",
     "@nuxt/ui": "^4.0.0",
-    "@pinia/nuxt": "^0.8.0",
+    "@pinia/nuxt": "^0.11.2",
     "@polkadot/api": "^10.11.1",
     "@polkadot/extension-dapp": "^0.46.6",
     "@polkadot/util": "^12.6.1",
