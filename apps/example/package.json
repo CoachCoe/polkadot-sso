@@ -21,7 +21,7 @@
     "@polkadot/util-crypto": "^12.6.1",
     "axios": "^1.6.2",
     "nuxt": "^4.1.2",
-    "pinia": "^2.2.8"
+    "pinia": "^3.0.3"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.9.0",
