@@ -28,6 +28,9 @@ const mockWindow = {
         })
       }
     }
+  },
+  walletExtension: {
+    isNovaWallet: false
   }
 };
 
@@ -63,19 +66,37 @@ describe('Polkadot Auth Client', () => {
     it('should detect available wallets', async () => {
       const wallets = await client.getAvailableWallets();
       
-      expect(wallets).toHaveLength(3);
+      expect(wallets).toHaveLength(4);
       expect(wallets[0].name).toBe('Polkadot.js');
       expect(wallets[0].installed).toBe(true);
-      expect(wallets[1].name).toBe('Talisman');
-      expect(wallets[1].installed).toBe(false);
-      expect(wallets[2].name).toBe('SubWallet');
+      expect(wallets[1].name).toBe('Nova Wallet');
+      expect(wallets[1].installed).toBe(true);
+      expect(wallets[2].name).toBe('Talisman');
       expect(wallets[2].installed).toBe(false);
+      expect(wallets[3].name).toBe('SubWallet');
+      expect(wallets[3].installed).toBe(false);
     });
 
     it('should return empty array when window is undefined', async () => {
       delete (global as any).window;
       const wallets = await client.getAvailableWallets();
       expect(wallets).toEqual([]);
+    });
+
+    it('should detect Nova Wallet when isNovaWallet is true', async () => {
+      (global as any).window = {
+        ...mockWindow,
+        walletExtension: {
+          isNovaWallet: true
+        },
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn()
+      };
+      
+      const wallets = await client.getAvailableWallets();
+      
+      expect(wallets[1].name).toBe('Nova Wallet');
+      expect(wallets[1].installed).toBe(true);
     });
   });
 
@@ -97,6 +118,25 @@ describe('Polkadot Auth Client', () => {
     it('should throw error when window is undefined', async () => {
       delete (global as any).window;
       await expect(client.connectWallet('Polkadot.js')).rejects.toThrow('Wallet connection is only available in browser environment');
+    });
+
+    it('should connect to Nova Wallet', async () => {
+      (global as any).window = {
+        ...mockWindow,
+        walletExtension: {
+          isNovaWallet: true
+        },
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn()
+      };
+      
+      const accounts = await client.connectWallet('Nova Wallet');
+      
+      expect(accounts).toHaveLength(1);
+      expect(accounts[0].address).toBe('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY');
+      expect(accounts[0].name).toBe('Test Account');
+      expect(accounts[0].source).toBe('Nova Wallet');
+      expect(accounts[0].type).toBe('sr25519');
     });
   });
 

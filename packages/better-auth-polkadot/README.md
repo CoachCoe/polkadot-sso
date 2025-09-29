@@ -86,6 +86,7 @@ interface PolkadotAuthConfig {
 ## Supported Wallets
 
 - **Polkadot.js**: The official Polkadot wallet extension
+- **Nova Wallet**: Mobile-first Polkadot wallet (works through dApp browser)
 - **Talisman**: Popular multi-chain wallet
 - **SubWallet**: Feature-rich Polkadot wallet
 

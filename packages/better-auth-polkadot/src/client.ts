@@ -62,6 +62,8 @@ export function polkadotAuthClient(config: PolkadotAuthConfig) {
       return [];
     }
     
+    const isNovaWallet = (window as any).walletExtension?.isNovaWallet ?? false;
+    
     const wallets: PolkadotWalletInfo[] = [
       {
         name: 'Polkadot.js',
@@ -69,6 +71,13 @@ export function polkadotAuthClient(config: PolkadotAuthConfig) {
         url: 'https://polkadot.js.org/extension/',
         extensionId: 'nkbihfbeogaeaoehlefnkodbefgpgknn',
         installed: isWalletInstalled('polkadot-js')
+      },
+      {
+        name: 'Nova Wallet',
+        icon: 'https://novawallet.io/favicon.ico',
+        url: 'https://novawallet.io/',
+        extensionId: 'polkadot-js',
+        installed: isNovaWallet || isWalletInstalled('polkadot-js')
       },
       {
         name: 'Talisman',
@@ -133,8 +142,11 @@ export function polkadotAuthClient(config: PolkadotAuthConfig) {
       return null;
     }
     
+    const isNovaWallet = (window as any).walletExtension?.isNovaWallet ?? false;
+    
     const walletMap: Record<string, string> = {
       'Polkadot.js': 'polkadot-js',
+      'Nova Wallet': isNovaWallet ? 'polkadot-js' : 'polkadot-js',
       'Talisman': 'talisman',
       'SubWallet': 'subwallet'
     };
@@ -149,7 +161,7 @@ export function polkadotAuthClient(config: PolkadotAuthConfig) {
       return null;
     }
     
-    return new PolkadotWalletImpl(extensionName, extension);
+    return new PolkadotWalletImpl(extensionName, extension, walletName === 'Nova Wallet');
   };
   
   const signIn = async (options: {
@@ -303,10 +315,15 @@ Issued At: ${new Date().toISOString()}`;
 class PolkadotWalletImpl implements PolkadotWallet {
   constructor(
     public name: string,
-    private extension: any
+    private extension: any,
+    private isNova: boolean = false
   ) {}
   
   get icon(): string {
+    if (this.isNova) {
+      return 'https://novawallet.io/favicon.ico';
+    }
+    
     const icons: Record<string, string> = {
       'polkadot-js': 'https://polkadot.js.org/favicon.ico',
       'talisman': 'https://talisman.xyz/favicon.ico',
@@ -317,6 +334,10 @@ class PolkadotWalletImpl implements PolkadotWallet {
   }
   
   get url(): string {
+    if (this.isNova) {
+      return 'https://novawallet.io/';
+    }
+    
     const urls: Record<string, string> = {
       'polkadot-js': 'https://polkadot.js.org/extension/',
       'talisman': 'https://talisman.xyz/',
@@ -341,7 +362,7 @@ class PolkadotWalletImpl implements PolkadotWallet {
       return accounts.map((account: any) => ({
         address: account.address,
         name: account.name,
-        source: this.name,
+        source: this.isNova ? 'Nova Wallet' : this.name,
         type: account.type,
         publicKey: account.publicKey
       }));
