@@ -1,274 +1,175 @@
-import { polkadotAuthClient, signInWithPolkadot } from '../client';
+import { PolkadotAuthClient } from "../client"
 
-const mockConfig = {
-  domain: 'example.com',
-  appName: 'Test App',
-  appVersion: '1.0.0',
-  statement: 'Test statement',
-  uri: 'https://example.com',
-  chainId: 'polkadot'
-};
+const mockFetch = jest.fn()
+global.fetch = mockFetch
 
-const mockWindow = {
-  injectedWeb3: {
-    'polkadot-js': {
-      accounts: {
-        get: jest.fn().mockResolvedValue([
-          {
-            address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
-            name: 'Test Account',
-            type: 'sr25519',
-            publicKey: '0x1234567890abcdef'
-          }
-        ])
-      },
-      signer: {
-        signRaw: jest.fn().mockResolvedValue({
-          signature: '0xabcdef1234567890'
-        })
-      }
-    }
-  },
-  walletExtension: {
-    isNovaWallet: false
-  }
-};
+const mockWeb3Enable = jest.fn()
+const mockWeb3Accounts = jest.fn()
+const mockWeb3FromAddress = jest.fn()
 
-describe('Polkadot Auth Client', () => {
-  let client: any;
+jest.mock("@polkadot/extension-dapp", () => ({
+  web3Enable: mockWeb3Enable,
+  web3Accounts: mockWeb3Accounts,
+  web3FromAddress: mockWeb3FromAddress
+}))
+
+describe("PolkadotAuthClient", () => {
+  let client: PolkadotAuthClient
 
   beforeEach(() => {
-    (global as any).window = {
-      ...mockWindow,
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn()
-    };
-    client = polkadotAuthClient(mockConfig);
-  });
+    client = new PolkadotAuthClient("Test App", "http://localhost:3001")
+    jest.clearAllMocks()
+  })
 
-  afterEach(() => {
-    delete (global as any).window;
-  });
-
-  describe('Client Initialization', () => {
-    it('should initialize successfully', async () => {
-      await expect(client.init()).resolves.not.toThrow();
-    });
-
-    it('should throw error when domain is missing', () => {
-      const invalidConfig = { ...mockConfig, domain: '' };
-      const invalidClient = polkadotAuthClient(invalidConfig);
-      expect(() => invalidClient.validateConfig()).toThrow('domain is required');
-    });
-  });
-
-  describe('Wallet Detection', () => {
-    it('should detect available wallets', async () => {
-      const wallets = await client.getAvailableWallets();
-      
-      expect(wallets).toHaveLength(4);
-      expect(wallets[0].name).toBe('Polkadot.js');
-      expect(wallets[0].installed).toBe(true);
-      expect(wallets[1].name).toBe('Nova Wallet');
-      expect(wallets[1].installed).toBe(true);
-      expect(wallets[2].name).toBe('Talisman');
-      expect(wallets[2].installed).toBe(false);
-      expect(wallets[3].name).toBe('SubWallet');
-      expect(wallets[3].installed).toBe(false);
-    });
-
-    it('should return empty array when window is undefined', async () => {
-      delete (global as any).window;
-      const wallets = await client.getAvailableWallets();
-      expect(wallets).toEqual([]);
-    });
-
-    it('should detect Nova Wallet when isNovaWallet is true', async () => {
-      (global as any).window = {
-        ...mockWindow,
-        walletExtension: {
-          isNovaWallet: true
-        },
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn()
-      };
-      
-      const wallets = await client.getAvailableWallets();
-      
-      expect(wallets[1].name).toBe('Nova Wallet');
-      expect(wallets[1].installed).toBe(true);
-    });
-  });
-
-  describe('Wallet Connection', () => {
-    it('should connect to available wallet', async () => {
-      const accounts = await client.connectWallet('Polkadot.js');
-      
-      expect(accounts).toHaveLength(1);
-      expect(accounts[0].address).toBe('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY');
-      expect(accounts[0].name).toBe('Test Account');
-      expect(accounts[0].source).toBe('polkadot-js');
-      expect(accounts[0].type).toBe('sr25519');
-    });
-
-    it('should throw error for unavailable wallet', async () => {
-      await expect(client.connectWallet('UnavailableWallet')).rejects.toThrow('Wallet UnavailableWallet is not available');
-    });
-
-    it('should throw error when window is undefined', async () => {
-      delete (global as any).window;
-      await expect(client.connectWallet('Polkadot.js')).rejects.toThrow('Wallet connection is only available in browser environment');
-    });
-
-    it('should connect to Nova Wallet', async () => {
-      (global as any).window = {
-        ...mockWindow,
-        walletExtension: {
-          isNovaWallet: true
-        },
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn()
-      };
-      
-      const accounts = await client.connectWallet('Nova Wallet');
-      
-      expect(accounts).toHaveLength(1);
-      expect(accounts[0].address).toBe('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY');
-      expect(accounts[0].name).toBe('Test Account');
-      expect(accounts[0].source).toBe('Nova Wallet');
-      expect(accounts[0].type).toBe('sr25519');
-    });
-  });
-
-  describe('Authentication Flow', () => {
-    beforeEach(async () => {
-      await client.connectWallet('Polkadot.js');
-    });
-
-    it('should sign in successfully', async () => {
-      const result = await client.signIn();
-      
-      expect(result.success).toBe(true);
-      expect(result.address).toBe('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY');
-      expect(result.chainId).toBe('polkadot');
-      expect(result.message).toContain('Test App wants you to sign in');
-      expect(result.signature).toBe('0xabcdef1234567890');
-    });
-
-    it('should handle sign in with custom options', async () => {
-      const result = await client.signIn({
-        chainId: 'kusama'
-      });
-      
-      expect(result.success).toBe(true);
-      expect(result.chainId).toBe('kusama');
-      expect(result.message).toContain('Test statement');
-    });
-
-    it('should handle sign in failure', async () => {
-      mockWindow.injectedWeb3['polkadot-js'].signer.signRaw.mockRejectedValue(new Error('User rejected'));
-      
-      const result = await client.signIn();
-      
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('Failed to sign message with polkadot-js: User rejected');
-    });
-
-    it('should fail when no account is connected', async () => {
-      await client.signOut();
-      
-      const result = await client.signIn();
-      
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('No account selected');
-    });
-  });
-
-  describe('Connection State', () => {
-    it('should track connection state correctly', async () => {
-      expect(client.isConnected()).toBe(false);
-      
-      await client.connectWallet('Polkadot.js');
-      expect(client.isConnected()).toBe(true);
-      
-      await client.signOut();
-      expect(client.isConnected()).toBe(false);
-    });
-
-    it('should return current account', async () => {
-      expect(client.getCurrentAccount()).toBeNull();
-      
-      await client.connectWallet('Polkadot.js');
-      const account = client.getCurrentAccount();
-      
-      expect(account).toBeDefined();
-      expect(account?.address).toBe('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY');
-    });
-  });
-
-  describe('Event Handling', () => {
-    it('should register and emit events', () => {
-      const mockCallback = jest.fn();
-      
-      client.on('connected', mockCallback);
-      client.on('disconnected', mockCallback);
-      client.on('accountChanged', mockCallback);
-      
-      expect(mockCallback).not.toHaveBeenCalled();
-    });
-
-    it('should remove event listeners', () => {
-      const mockCallback = jest.fn();
-      
-      client.on('connected', mockCallback);
-      client.off('connected', mockCallback);
-      
-      expect(mockCallback).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('Message Generation', () => {
-    it('should generate proper authentication message', async () => {
-      await client.connectWallet('Polkadot.js');
-      const result = await client.signIn();
-      
-      expect(result).toBeDefined();
-      expect(result.message).toBeDefined();
-      expect(result.nonce).toBeDefined();
-    });
-  });
-
-  describe('Identity Resolution', () => {
-    it('should support identity resolution configuration', () => {
-      const customConfig = {
-        ...mockConfig,
-        enableIdentityResolution: true,
-        resolveIdentity: async (address: string) => {
-          return address === '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' ? 'test-identity' : null;
+  describe("getAccounts", () => {
+    it("should return accounts when wallet is available", async () => {
+      const mockExtensions = [{ name: "polkadot-js" }]
+      const mockAccounts = [
+        {
+          address: "1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z",
+          meta: { name: "Test Account", source: "polkadot-js" }
         }
-      };
-      
-      const customClient = polkadotAuthClient(customConfig);
-      expect(customClient.config.enableIdentityResolution).toBe(true);
-      expect(customClient.config.resolveIdentity).toBeDefined();
-    });
-  });
+      ]
 
-  describe('Ultra Simple API', () => {
-    it('should support ultra simple signInWithPolkadot function', async () => {
-      const result = await signInWithPolkadot({ domain: 'example.com' });
-      
-      expect(result).toBeDefined();
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('No wallet connected');
-    });
+      mockWeb3Enable.mockResolvedValue(mockExtensions)
+      mockWeb3Accounts.mockResolvedValue(mockAccounts)
 
-    it('should support ultra simple signInWithPolkadot with custom wallet', async () => {
-      const result = await signInWithPolkadot({ domain: 'example.com' }, 'Nova Wallet');
-      
-      expect(result).toBeDefined();
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('No wallet connected');
-    });
-  });
-});
+      const accounts = await client.getAccounts()
+
+      expect(accounts).toHaveLength(1)
+      expect(accounts[0]).toEqual({
+        address: "1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z",
+        name: "Test Account",
+        source: "polkadot-js",
+        chain: "polkadot"
+      })
+    })
+
+    it("should throw error when no extensions found", async () => {
+      mockWeb3Enable.mockResolvedValue([])
+
+      await expect(client.getAccounts()).rejects.toThrow("No Polkadot wallet extensions found")
+    })
+
+    it("should handle errors gracefully", async () => {
+      mockWeb3Enable.mockRejectedValue(new Error("Extension error"))
+
+      await expect(client.getAccounts()).rejects.toThrow("Extension error")
+    })
+  })
+
+  describe("signMessage", () => {
+    it("should sign message successfully", async () => {
+      const mockSigner = {
+        signRaw: jest.fn().mockResolvedValue({
+          signature: "0x1234567890abcdef"
+        })
+      }
+
+      mockWeb3FromAddress.mockResolvedValue({
+        signer: mockSigner
+      })
+
+      const signature = await client.signMessage("1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z", "test message")
+
+      expect(signature).toBe("0x1234567890abcdef")
+      expect(mockSigner.signRaw).toHaveBeenCalledWith({
+        address: "1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z",
+        data: "test message",
+        type: "bytes"
+      })
+    })
+
+    it("should throw error when no signer available", async () => {
+      mockWeb3FromAddress.mockResolvedValue({
+        signer: null
+      })
+
+      await expect(client.signMessage("1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z", "test message"))
+        .rejects.toThrow("No signer available for address")
+    })
+  })
+
+  describe("authenticate", () => {
+    it("should complete authentication flow", async () => {
+      const mockChallenge = {
+        message: "test challenge",
+        nonce: "test-nonce",
+        chain: "polkadot",
+        expiresAt: Date.now() + 300000
+      }
+
+      const mockSigner = {
+        signRaw: jest.fn().mockResolvedValue({
+          signature: "0x1234567890abcdef"
+        })
+      }
+
+      const mockAuthResponse = {
+        user: { id: "user-1", address: "1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z" },
+        session: { id: "session-1", token: "jwt-token" }
+      }
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockChallenge)
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockAuthResponse)
+        })
+
+      mockWeb3FromAddress.mockResolvedValue({
+        signer: mockSigner
+      })
+
+      const result = await client.authenticate("1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z", "polkadot")
+
+      expect(result).toEqual(mockAuthResponse)
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+    })
+
+    it("should handle challenge request failure", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 400
+      })
+
+      await expect(client.authenticate("1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z", "polkadot"))
+        .rejects.toThrow("Failed to get challenge")
+    })
+
+    it("should handle signature verification failure", async () => {
+      const mockChallenge = {
+        message: "test challenge",
+        nonce: "test-nonce",
+        chain: "polkadot",
+        expiresAt: Date.now() + 300000
+      }
+
+      const mockSigner = {
+        signRaw: jest.fn().mockResolvedValue({
+          signature: "0x1234567890abcdef"
+        })
+      }
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockChallenge)
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 401
+        })
+
+      mockWeb3FromAddress.mockResolvedValue({
+        signer: mockSigner
+      })
+
+      await expect(client.authenticate("1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z", "polkadot"))
+        .rejects.toThrow("Signature verification failed")
+    })
+  })
+})
