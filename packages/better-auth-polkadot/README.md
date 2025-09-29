@@ -40,6 +40,21 @@ export const auth = betterAuth({
 
 ### Client-Side Setup
 
+**Ultra Simple One-Liner:**
+```typescript
+import { signInWithPolkadot } from "@polkadot-sso/better-auth-polkadot"
+
+const result = await signInWithPolkadot({ domain: "example.com" })
+```
+
+**Super Simple One-Liner:**
+```typescript
+import { polkadotAuthClient } from "@polkadot-sso/better-auth-polkadot"
+
+const result = await polkadotAuthClient({ domain: "example.com" }).signIn({ walletName: "Polkadot.js" })
+```
+
+**Full Example:**
 ```typescript
 import { polkadotAuthClient } from "@polkadot-sso/better-auth-polkadot"
 

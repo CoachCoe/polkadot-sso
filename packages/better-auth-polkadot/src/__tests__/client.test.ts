@@ -1,4 +1,4 @@
-import { polkadotAuthClient } from '../client';
+import { polkadotAuthClient, signInWithPolkadot } from '../client';
 
 const mockConfig = {
   domain: 'example.com',
@@ -251,6 +251,24 @@ describe('Polkadot Auth Client', () => {
       const customClient = polkadotAuthClient(customConfig);
       expect(customClient.config.enableIdentityResolution).toBe(true);
       expect(customClient.config.resolveIdentity).toBeDefined();
+    });
+  });
+
+  describe('Ultra Simple API', () => {
+    it('should support ultra simple signInWithPolkadot function', async () => {
+      const result = await signInWithPolkadot({ domain: 'example.com' });
+      
+      expect(result).toBeDefined();
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('No wallet connected');
+    });
+
+    it('should support ultra simple signInWithPolkadot with custom wallet', async () => {
+      const result = await signInWithPolkadot({ domain: 'example.com' }, 'Nova Wallet');
+      
+      expect(result).toBeDefined();
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('No wallet connected');
     });
   });
 });

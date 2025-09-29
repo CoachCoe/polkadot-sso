@@ -171,6 +171,9 @@ export function polkadotAuthClient(config: PolkadotAuthConfig) {
     chainId?: string;
   } = {}): Promise<PolkadotAuthResult> => {
     try {
+      validateConfig();
+      setupEventListeners();
+      
       let account = options.account || currentAccount;
       let wallet = currentWallet;
       
@@ -310,6 +313,11 @@ Issued At: ${new Date().toISOString()}`;
     on,
     off
   };
+}
+
+export async function signInWithPolkadot(config: PolkadotAuthConfig, walletName: string = 'Polkadot.js'): Promise<PolkadotAuthResult> {
+  const client = polkadotAuthClient(config);
+  return await client.signIn({ walletName });
 }
 
 class PolkadotWalletImpl implements PolkadotWallet {
