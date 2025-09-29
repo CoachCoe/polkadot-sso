@@ -55,13 +55,9 @@ export class GoogleAuthService {
     });
   }
 
-  /**
-   * Generate a Google OAuth challenge with PKCE
-   */
   async generateChallenge(clientId: string, requestId?: string): Promise<GoogleChallenge> {
     const db = await getDatabaseConnection();
     try {
-      // Generate PKCE parameters
       const codeVerifier = this.generateCodeVerifier();
       const codeChallenge = await this.generateCodeChallenge(codeVerifier);
       const state = generateSecureRandom(32);
@@ -83,7 +79,6 @@ export class GoogleAuthService {
         used: false,
       };
 
-      // Store challenge in database
       await db.run(
         `INSERT INTO google_challenges (
           challenge_id, client_id, state, code_verifier, code_challenge, nonce, 
@@ -122,9 +117,6 @@ export class GoogleAuthService {
     }
   }
 
-  /**
-   * Get the Google OAuth authorization URL
-   */
   getAuthorizationUrl(challenge: GoogleChallenge): string {
     const authUrl = this.oauth2Client.generateAuthUrl({
       access_type: 'offline',
@@ -144,15 +136,11 @@ export class GoogleAuthService {
     return authUrl;
   }
 
-  /**
-   * Verify Google OAuth callback and exchange code for tokens
-   */
   async verifyCallback(
     request: GoogleVerificationRequest,
     requestId?: string
   ): Promise<GoogleVerificationResponse> {
     try {
-      // Retrieve and validate challenge
       const challenge = await this.getChallenge(request.state, requestId);
       
       if (challenge.used) {
@@ -167,7 +155,6 @@ export class GoogleAuthService {
         throw new AuthenticationError('Client ID mismatch', undefined, requestId);
       }
 
-      // Exchange authorization code for tokens
       const { tokens } = await this.oauth2Client.getToken({
         code: request.code,
         codeVerifier: challenge.code_verifier,
@@ -177,7 +164,6 @@ export class GoogleAuthService {
         throw new AuthenticationError('No access token received from Google', undefined, requestId);
       }
 
-      // Verify and decode ID token
       const ticket = await this.oauth2Client.verifyIdToken({
         idToken: tokens.id_token!,
         audience: this.config.clientId,
@@ -188,12 +174,10 @@ export class GoogleAuthService {
         throw new AuthenticationError('Invalid ID token payload', undefined, requestId);
       }
 
-      // Validate nonce
       if (payload.nonce !== challenge.nonce) {
         throw new AuthenticationError('Nonce mismatch', undefined, requestId);
       }
 
-      // Create user info object
       const userInfo: GoogleUserInfo = {
         id: payload.sub,
         email: payload.email,
@@ -206,10 +190,8 @@ export class GoogleAuthService {
         hd: payload.hd,
       };
 
-      // Create session
       const session = await this.createSession(userInfo, tokens as GoogleTokenResponse, challenge.client_id, requestId);
 
-      // Mark challenge as used
       await this.markChallengeAsUsed(challenge.id);
 
       logger.info('Google OAuth verification successful', {
@@ -238,9 +220,6 @@ export class GoogleAuthService {
     }
   }
 
-  /**
-   * Get challenge by state parameter
-   */
   private async getChallenge(state: string, requestId?: string): Promise<GoogleChallenge> {
     const db = await getDatabaseConnection();
     try {
@@ -269,9 +248,6 @@ export class GoogleAuthService {
     }
   }
 
-  /**
-   * Create a new Google OAuth session
-   */
   private async createSession(
     userInfo: GoogleUserInfo,
     tokens: GoogleTokenResponse,
@@ -308,7 +284,6 @@ export class GoogleAuthService {
       is_active: true,
     };
 
-    // Store session in database
     const db = await getDatabaseConnection();
     try {
       await db.run(
@@ -351,9 +326,6 @@ export class GoogleAuthService {
     return session;
   }
 
-  /**
-   * Mark challenge as used
-   */
   private async markChallengeAsUsed(challengeId: string): Promise<void> {
     const db = await getDatabaseConnection();
     try {
@@ -366,25 +338,16 @@ export class GoogleAuthService {
     }
   }
 
-  /**
-   * Generate PKCE code verifier
-   */
   private generateCodeVerifier(): string {
     return generateSecureRandom(128); // 128 characters for high entropy
   }
 
-  /**
-   * Generate PKCE code challenge from verifier
-   */
   private async generateCodeChallenge(verifier: string): Promise<string> {
     const hash = createHash('sha256');
     hash.update(verifier);
     return hash.digest('base64url');
   }
 
-  /**
-   * Generate session fingerprint
-   */
   private generateFingerprint(googleId: string, clientId: string): string {
     const data = `${googleId}:${clientId}:${Date.now()}`;
     const hash = createHash('sha256');
@@ -392,18 +355,10 @@ export class GoogleAuthService {
     return hash.digest('hex');
   }
 
-  /**
-   * Get redirect URL for successful authentication
-   */
   private getRedirectUrl(clientId: string, sessionId: string): string {
-    // This would typically redirect to the client application
-    // For now, return a success page URL
     return `/api/auth/success?session_id=${sessionId}&client_id=${clientId}`;
   }
 
-  /**
-   * Clean up expired challenges
-   */
   async cleanupExpiredChallenges(): Promise<number> {
     const db = await getDatabaseConnection();
     try {
@@ -425,9 +380,6 @@ export class GoogleAuthService {
     }
   }
 
-  /**
-   * Get session by ID
-   */
   async getSession(sessionId: string): Promise<GoogleSession | null> {
     const db = await getDatabaseConnection();
     try {
@@ -463,9 +415,6 @@ export class GoogleAuthService {
     }
   }
 
-  /**
-   * Refresh access token using refresh token
-   */
   async refreshAccessToken(sessionId: string): Promise<GoogleSession | null> {
     const session = await this.getSession(sessionId);
     if (!session || !session.refresh_token) {
@@ -483,7 +432,6 @@ export class GoogleAuthService {
         throw new Error('No access token received from refresh');
       }
 
-      // Update session with new tokens
       const now = Date.now();
       const accessTokenExpiresAt = now + ((credentials.expiry_date || 0) - now);
 
@@ -501,7 +449,6 @@ export class GoogleAuthService {
         releaseDatabaseConnection(db);
       }
 
-      // Return updated session
       return await this.getSession(sessionId);
     } catch (error) {
       logger.error('Failed to refresh Google access token', {
@@ -513,7 +460,6 @@ export class GoogleAuthService {
   }
 }
 
-// Global Google auth service instance - lazy loaded
 let _googleAuthService: GoogleAuthService | null = null;
 
 export const getGoogleAuthService = (): GoogleAuthService => {

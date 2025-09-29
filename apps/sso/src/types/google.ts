@@ -4,7 +4,6 @@
 
 import { z } from 'zod';
 
-// Google OAuth 2.0 Configuration
 export interface GoogleOAuthConfig {
   clientId: string;
   clientSecret: string;
@@ -13,7 +12,6 @@ export interface GoogleOAuthConfig {
   authTimeout: number; // in seconds
 }
 
-// Google OAuth 2.0 Challenge (PKCE)
 export interface GoogleChallenge {
   id: string;
   client_id: string;
@@ -26,7 +24,6 @@ export interface GoogleChallenge {
   used: boolean;
 }
 
-// Google OAuth 2.0 Authorization Response
 export interface GoogleAuthResponse {
   code: string;
   state: string;
@@ -35,7 +32,6 @@ export interface GoogleAuthResponse {
   error_description?: string;
 }
 
-// Google User Information
 export interface GoogleUserInfo {
   id: string;
   email: string;
@@ -45,10 +41,9 @@ export interface GoogleUserInfo {
   family_name: string;
   picture: string;
   locale: string;
-  hd?: string; // Hosted domain (for G Suite users)
+  hd?: string; 
 }
 
-// Google Token Response
 export interface GoogleTokenResponse {
   access_token: string;
   expires_in: number;
@@ -58,13 +53,12 @@ export interface GoogleTokenResponse {
   id_token?: string;
 }
 
-// Google ID Token Payload
 export interface GoogleIdToken {
-  iss: string; // Issuer
-  sub: string; // Subject (user ID)
-  aud: string; // Audience (client ID)
-  exp: number; // Expiration time
-  iat: number; // Issued at
+  iss: string;  
+  sub: string;  
+  aud: string; 
+  exp: number; 
+  iat: number;  
   email: string;
   email_verified: boolean;
   name: string;
@@ -72,11 +66,10 @@ export interface GoogleIdToken {
   given_name: string;
   family_name: string;
   locale: string;
-  hd?: string; // Hosted domain
+  hd?: string; 
   nonce?: string;
 }
 
-// Google OAuth Session
 export interface GoogleSession {
   id: string;
   google_id: string;
@@ -96,14 +89,12 @@ export interface GoogleSession {
   is_active: boolean;
 }
 
-// Google OAuth Verification Request
 export interface GoogleVerificationRequest {
   code: string;
   state: string;
   client_id: string;
 }
 
-// Google OAuth Verification Response
 export interface GoogleVerificationResponse {
   success: boolean;
   session?: GoogleSession;
@@ -111,7 +102,6 @@ export interface GoogleVerificationResponse {
   error?: string;
 }
 
-// Zod Schemas for Validation
 export const googleChallengeQuerySchema = z.object({
   client_id: z.string().min(1, 'Client ID is required'),
 });
@@ -159,7 +149,6 @@ export const googleStatusResponseSchema = z.object({
   challengeId: z.string().optional(),
 });
 
-// Export schemas object following existing pattern
 export const googleSchemas = {
   challengeQuery: googleChallengeQuerySchema,
   verificationQuery: googleVerificationQuerySchema,

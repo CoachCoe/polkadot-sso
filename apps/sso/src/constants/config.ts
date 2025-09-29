@@ -3,23 +3,18 @@
  */
 
 export const AUTH_CONFIG = {
-  // Token expiration times (in seconds)
-  ACCESS_TOKEN_EXPIRY: 900, // 15 minutes
-  REFRESH_TOKEN_EXPIRY: 86400, // 24 hours
-  AUTH_CODE_EXPIRY: 300, // 5 minutes
+  ACCESS_TOKEN_EXPIRY: 900,
+  REFRESH_TOKEN_EXPIRY: 86400, 
+  AUTH_CODE_EXPIRY: 300, 
   
-  // Challenge expiration
-  CHALLENGE_EXPIRY: 300, // 5 minutes
+  CHALLENGE_EXPIRY: 300, 
   
-  // UI delays (in milliseconds)
   REDIRECT_DELAY: 500,
   LOADING_TIMEOUT: 30000,
   
-  // Rate limiting
   MAX_LOGIN_ATTEMPTS: 5,
-  RATE_LIMIT_WINDOW: 15 * 60 * 1000, // 15 minutes
+  RATE_LIMIT_WINDOW: 15 * 60 * 1000, 
   
-  // Security
   MIN_SIGNATURE_LENGTH: 64,
   MAX_MESSAGE_LENGTH: 1000,
   MAX_ADDRESS_LENGTH: 100,

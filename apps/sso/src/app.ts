@@ -13,6 +13,7 @@ import { validationMiddleware } from './middleware/validation.js';
 import { createAuthRouter } from './routes/auth/index.js';
 import { createTelegramAuthRouter } from './routes/telegramAuth.js';
 import { createGoogleAuthRouter } from './routes/googleAuth.js';
+import { createPAPIRouter } from './routes/papiRoutes.js';
 import { AuditService } from './services/auditService.js';
 import { ChallengeService } from './services/challengeService.js';
 import { TokenService } from './services/token.js';
@@ -23,28 +24,24 @@ const logger = createLogger('polkadot-sso-app');
 
 const app = express();
 
-// Trust proxy for rate limiting (needed for ngrok)
+
 app.set('trust proxy', 1);
 
-// Body parsing middleware MUST come first so req.body is available
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Apply security middleware
 securityMiddleware.forEach(middleware => {
   if (middleware) {
     app.use(middleware);
   }
 });
 
-// Apply validation middleware (needs req.body to be populated)
 validationMiddleware.forEach(middleware => {
   if (middleware) {
     app.use(middleware);
   }
 });
 
-// Swagger documentation
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -65,13 +62,11 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-// Serve the OpenAPI spec as JSON
 app.get('/api-docs/swagger.json', (_req: Request, res: Response) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
 
-// Serve a simple Swagger UI page
 app.get('/api-docs', (_req: Request, res: Response) => {
   const html = `
 <!DOCTYPE html>
@@ -122,7 +117,6 @@ app.get('/api-docs', (_req: Request, res: Response) => {
   res.send(html);
 });
 
-// Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'healthy',
@@ -132,13 +126,11 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
-// Initialize services
 const tokenService = new TokenService();
 const challengeService = new ChallengeService();
 const auditService = new AuditService();
-const clients = new Map(); // Empty clients map for now
+const clients = new Map();  
 
-// Add default client for demo purposes
 clients.set('demo-client', {
   client_id: 'demo-client',
   client_secret: process.env.DEFAULT_CLIENT_SECRET || 'default-client-secret-for-development-only',
@@ -147,10 +139,8 @@ clients.set('demo-client', {
   allowed_origins: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173']
 });
 
-// Create rate limiters once at app initialization
 const rateLimiters = createRateLimiters(auditService);
 
-// Initialize database
 let db: Database | null = null;
 initializeDatabase().then(database => {
   db = database;
@@ -160,7 +150,6 @@ initializeDatabase().then(database => {
   process.exit(1);
 });
 
-// API routes
 app.use('/api/auth', (req, res, next) => {
   if (!db) {
     const error = new ServiceUnavailableError('Database not initialized', undefined, (req as Request & { requestId?: string }).requestId);
@@ -170,7 +159,6 @@ app.use('/api/auth', (req, res, next) => {
   authRouter(req, res, next);
 });
 
-// Telegram authentication routes
 app.use('/api/auth/telegram', (req, res, next) => {
   if (!db) {
     const error = new ServiceUnavailableError('Database not initialized', undefined, (req as Request & { requestId?: string }).requestId);
@@ -180,7 +168,6 @@ app.use('/api/auth/telegram', (req, res, next) => {
   telegramAuthRouter(req, res, next);
 });
 
-// Google OAuth authentication routes
 app.use('/api/auth/google', (req, res, next) => {
   if (!db) {
     const error = new ServiceUnavailableError('Database not initialized', undefined, (req as Request & { requestId?: string }).requestId);
@@ -190,12 +177,23 @@ app.use('/api/auth/google', (req, res, next) => {
   googleAuthRouter(req, res, next);
 });
 
-// 404 handler (must be before error handler)
+app.use('/api/papi', async (req, res, next) => {
+  if (!db) {
+    const error = new ServiceUnavailableError('Database not initialized', undefined, (req as Request & { requestId?: string }).requestId);
+    return next(error);
+  }
+  try {
+    const papiRouter = await createPAPIRouter(auditService, clients, db, rateLimiters);
+    papiRouter(req, res, next);
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.use((req, res) => {
   notFoundHandler(req, res);
 });
 
-// Global error handling middleware (must be last)
 app.use(globalErrorHandler);
 
 logger.info('Polkadot SSO application initialized successfully');

@@ -81,7 +81,6 @@ class DatabasePool {
       throw new Error('Database pool is shutting down');
     }
 
-    // Check for available healthy connection
     const availableConnection = this.pool.find(
       conn => !conn.inUse && this.isConnectionHealthy(conn)
     );
@@ -92,7 +91,6 @@ class DatabasePool {
       return availableConnection.db;
     }
 
-    // Create new connection if under limit
     if (this.pool.length < DB_POOL_CONFIG.max) {
       try {
         const newConnection = await this.createConnection();
@@ -107,7 +105,6 @@ class DatabasePool {
       }
     }
 
-    // Wait for available connection with timeout
     return new Promise<Database>((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error(`Database connection timeout after ${DB_POOL_CONFIG.acquireTimeout}ms`));
@@ -128,12 +125,10 @@ class DatabasePool {
 
   private isConnectionHealthy(connection: PooledConnection): boolean {
     try {
-      // Check if connection is still valid
       if (!connection.db) {
         return false;
       }
 
-      // Check if connection has been idle too long
       const idleTime = Date.now() - connection.lastUsed;
       if (idleTime > DB_POOL_CONFIG.idleTimeout) {
         return false;
@@ -174,20 +169,16 @@ class DatabasePool {
   private reapIdleConnections(): void {
     const now = Date.now();
 
-    // Find connections that are idle or unhealthy
     const connectionsToRemove = this.pool.filter(conn => {
       if (conn.inUse) return false; // Don't remove in-use connections
 
-      // Remove if idle too long
       if (now - conn.lastUsed > DB_POOL_CONFIG.idleTimeout) return true;
 
-      // Remove if unhealthy
       if (!this.isConnectionHealthy(conn)) return true;
 
       return false;
     });
 
-    // Ensure we don't go below minimum connections
     const maxRemovable = Math.max(
       0,
       connectionsToRemove.length -
@@ -291,12 +282,10 @@ export function getDatabasePoolStats() {
   return dbPool?.getStats() || null;
 }
 
-// Legacy function for backward compatibility
 export async function initializeDatabase(): Promise<Database> {
   const pool = await initializeDatabasePool();
   const db = await pool.getConnection();
 
-  // Initialize schema
   await initializeSchema(db);
 
   return db;
@@ -629,6 +618,88 @@ async function initializeSchema(db: Database): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_google_sessions_email ON google_sessions(email);
     CREATE INDEX IF NOT EXISTS idx_google_sessions_client ON google_sessions(client_id);
     CREATE INDEX IF NOT EXISTS idx_google_sessions_refresh_token ON google_sessions(refresh_token);
+
+    -- PAPI (Polkadot API) tables
+    CREATE TABLE IF NOT EXISTS papi_chains (
+      id TEXT PRIMARY KEY,
+      name TEXT UNIQUE NOT NULL,
+      display_name TEXT NOT NULL,
+      rpc_url TEXT NOT NULL,
+      chain_id TEXT NOT NULL,
+      ss58_format INTEGER NOT NULL,
+      decimals INTEGER NOT NULL,
+      token_symbol TEXT NOT NULL,
+      is_enabled BOOLEAN DEFAULT 1,
+      timeout INTEGER DEFAULT 30000,
+      retry_attempts INTEGER DEFAULT 3,
+      version TEXT,
+      genesis_hash TEXT,
+      last_connected INTEGER,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS papi_transactions (
+      id TEXT PRIMARY KEY,
+      chain TEXT NOT NULL,
+      from_address TEXT NOT NULL,
+      to_address TEXT,
+      amount TEXT,
+      method TEXT,
+      section TEXT,
+      hash TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
+      block_number INTEGER,
+      extrinsic_index INTEGER,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL,
+      FOREIGN KEY (chain) REFERENCES papi_chains(name)
+    );
+
+    CREATE TABLE IF NOT EXISTS papi_events (
+      id TEXT PRIMARY KEY,
+      chain TEXT NOT NULL,
+      block_number INTEGER NOT NULL,
+      event_index INTEGER NOT NULL,
+      section TEXT NOT NULL,
+      method TEXT NOT NULL,
+      data TEXT NOT NULL, -- JSON string
+      timestamp INTEGER NOT NULL,
+      created_at INTEGER NOT NULL,
+      FOREIGN KEY (chain) REFERENCES papi_chains(name)
+    );
+
+    CREATE TABLE IF NOT EXISTS papi_accounts (
+      id TEXT PRIMARY KEY,
+      address TEXT NOT NULL,
+      chain TEXT NOT NULL,
+      nonce INTEGER DEFAULT 0,
+      consumers INTEGER DEFAULT 0,
+      providers INTEGER DEFAULT 0,
+      sufficients INTEGER DEFAULT 0,
+      free_balance TEXT DEFAULT '0',
+      reserved_balance TEXT DEFAULT '0',
+      frozen_balance TEXT DEFAULT '0',
+      last_updated INTEGER NOT NULL,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL,
+      FOREIGN KEY (chain) REFERENCES papi_chains(name),
+      UNIQUE(address, chain)
+    );
+
+    -- PAPI indexes
+    CREATE INDEX IF NOT EXISTS idx_papi_chains_name ON papi_chains(name);
+    CREATE INDEX IF NOT EXISTS idx_papi_chains_enabled ON papi_chains(is_enabled);
+    CREATE INDEX IF NOT EXISTS idx_papi_transactions_chain ON papi_transactions(chain);
+    CREATE INDEX IF NOT EXISTS idx_papi_transactions_from ON papi_transactions(from_address);
+    CREATE INDEX IF NOT EXISTS idx_papi_transactions_hash ON papi_transactions(hash);
+    CREATE INDEX IF NOT EXISTS idx_papi_transactions_status ON papi_transactions(status);
+    CREATE INDEX IF NOT EXISTS idx_papi_events_chain ON papi_events(chain);
+    CREATE INDEX IF NOT EXISTS idx_papi_events_block ON papi_events(block_number);
+    CREATE INDEX IF NOT EXISTS idx_papi_events_section_method ON papi_events(section, method);
+    CREATE INDEX IF NOT EXISTS idx_papi_accounts_address ON papi_accounts(address);
+    CREATE INDEX IF NOT EXISTS idx_papi_accounts_chain ON papi_accounts(chain);
+    CREATE INDEX IF NOT EXISTS idx_papi_accounts_address_chain ON papi_accounts(address, chain);
   `);
 
   // Migration: Add missing columns to existing challenges table

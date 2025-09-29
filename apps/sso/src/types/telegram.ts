@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// Telegram authentication data from widget
 export interface TelegramAuthData {
   id: number;
   first_name: string;
@@ -11,7 +10,6 @@ export interface TelegramAuthData {
   hash: string;
 }
 
-// Telegram challenge data (similar to existing Challenge interface)
 export interface TelegramChallenge extends TelegramAuthData {
   challenge_id: string;
   client_id: string;
@@ -22,7 +20,6 @@ export interface TelegramChallenge extends TelegramAuthData {
   used: boolean;
 }
 
-// Telegram session data (extends existing Session)
 export interface TelegramSession {
   id: string;
   telegram_id: number;
@@ -43,7 +40,6 @@ export interface TelegramSession {
   is_active: boolean;
 }
 
-// Telegram bot configuration
 export interface TelegramBotConfig {
   botToken: string;
   botUsername: string;
@@ -51,7 +47,6 @@ export interface TelegramBotConfig {
   authTimeout: number; // seconds
 }
 
-// Telegram widget template data
 export interface TelegramWidgetTemplateData {
   challengeId: string;
   clientId: string;
@@ -61,7 +56,6 @@ export interface TelegramWidgetTemplateData {
   nonce: string;
 }
 
-// Zod schemas for validation
 export const telegramIdSchema = z.number().int().positive('Invalid Telegram ID');
 export const telegramUsernameSchema = z.string().regex(/^[a-zA-Z0-9_]{5,32}$/, 'Invalid Telegram username format');
 export const telegramHashSchema = z.string().regex(/^[a-f0-9]{64}$/, 'Invalid Telegram hash format');
@@ -134,7 +128,6 @@ export const telegramWebAppAuthResponseSchema = z.object({
   error: z.string().optional(),
 });
 
-// Export schemas object following existing pattern
 export const telegramSchemas = {
   authData: telegramAuthDataSchema,
   challengeQuery: telegramChallengeQuerySchema,

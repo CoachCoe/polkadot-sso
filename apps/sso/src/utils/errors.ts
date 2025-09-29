@@ -118,6 +118,15 @@ export class InternalServerError extends PolkadotSSOError {
   }
 }
 
+export class ChainNotSupportedError extends PolkadotSSOError {
+  readonly code = 'CHAIN_NOT_SUPPORTED';
+  readonly statusCode = 404;
+
+  constructor(chain: string, details?: any, requestId?: string) {
+    super(`Chain '${chain}' is not supported or not available`, details, requestId);
+  }
+}
+
 /**
  * Error handler utility functions
  */

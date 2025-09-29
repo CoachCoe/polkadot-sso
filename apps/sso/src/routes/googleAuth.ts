@@ -27,7 +27,6 @@ export function createGoogleAuthRouter(
 ): Router {
   const router = Router();
 
-  // Initialize Google Auth Service
   let googleAuthService;
   try {
     googleAuthService = getGoogleAuthService();
@@ -35,7 +34,6 @@ export function createGoogleAuthRouter(
     logger.error('Failed to initialize Google Auth Service', {
       error: error instanceof Error ? error.message : String(error),
     });
-    // Return a router that shows an error for all routes
     router.use((req, res, next) => {
       res.status(503).json({
         error: 'Google OAuth service is not available',
@@ -45,10 +43,6 @@ export function createGoogleAuthRouter(
     return router;
   }
 
-  /**
-   * POST /api/auth/google/challenge
-   * Generate Google OAuth challenge and return authorization URL
-   */
   router.post(
     '/challenge',
     rateLimiters.challenge,
@@ -58,17 +52,14 @@ export function createGoogleAuthRouter(
       const { client_id } = req.query;
       const requestId = (req as Request & { requestId?: string }).requestId;
 
-      // Validate client
       const client = clients.get(client_id as string);
       if (!client) {
         throw new NotFoundError(`Client '${client_id}' not found`, undefined, requestId);
       }
 
-      // Generate challenge
       const challenge = await googleAuthService.generateChallenge(client_id as string, requestId);
       const authUrl = googleAuthService.getAuthorizationUrl(challenge);
 
-      // Log audit event
       await auditService.log({
         type: 'AUTH_ATTEMPT',
         user_address: `google:${challenge.id}`,
@@ -95,10 +86,6 @@ export function createGoogleAuthRouter(
     })
   );
 
-  /**
-   * GET /api/auth/google/challenge
-   * Generate Google OAuth challenge and return HTML page with redirect
-   */
   router.get(
     '/challenge',
     rateLimiters.challenge,
@@ -108,17 +95,14 @@ export function createGoogleAuthRouter(
       const { client_id } = req.query;
       const requestId = (req as Request & { requestId?: string }).requestId;
 
-      // Validate client
       const client = clients.get(client_id as string);
       if (!client) {
         throw new NotFoundError(`Client '${client_id}' not found`, undefined, requestId);
       }
 
-      // Generate challenge
       const challenge = await googleAuthService.generateChallenge(client_id as string, requestId);
       const authUrl = googleAuthService.getAuthorizationUrl(challenge);
 
-      // Log audit event
       await auditService.log({
         type: 'AUTH_ATTEMPT',
         user_address: `google:${challenge.id}`,
@@ -133,15 +117,10 @@ export function createGoogleAuthRouter(
         user_agent: req.get('User-Agent'),
       });
 
-      // Return HTML page that redirects to Google OAuth
       res.send(generateGoogleAuthPage(authUrl, client_id as string, res.locals.nonce));
     })
   );
 
-  /**
-   * GET /api/auth/google/callback
-   * Handle Google OAuth callback
-   */
   router.get(
     '/callback',
     rateLimiters.verify,
@@ -159,7 +138,6 @@ export function createGoogleAuthRouter(
       });
 
       try {
-        // Verify the OAuth callback
         const result = await googleAuthService.verifyCallback(
           {
             code: code as string,
@@ -173,7 +151,6 @@ export function createGoogleAuthRouter(
           throw new AuthenticationError('OAuth verification failed', undefined, requestId);
         }
 
-        // Log successful authentication
         await auditService.log({
           type: 'AUTH_ATTEMPT',
           user_address: `google:${result.session.google_id}`,
@@ -189,7 +166,6 @@ export function createGoogleAuthRouter(
           user_agent: req.get('User-Agent'),
         });
 
-        // Redirect to success page or client application
         if (result.redirect_url) {
           res.redirect(result.redirect_url);
         } else {
@@ -206,7 +182,6 @@ export function createGoogleAuthRouter(
           });
         }
       } catch (error) {
-        // Log failed authentication
         await auditService.log({
           type: 'AUTH_ATTEMPT',
           user_address: `google:${state}`,
@@ -226,10 +201,6 @@ export function createGoogleAuthRouter(
     })
   );
 
-  /**
-   * POST /api/auth/google/verify
-   * Alternative verification endpoint for programmatic access
-   */
   router.post(
     '/verify',
     rateLimiters.verify,
@@ -247,7 +218,6 @@ export function createGoogleAuthRouter(
       });
 
       try {
-        // Verify the OAuth callback
         const result = await googleAuthService.verifyCallback(
           { code, state, client_id },
           requestId
@@ -257,7 +227,6 @@ export function createGoogleAuthRouter(
           throw new AuthenticationError('OAuth verification failed', undefined, requestId);
         }
 
-        // Log successful authentication
         await auditService.log({
           type: 'AUTH_ATTEMPT',
           user_address: `google:${result.session.google_id}`,
@@ -290,7 +259,6 @@ export function createGoogleAuthRouter(
           },
         });
       } catch (error) {
-        // Log failed authentication
         await auditService.log({
           type: 'AUTH_ATTEMPT',
           user_address: `google:${state}`,
@@ -310,10 +278,6 @@ export function createGoogleAuthRouter(
     })
   );
 
-  /**
-   * GET /api/auth/google/status/:challengeId
-   * Check the status of a Google OAuth challenge
-   */
   router.get(
     '/status/:challengeId',
     rateLimiters.challenge,
@@ -323,7 +287,6 @@ export function createGoogleAuthRouter(
       const requestId = (req as Request & { requestId?: string }).requestId;
 
       try {
-        // Check if challenge exists and is still valid
         const row = await db.get(
           'SELECT * FROM google_challenges WHERE challenge_id = ?',
           [challengeId]

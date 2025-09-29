@@ -33,19 +33,18 @@ export const createRateLimiter = (
 };
 
 export const createRateLimiters = (auditService: AuditService) => {
-  // Environment-based rate limiting configuration
   const isProduction = process.env.NODE_ENV === 'production';
 
   return {
     login: createRateLimiter(
-      isProduction ? 15 * 60 * 1000 : 5 * 60 * 1000, // 15 min in prod, 5 min in dev
-      isProduction ? 3 : 5, // Stricter in production
+      isProduction ? 15 * 60 * 1000 : 5 * 60 * 1000,  
+      isProduction ? 3 : 5,  
       'login',
       auditService
     ),
     challenge: createRateLimiter(
-      isProduction ? 5 * 60 * 1000 : 2 * 60 * 1000, // 5 min in prod, 2 min in dev
-      isProduction ? 2 : 3, // Stricter in production
+      isProduction ? 5 * 60 * 1000 : 2 * 60 * 1000,  
+      isProduction ? 2 : 3,  
       'challenge',
       auditService
     ),
@@ -56,8 +55,8 @@ export const createRateLimiters = (auditService: AuditService) => {
       auditService
     ),
     token: createRateLimiter(
-      isProduction ? 60 * 1000 : 30 * 1000, // 1 min in prod, 30 sec in dev
-      isProduction ? 1 : 2, // Stricter in production
+      isProduction ? 60 * 1000 : 30 * 1000,  
+      isProduction ? 1 : 2, 
       'token',
       auditService
     ),
@@ -75,13 +74,13 @@ export const createRateLimiters = (auditService: AuditService) => {
     ),
     api: createRateLimiter(
       isProduction ? 60 * 1000 : 30 * 1000,
-      isProduction ? 20 : 30, // Stricter in production
+      isProduction ? 20 : 30,  
       'api',
       auditService
     ),
     status: createRateLimiter(
-      60 * 1000, // 1 minute window
-      30, // 30 requests per minute
+      60 * 1000, 
+      30, 
       'status',
       auditService
     ),

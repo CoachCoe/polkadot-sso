@@ -26,7 +26,6 @@ export const createTelegramAuthRouter = (
   const router = Router();
   const telegramAuthService = getTelegramAuthService();
 
-  // Check if Telegram authentication is enabled
   if (!telegramAuthService.isEnabled()) {
     logger.warn('Telegram authentication is disabled - routes will return 503');
     
@@ -40,10 +39,6 @@ export const createTelegramAuthRouter = (
     return router;
   }
 
-  /**
-   * GET /api/auth/telegram/challenge
-   * Generate a Telegram authentication challenge
-   */
   router.get(
     '/challenge',
     rateLimiters.challenge,
@@ -100,10 +95,6 @@ export const createTelegramAuthRouter = (
     })
   );
 
-  /**
-   * GET /api/auth/telegram/status/:challengeId
-   * Check the status of a Telegram authentication challenge
-   */
   router.get(
     '/status/:challengeId',
     rateLimiters.status,
@@ -143,10 +134,6 @@ export const createTelegramAuthRouter = (
     })
   );
 
-  /**
-   * POST /api/auth/telegram/webapp
-   * Authenticate using Telegram Web App (seamless authentication)
-   */
   router.post(
     '/webapp',
     rateLimiters.verify,
@@ -164,7 +151,6 @@ export const createTelegramAuthRouter = (
         requestId,
       });
 
-      // Verify Telegram authentication data
       if (!telegramAuthService.verifyTelegramAuth(authData)) {
         await auditService.log({
           type: 'AUTH_ATTEMPT',
@@ -180,14 +166,12 @@ export const createTelegramAuthRouter = (
         throw new AuthenticationError('Invalid Telegram authentication data', { client_id }, requestId);
       }
 
-      // Create session
       const session = await telegramAuthService.createSession(
         authData,
         client_id,
         `webapp-${Date.now()}`
       );
 
-      // Generate authorization code
       const authCode = require('crypto').randomBytes(32).toString('hex');
       await db.run(
         `INSERT INTO auth_codes (
@@ -236,10 +220,6 @@ export const createTelegramAuthRouter = (
     })
   );
 
-  /**
-   * POST /api/auth/telegram/verify
-   * Verify Telegram authentication data and create session
-   */
   router.post(
     '/verify',
     rateLimiters.verify,
@@ -281,7 +261,6 @@ export const createTelegramAuthRouter = (
         throw new ValidationError('Invalid code verifier', { code_verifier }, requestId);
       }
 
-      // Verify Telegram authentication data
       if (!telegramAuthService.verifyTelegramAuth(authData)) {
         await auditService.log({
           type: 'AUTH_ATTEMPT',
@@ -297,17 +276,14 @@ export const createTelegramAuthRouter = (
         throw new AuthenticationError('Invalid Telegram authentication data', { challenge_id }, requestId);
       }
 
-      // Mark challenge as used
       await telegramAuthService.markChallengeUsed(challenge_id as string);
 
-      // Create session
       const session = await telegramAuthService.createSession(
         authData,
         challenge.client_id,
         challenge_id as string
       );
 
-      // Generate authorization code
       const authCode = require('crypto').randomBytes(32).toString('hex');
       await db.run(
         `INSERT INTO auth_codes (
@@ -332,26 +308,19 @@ export const createTelegramAuthRouter = (
         user_agent: req.get('User-Agent'),
       });
 
-      // Return redirect URL for the callback
       const redirectUrl = `${client.redirect_url}?code=${authCode}&state=${state}`;
 
-      // Check if this is an AJAX request (from the widget)
       if (req.headers.accept?.includes('application/json')) {
         res.json({
           success: true,
           redirectUrl,
         });
       } else {
-        // Redirect directly for non-AJAX requests
         res.redirect(redirectUrl);
       }
     })
   );
 
-  /**
-   * GET /api/auth/telegram/session
-   * Get current Telegram session information
-   */
   router.get(
     '/session',
     rateLimiters.status,
@@ -372,7 +341,6 @@ export const createTelegramAuthRouter = (
 
       const session = verificationResult.session;
       
-      // Extract Telegram ID from address (format: "telegram:123456789")
       const telegramId = parseInt(session.address.replace('telegram:', ''));
       const telegramSession = await telegramAuthService.getSession(telegramId, session.client_id);
 
@@ -396,10 +364,6 @@ export const createTelegramAuthRouter = (
     })
   );
 
-  /**
-   * POST /api/auth/telegram/logout
-   * Logout and invalidate Telegram session
-   */
   router.post(
     '/logout',
     rateLimiters.logout,
@@ -428,10 +392,6 @@ export const createTelegramAuthRouter = (
     })
   );
 
-  /**
-   * GET /api/auth/telegram/callback
-   * Handle Telegram login widget callback
-   */
   router.get(
     '/callback',
     rateLimiters.verify,
@@ -444,14 +404,12 @@ export const createTelegramAuthRouter = (
         requestId,
       });
 
-      // Telegram sends auth data as query parameters
       const { id, first_name, last_name, username, photo_url, auth_date, hash } = req.query;
 
       if (!id || !auth_date || !hash) {
         throw new AuthenticationError('Missing required Telegram auth parameters', undefined, requestId);
       }
 
-      // Create auth data object
       const authData = {
         id: parseInt(id as string),
         first_name: first_name as string,
@@ -462,7 +420,6 @@ export const createTelegramAuthRouter = (
         hash: hash as string,
       };
 
-      // Verify Telegram authentication data
       if (!telegramAuthService.verifyTelegramAuth(authData)) {
         await auditService.log({
           type: 'AUTH_ATTEMPT',
@@ -481,8 +438,6 @@ export const createTelegramAuthRouter = (
         throw new AuthenticationError('Invalid Telegram authentication data', undefined, requestId);
       }
 
-      // For now, redirect to a success page
-      // In a real implementation, you'd want to create a session and redirect to the client
       res.redirect(`/api/auth/success?telegram_id=${authData.id}&username=${authData.username}`);
     })
   );

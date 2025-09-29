@@ -20,9 +20,6 @@ export interface ApiResponse<T = any> {
   };
 }
 
-/**
- * Send standardized success response
- */
 export function sendSuccess<T>(
   res: Response,
   data: T,
@@ -41,9 +38,6 @@ export function sendSuccess<T>(
   res.status(statusCode).json(response);
 }
 
-/**
- * Send standardized error response
- */
 export function sendError(
   res: Response,
   error: PolkadotSSOError,
@@ -65,9 +59,6 @@ export function sendError(
   res.status(error.statusCode).json(response);
 }
 
-/**
- * Send validation error response
- */
 export function sendValidationError(
   res: Response,
   message: string,
@@ -90,9 +81,6 @@ export function sendValidationError(
   res.status(HTTP_STATUS.BAD_REQUEST).json(response);
 }
 
-/**
- * Send authentication error response
- */
 export function sendAuthError(
   res: Response,
   message: string = 'Authentication required',
@@ -115,9 +103,6 @@ export function sendAuthError(
   res.status(HTTP_STATUS.UNAUTHORIZED).json(response);
 }
 
-/**
- * Send not found error response
- */
 export function sendNotFoundError(
   res: Response,
   message: string = 'Resource not found',

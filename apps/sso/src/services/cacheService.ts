@@ -355,11 +355,9 @@ export class CacheService {
   }
 }
 
-// Cache strategies for different use cases
 export class CacheStrategies {
   constructor(private cache: CacheService) {}
 
-  // User profile cache - longer TTL for user data
   async getUserProfile<T>(address: string): Promise<T | null> {
     return this.cache.get<T>(`user:profile:${address}`, { ttl: 3600, prefix: 'user' }); // 1 hour
   }
@@ -368,7 +366,6 @@ export class CacheStrategies {
     return this.cache.set<T>(`user:profile:${address}`, profile, { ttl: 3600, prefix: 'user' });
   }
 
-  // Session cache - shorter TTL for session data
   async getSession<T>(sessionId: string): Promise<T | null> {
     return this.cache.get<T>(`session:${sessionId}`, { ttl: 900, prefix: 'session' }); // 15 minutes
   }
@@ -377,7 +374,6 @@ export class CacheStrategies {
     return this.cache.set<T>(`session:${sessionId}`, session, { ttl: 900, prefix: 'session' });
   }
 
-  // Challenge cache - very short TTL for security
   async getChallenge<T>(challengeId: string): Promise<T | null> {
     return this.cache.get<T>(`challenge:${challengeId}`, { ttl: 300, prefix: 'challenge' }); // 5 minutes
   }
@@ -389,7 +385,6 @@ export class CacheStrategies {
     });
   }
 
-  // Client cache - longer TTL for client configuration
   async getClient<T>(clientId: string): Promise<T | null> {
     return this.cache.get<T>(`client:${clientId}`, { ttl: 7200, prefix: 'client' }); // 2 hours
   }
@@ -398,7 +393,6 @@ export class CacheStrategies {
     return this.cache.set<T>(`client:${clientId}`, client, { ttl: 7200, prefix: 'client' });
   }
 
-  // Rate limiting cache - very short TTL
   async getRateLimit(key: string): Promise<number | null> {
     return this.cache.get<number>(`ratelimit:${key}`, { ttl: 60, prefix: 'ratelimit' }); // 1 minute
   }
@@ -411,23 +405,19 @@ export class CacheStrategies {
     return this.cache.increment(`ratelimit:${key}`, 1, { prefix: 'ratelimit' });
   }
 
-  // Clear all user-related cache
   async clearUserCache(address: string): Promise<number> {
     return this.cache.clearPattern(`user:*:${address}`, { prefix: 'user' });
   }
 
-  // Clear all session cache
   async clearSessionCache(): Promise<number> {
     return this.cache.clearPattern('*', { prefix: 'session' });
   }
 
-  // Clear all challenge cache
   async clearChallengeCache(): Promise<number> {
     return this.cache.clearPattern('*', { prefix: 'challenge' });
   }
 }
 
-// Global cache service instance
 let cacheService: CacheService | null = null;
 let cacheStrategies: CacheStrategies | null = null;
 

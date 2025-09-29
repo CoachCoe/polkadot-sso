@@ -37,7 +37,6 @@ export async function validateClientCredentials(req: Request, clients?: Map<stri
     return null;
   }
 
-  // If clients map is provided, validate against it
   if (clients) {
     const client = clients.get(client_id);
     if (client && client.client_secret === client_secret) {
@@ -45,7 +44,6 @@ export async function validateClientCredentials(req: Request, clients?: Map<stri
     }
   }
 
-  // For development, check against the demo client
   if (client_id === 'demo-client' && client_secret === 'default-client-secret-for-development-only') {
     return {
       client_id: 'demo-client',

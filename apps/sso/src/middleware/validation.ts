@@ -7,9 +7,6 @@ import { sanitizeInput } from '../utils/sanitization.js';
 
 const logger = createLogger('validation-middleware');
 
-/**
- * Enhanced input sanitization
- */
 export const sanitizeRequest = () => (req: Request, _res: Response, next: NextFunction) => {
   try {
     if (req.body) {
@@ -32,13 +29,9 @@ export const sanitizeRequest = () => (req: Request, _res: Response, next: NextFu
   }
 };
 
-/**
- * Enhanced body validation with detailed error messages
- */
 export const validateBody = (schema: z.ZodSchema) => {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
-      // Validate the body directly
       const result = schema.safeParse(req.body);
 
       if (!result.success) {
@@ -63,7 +56,6 @@ export const validateBody = (schema: z.ZodSchema) => {
         return next(error);
       }
 
-      // Replace the original body with validated data
       req.body = result.data;
 
       next();
@@ -78,9 +70,6 @@ export const validateBody = (schema: z.ZodSchema) => {
   };
 };
 
-/**
- * Enhanced query validation
- */
 export const validateQuery = (schema: z.ZodSchema) => {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
@@ -123,9 +112,6 @@ export const validateQuery = (schema: z.ZodSchema) => {
   };
 };
 
-/**
- * Enhanced parameter validation
- */
 export const validateParams = (schema: z.ZodSchema) => {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
@@ -168,19 +154,14 @@ export const validateParams = (schema: z.ZodSchema) => {
   };
 };
 
-/**
- * Enhanced sanitization for request parameters
- */
 export const sanitizeRequestParams = () => (req: Request, _res: Response, next: NextFunction) => {
   try {
-    // Sanitize URL parameters
     for (const param in req.params) {
       if (typeof req.params[param] === 'string') {
         req.params[param] = sanitizeInput(req.params[param]) as string;
       }
     }
 
-    // Sanitize query parameters
     for (const param in req.query) {
       if (typeof req.query[param] === 'string') {
         req.query[param] = sanitizeInput(req.query[param]) as string;
@@ -202,9 +183,6 @@ export const sanitizeRequestParams = () => (req: Request, _res: Response, next: 
   }
 };
 
-/**
- * Content type validation
- */
 export const validateContentType = (allowedTypes: string[] = ['application/json']) => {
   return (req: Request, _res: Response, next: NextFunction) => {
     const contentType = req.get('Content-Type');
@@ -237,11 +215,7 @@ export const validateContentType = (allowedTypes: string[] = ['application/json'
   };
 };
 
-/**
- * Request size validation
- */
 export const validateRequestSize = (maxSize: number = 1024 * 1024) => {
-  // 1MB default
   return (req: Request, _res: Response, next: NextFunction) => {
     const contentLength = parseInt(req.get('Content-Length') || '0');
 
@@ -271,9 +245,6 @@ export const validateRequestSize = (maxSize: number = 1024 * 1024) => {
   };
 };
 
-/**
- * IP address validation
- */
 export const validateIPAddress =
   () =>
   (req: Request, _res: Response, next: NextFunction): void => {
@@ -287,7 +258,6 @@ export const validateIPAddress =
       });
     }
 
-    // Basic IP format validation
     const ipv4Regex =
       /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
@@ -303,9 +273,6 @@ export const validateIPAddress =
     next();
   };
 
-/**
- * Combined validation middleware
- */
 export const validationMiddleware = [
   sanitizeRequest(),
   sanitizeRequestParams(),

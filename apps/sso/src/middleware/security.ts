@@ -6,29 +6,23 @@ import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('security-middleware');
 
-/**
- * Generate a secure nonce for CSP
- */
 export const nonceMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   const nonce = Buffer.from(uuidv4()).toString('base64');
   res.locals.nonce = nonce;
   next();
 };
 
-/**
- * Enhanced security headers middleware
- */
 export const securityHeaders = helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: [
         "'self'",
-        "'unsafe-inline'", // Temporarily allow inline scripts for the signing page
+        "'unsafe-inline'",  
         'https://cdn.jsdelivr.net',
         'https://polkadot.js.org',
         'https://unpkg.com',
-        'https://telegram.org', // Allow Telegram widget script
+        'https://telegram.org', 
       ],
       connectSrc: [
         "'self'",
@@ -46,17 +40,15 @@ export const securityHeaders = helmet({
       ],
       fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'],
       imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
-      frameSrc: ["'self'", 'https://oauth.telegram.org'], // Allow Telegram OAuth iframe
+      frameSrc: ["'self'", 'https://oauth.telegram.org'],  
       frameAncestors: ["'none'"],
       objectSrc: ["'none'"],
       formAction: ["'self'"],
-      // Don't upgrade insecure requests in development
-      // upgradeInsecureRequests: [],
       baseUri: ["'self'"],
     },
   },
   hsts: {
-    maxAge: 31536000, // 1 year
+    maxAge: 31536000,  
     includeSubDomains: true,
     preload: true,
   },
@@ -67,12 +59,9 @@ export const securityHeaders = helmet({
   referrerPolicy: { policy: 'same-origin' },
   xssFilter: true,
   hidePoweredBy: true,
-  crossOriginEmbedderPolicy: false, // Disable for compatibility
+  crossOriginEmbedderPolicy: false,  
 });
 
-/**
- * Enhanced CORS configuration
- */
 export const corsConfig = cors({
   origin: (origin, callback) => {
     const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
@@ -80,7 +69,6 @@ export const corsConfig = cors({
       'http://localhost:3001',
     ];
 
-    // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
@@ -103,9 +91,6 @@ export const corsConfig = cors({
   exposedHeaders: ['X-Request-ID'],
 });
 
-/**
- * Request ID middleware for tracing
- */
 export const requestIdMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   const requestId = (req as any).requestId || uuidv4();
   (req as any).requestId = requestId;
@@ -113,9 +98,6 @@ export const requestIdMiddleware = (req: Request, res: Response, next: NextFunct
   next();
 };
 
-/**
- * Security headers for API responses
- */
 export const apiSecurityHeaders = (req: Request, res: Response, next: NextFunction): void => {
   // Prevent caching of sensitive endpoints
   if (req.path.startsWith('/api/auth/')) {
@@ -127,7 +109,6 @@ export const apiSecurityHeaders = (req: Request, res: Response, next: NextFuncti
     });
   }
 
-  // Add security headers
   res.set({
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
@@ -140,9 +121,6 @@ export const apiSecurityHeaders = (req: Request, res: Response, next: NextFuncti
   next();
 };
 
-/**
- * IP whitelist middleware (optional)
- */
 export const ipWhitelistMiddleware = (allowedIPs: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     const clientIP = req.ip || req.connection.remoteAddress;
@@ -157,9 +135,6 @@ export const ipWhitelistMiddleware = (allowedIPs: string[]) => {
   };
 };
 
-/**
- * Rate limiting headers
- */
 export const rateLimitHeaders = (req: Request, res: Response, next: NextFunction): void => {
   res.set({
     'X-RateLimit-Limit': '100',
@@ -170,19 +145,16 @@ export const rateLimitHeaders = (req: Request, res: Response, next: NextFunction
   next();
 };
 
-/**
- * Security audit middleware
- */
 export const securityAuditMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
   const startTime = Date.now();
 
-  // Log suspicious patterns
+
   const suspiciousPatterns = [
-    /\.\.\//, // Directory traversal
-    /<script/i, // XSS attempts
-    /union.*select/i, // SQL injection
-    /javascript:/i, // JavaScript protocol
-    /on\w+\s*=/i, // Event handlers
+    /\.\.\//,  
+    /<script/i,  
+    /union.*select/i,  
+    /javascript:/i,  
+    /on\w+\s*=/i,  
   ];
 
   const userAgent = req.get('User-Agent') || '';
@@ -196,12 +168,11 @@ export const securityAuditMiddleware = (req: Request, _res: Response, next: Next
         userAgent,
         url,
         pattern: pattern.toString(),
-        body: body.substring(0, 200), // Limit body size
+        body: body.substring(0, 200), 
       });
     }
   }
 
-  // Log response time for performance monitoring
   _res.on('finish', () => {
     const duration = Date.now() - startTime;
     if (duration > 5000) {
@@ -219,9 +190,6 @@ export const securityAuditMiddleware = (req: Request, _res: Response, next: Next
   next();
 };
 
-/**
- * Combined security middleware
- */
 export const securityMiddleware = [
   securityHeaders,
   corsConfig,

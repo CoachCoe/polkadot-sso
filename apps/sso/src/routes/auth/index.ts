@@ -9,7 +9,6 @@ import { ChallengeService } from '../../services/challengeService.js';
 import { TokenService } from '../../services/token.js';
 import { Client } from '../../types/auth.js';
 import { AuthenticationError, NotFoundError, ValidationError } from '../../utils/errors.js';
-// import { createLogger } from '../../utils/logger.js';
 import { schemas } from '../../utils/schemas.js';
 import { createLoginHandler, createTokenHandler, createVerifyHandler } from './handlers.js';
 import { generateApiDocsPage, generateAuthSelectionPage, generateChallengePage } from './templates.js';
@@ -25,7 +24,6 @@ export const createAuthRouter = (
   rateLimiters: RateLimiters
 ) => {
   const router = Router();
-  // const logger = createLogger('auth-router');
 
   const loginHandler = createLoginHandler(
     tokenService,
@@ -37,7 +35,6 @@ export const createAuthRouter = (
   const verifyHandler = createVerifyHandler(challengeService, auditService, clients, db);
   const tokenHandler = createTokenHandler(tokenService, auditService, db, clients);
 
-  // Authentication method selection page
   router.get(
     '/select',
     rateLimiters.challenge,
@@ -119,14 +116,12 @@ export const createAuthRouter = (
         throw new ValidationError('Challenge ID is required', { field: 'challengeId' }, requestId);
       }
 
-      // Get challenge from database
       const challenge = await challengeService.getChallenge(challengeId);
 
       if (!challenge) {
         throw new NotFoundError('Challenge not found', { challengeId }, requestId);
       }
 
-      // Check if challenge is expired
       const now = Date.now();
       const expiresAt = new Date(challenge.expires_at).getTime();
 
@@ -138,7 +133,6 @@ export const createAuthRouter = (
         });
       }
 
-      // Check if challenge has been used
       if (challenge.used) {
         return res.status(200).json({
           status: 'used',
@@ -147,7 +141,6 @@ export const createAuthRouter = (
         });
       }
 
-      // Challenge is valid and pending
       return res.status(200).json({
         status: 'pending',
         message: 'Challenge is pending verification',
@@ -288,8 +281,8 @@ export const createAuthRouter = (
       return res.json({
         user: {
           address: session.address,
-          chain: 'westend', // You might want to store this in the session
-          wallet: 'polkadot-js', // You might want to store this in the session
+          chain: 'westend',  
+          wallet: 'polkadot-js',  
         },
         accessToken: token,
         refreshToken: session.refresh_token,

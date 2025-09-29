@@ -41,7 +41,6 @@ export class AuditService {
         error: error instanceof Error ? error.message : String(error),
         event: event.type,
       });
-      // Don't throw - audit failures shouldn't break the application
     } finally {
       if (db) {
         releaseDatabaseConnection(db);

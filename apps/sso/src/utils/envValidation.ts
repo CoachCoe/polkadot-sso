@@ -102,6 +102,29 @@ const envSchema = z.object({
     .string()
     .transform(val => val.split(',').map(s => s.trim()))
     .default(['openid', 'email', 'profile']),
+
+  // PAPI (Polkadot API) Configuration
+  PAPI_ENABLED: z
+    .string()
+    .transform(val => val === 'true')
+    .default(false),
+  PAPI_DEFAULT_TIMEOUT: z.string().transform(Number).pipe(z.number().min(1000).max(60000)).default(30000), // 30 seconds
+  PAPI_MAX_RETRIES: z.string().transform(Number).pipe(z.number().min(1).max(10)).default(3),
+  PAPI_CONNECTION_POOL_SIZE: z.string().transform(Number).pipe(z.number().min(1).max(20)).default(5),
+  PAPI_ENABLE_EVENT_STREAMING: z
+    .string()
+    .transform(val => val === 'true')
+    .default(false),
+  PAPI_ENABLE_TRANSACTION_TRACKING: z
+    .string()
+    .transform(val => val === 'true')
+    .default(true),
+  
+  // Chain-specific endpoints
+  KUSAMA_RPC_URL: z.string().url('KUSAMA_RPC_URL must be a valid URL').optional(),
+  POLKADOT_RPC_URL: z.string().url('POLKADOT_RPC_URL must be a valid URL').optional(),
+  WESTEND_RPC_URL: z.string().url('WESTEND_RPC_URL must be a valid URL').optional(),
+  ASSET_HUB_RPC_URL: z.string().url('ASSET_HUB_RPC_URL must be a valid URL').optional(),
 });
 
 export type ValidatedEnv = z.infer<typeof envSchema>;
@@ -137,6 +160,10 @@ export function validateEnvironment(): EnvValidationResult {
 
       if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
         warnings.push('GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not configured - Google OAuth will be disabled');
+      }
+
+      if (!env.PAPI_ENABLED) {
+        warnings.push('PAPI_ENABLED is false - Polkadot API integration will be disabled');
       }
 
       if (env.COOKIE_SECURE === false) {
@@ -177,6 +204,7 @@ export function validateEnvironment(): EnvValidationResult {
       hasKusama: !!env.KUSAMA_ENDPOINT,
       hasTelegram: !!(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_BOT_USERNAME),
       hasGoogle: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+      hasPAPI: env.PAPI_ENABLED,
       dbPoolMin: env.DB_POOL_MIN,
       dbPoolMax: env.DB_POOL_MAX,
       compressionLevel: env.COMPRESSION_LEVEL,

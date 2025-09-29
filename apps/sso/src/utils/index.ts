@@ -1,4 +1,3 @@
-export * from './db.js';
 export * from './envValidation.js';
 export * from './logger.js';
 export * from './sanitization.js';

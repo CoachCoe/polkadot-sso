@@ -5,22 +5,16 @@ import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('error-handler');
 
-/**
- * Global error handling middleware
- */
 export function globalErrorHandler(
   error: unknown,
   req: Request,
   res: Response,
   _next: NextFunction
 ): void {
-  // Generate request ID if not present
   const requestId = (req as any).requestId || uuidv4();
 
-  // Convert error to PolkadotSSOError
   const polkadotError = ErrorHandler.fromError(error, requestId);
 
-  // Log the error
   logger.error('Request error', {
     requestId,
     method: req.method,
@@ -35,14 +29,12 @@ export function globalErrorHandler(
     },
   });
 
-  // Don't send error details in production for internal errors
   const isProduction = process.env.NODE_ENV === 'production';
   const isInternalError = polkadotError.statusCode >= 500;
 
   const response = errorToResponse(polkadotError);
 
   if (isProduction && isInternalError) {
-    // In production, don't expose internal error details
     res.status(polkadotError.statusCode).json({
       error: 'Internal Server Error',
       code: 'INTERNAL_SERVER_ERROR',
@@ -52,14 +44,10 @@ export function globalErrorHandler(
       requestId,
     });
   } else {
-    // In development or for client errors, send full details
     res.status(polkadotError.statusCode).json(response);
   }
 }
 
-/**
- * 404 handler for unmatched routes
- */
 export function notFoundHandler(req: Request, res: Response): void {
   const requestId = (req as any).requestId || uuidv4();
 
@@ -81,9 +69,6 @@ export function notFoundHandler(req: Request, res: Response): void {
   });
 }
 
-/**
- * Async error wrapper for route handlers
- */
 export function asyncHandler<T extends any[], R>(
   fn: (...args: T) => Promise<R>
 ): (...args: T) => Promise<R> {
@@ -91,15 +76,11 @@ export function asyncHandler<T extends any[], R>(
     try {
       return await fn(...args);
     } catch (error) {
-      // The error will be caught by the global error handler
       throw error;
     }
   };
 }
 
-/**
- * Request ID middleware
- */
 export function requestIdMiddleware(req: Request, res: Response, next: NextFunction): void {
   const requestId = uuidv4();
   (req as any).requestId = requestId;

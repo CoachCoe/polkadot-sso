@@ -5,7 +5,6 @@ import { AuditService } from '../../services/auditService.js';
 import { ChallengeService } from '../../services/challengeService.js';
 import { TokenService } from '../../services/token.js';
 import { Client } from '../../types/auth.js';
-import { secureQueries } from '../../utils/db.js';
 import { createLogger, logError, logRequest } from '../../utils/logger.js';
 import { validateAuthRequest, validateClientCredentials } from '../../utils/validation.js';
 import { verifySignature as cryptoVerifySignature } from '../../utils/crypto.js';
@@ -127,11 +126,9 @@ export const createVerifyHandler = (
 
       const code_challenge = generateCodeChallenge(code_verifier as string);
 
-      // Convert base64url to hex for comparison if stored value is hex
       let storedChallenge = challenge.code_challenge;
       let calculatedChallengeHex = Buffer.from(code_challenge, 'base64url').toString('hex');
 
-      // Check if stored challenge is in hex format (all lowercase hex chars)
       const isHex = /^[a-f0-9]+$/.test(storedChallenge);
 
       logger.info('Code verifier validation', {
@@ -144,7 +141,6 @@ export const createVerifyHandler = (
         matches: isHex ? (calculatedChallengeHex === storedChallenge) : (code_challenge === storedChallenge)
       });
 
-      // Compare based on format of stored challenge
       const matches = isHex
         ? (calculatedChallengeHex === storedChallenge)
         : (code_challenge === storedChallenge);
@@ -183,16 +179,12 @@ export const createVerifyHandler = (
         user_agent: req.get('User-Agent'),
       });
 
-      // Instead of redirecting directly, return the redirect URL
-      // This avoids issues with HTTPS upgrades in development
       const redirectUrl = `${client.redirect_url}?code=${authCode}&state=${state}`;
 
-      // Check if this is an AJAX request (from the signing page)
       if (req.headers.accept?.includes('application/json')) {
         return res.json({ success: true, redirectUrl });
       }
 
-      // Otherwise do a normal redirect
       return res.redirect(redirectUrl);
     } catch (error) {
       logError(req, error as Error);
@@ -226,7 +218,7 @@ export const createTokenHandler = (
         return res.status(401).send('Invalid client credentials');
       }
 
-      const authCode = await secureQueries.authCodes.verify(db, code, client_id);
+      const authCode = await db.get('SELECT * FROM auth_codes WHERE code = ? AND client_id = ? AND used = 0', [code, client_id]);
       if (!authCode || Date.now() > (authCode.expires_at as number)) {
         return res.status(400).send('Invalid or expired authorization code');
       }
@@ -264,7 +256,7 @@ export const createTokenHandler = (
       return res.json({
         access_token: session.access_token,
         token_type: 'Bearer',
-        expires_in: 900, // 15 minutes
+        expires_in: 900,  
         refresh_token: session.refresh_token,
       });
     } catch (error) {
