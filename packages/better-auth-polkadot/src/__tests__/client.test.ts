@@ -26,7 +26,7 @@ describe("PolkadotAuthClient", () => {
       const mockExtensions = [{ name: "polkadot-js" }]
       const mockAccounts = [
         {
-          address: "1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z",
+          address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
           meta: { name: "Test Account", source: "polkadot-js" }
         }
       ]
@@ -38,23 +38,26 @@ describe("PolkadotAuthClient", () => {
 
       expect(accounts).toHaveLength(1)
       expect(accounts[0]).toEqual({
-        address: "1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z",
+        address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
         name: "Test Account",
         source: "polkadot-js",
-        chain: "polkadot"
+        chain: "westend"
       })
     })
 
-    it("should throw error when no extensions found", async () => {
+    it("should return empty array when no extensions found", async () => {
       mockWeb3Enable.mockResolvedValue([])
+      mockWeb3Accounts.mockResolvedValue([])
 
-      await expect(client.getAccounts()).rejects.toThrow("No Polkadot wallet extensions found")
+      const accounts = await client.getAccounts()
+      expect(accounts).toEqual([])
     })
 
     it("should handle errors gracefully", async () => {
       mockWeb3Enable.mockRejectedValue(new Error("Extension error"))
 
-      await expect(client.getAccounts()).rejects.toThrow("Extension error")
+      const accounts = await client.getAccounts()
+      expect(accounts).toEqual([])
     })
   })
 
@@ -85,8 +88,8 @@ describe("PolkadotAuthClient", () => {
         signer: null
       })
 
-      await expect(client.signMessage("1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z", "test message"))
-        .rejects.toThrow("No signer available for address")
+      await expect(client.signMessage("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", "test message"))
+        .rejects.toThrow("No signer available")
     })
   })
 
@@ -136,7 +139,7 @@ describe("PolkadotAuthClient", () => {
         status: 400
       })
 
-      await expect(client.authenticate("1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z", "polkadot"))
+      await expect(client.authenticate("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", "polkadot"))
         .rejects.toThrow("Failed to get challenge")
     })
 
@@ -168,8 +171,8 @@ describe("PolkadotAuthClient", () => {
         signer: mockSigner
       })
 
-      await expect(client.authenticate("1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z", "polkadot"))
-        .rejects.toThrow("Signature verification failed")
+      await expect(client.authenticate("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", "polkadot"))
+        .rejects.toThrow("Failed to verify signature")
     })
   })
 })

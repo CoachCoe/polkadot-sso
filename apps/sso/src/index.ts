@@ -1,11 +1,9 @@
 import { createServer } from "http"
-
-const server = createServer()
+import { auth } from "./server.js"
 
 const PORT = process.env.PORT || 3001
 
-server.on('request', (req, res) => {
-  res.setHeader('Content-Type', 'application/json')
+const server = createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
@@ -17,62 +15,48 @@ server.on('request', (req, res) => {
   }
 
   if (req.url === '/health') {
-    res.writeHead(200)
-    res.end(JSON.stringify({ status: 'healthy', timestamp: new Date().toISOString() }))
-    return
-  }
-
-  if (req.url === '/api/auth/polkadot/challenge' && req.method === 'POST') {
-    res.writeHead(200)
-    res.end(JSON.stringify({
-      message: "Sign this message to authenticate with Polkadot SSO",
-      nonce: "test-nonce-" + Date.now(),
-      chain: "polkadot",
-      expiresAt: Date.now() + 300000
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ 
+      status: 'healthy', 
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
+      service: 'polkadot-sso'
     }))
     return
   }
 
-  if (req.url === '/api/auth/polkadot/verify' && req.method === 'POST') {
-    res.writeHead(200)
-    res.end(JSON.stringify({
-      user: {
-        id: "test-user-" + Date.now(),
-        address: "1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z",
-        chain: "polkadot",
-        provider: "polkadot-js",
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      session: {
-        id: "test-session-" + Date.now(),
-        userId: "test-user-" + Date.now(),
-        token: "test-jwt-token-" + Date.now(),
-        expiresAt: new Date(Date.now() + 900000),
-        createdAt: new Date()
-      },
-      token: "test-jwt-token-" + Date.now()
+  try {
+    const url = `http://${req.headers.host}${req.url}`
+    const request = new Request(url, {
+      method: req.method,
+      headers: req.headers as any,
+      body: req.method !== 'GET' && req.method !== 'HEAD' ? req : undefined
+    })
+    
+    const response = await auth.handler(request)
+    
+    if (response) {
+      res.writeHead(response.status, Object.fromEntries(response.headers.entries()))
+      res.end(await response.text())
+    } else {
+      res.writeHead(404, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({ error: 'Not Found' }))
+    }
+  } catch (error) {
+    console.error('Server error:', error)
+    res.writeHead(500, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ 
+      error: 'Internal Server Error',
+      code: 'INTERNAL_ERROR'
     }))
-    return
   }
-
-  if (req.url === '/api/auth/session' && req.method === 'GET') {
-    res.writeHead(200)
-    res.end(JSON.stringify({
-      user: null,
-      session: null
-    }))
-    return
-  }
-
-  res.writeHead(404)
-  res.end(JSON.stringify({ error: 'Not Found' }))
 })
 
 server.listen(PORT, () => {
   console.log(`🚀 Polkadot SSO server running on port ${PORT}`)
   console.log(`📚 API Documentation: http://localhost:${PORT}/api/auth`)
   console.log(`🏥 Health Check: http://localhost:${PORT}/health`)
+  console.log(`🔐 Better Auth integration active`)
 })
 
 export default server

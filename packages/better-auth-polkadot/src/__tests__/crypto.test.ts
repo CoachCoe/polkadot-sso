@@ -3,9 +3,10 @@ import {
   generateChallenge, 
   generateNonce, 
   isValidAddress, 
-  formatAddress 
+  formatAddress,
+  createMessageHash
 } from "../crypto"
-import type { PolkadotProvider } from "../types"
+import type { PolkadotProvider } from "../plugin"
 
 const mockProvider: PolkadotProvider = {
   id: "polkadot",
@@ -19,16 +20,21 @@ const mockProvider: PolkadotProvider = {
 
 describe("Crypto utilities", () => {
   describe("generateChallenge", () => {
-    it("should generate a challenge with address and chain", () => {
-      const address = "1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z"
+    it("should generate SIWE-style challenge", () => {
+      const address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
       const chain = "polkadot"
       
       const challenge = generateChallenge(address, chain)
       
-      expect(challenge).toContain("Sign this message to authenticate with polkadot")
-      expect(challenge).toContain(`Address: ${address}`)
-      expect(challenge).toContain("Timestamp:")
+      expect(challenge).toContain(address)
+      expect(challenge).toContain(chain)
+      expect(challenge).toContain("wants you to sign in")
+      expect(challenge).toContain("Sign in with Polkadot")
+      expect(challenge).toContain("URI:")
+      expect(challenge).toContain("Version:")
+      expect(challenge).toContain("Chain ID:")
       expect(challenge).toContain("Nonce:")
+      expect(challenge).toContain("Issued At:")
     })
   })
 
@@ -37,7 +43,7 @@ describe("Crypto utilities", () => {
       const nonce = generateNonce()
       
       expect(typeof nonce).toBe("string")
-      expect(nonce.length).toBeGreaterThan(10)
+      expect(nonce.length).toBe(32)
     })
 
     it("should generate unique nonces", () => {
@@ -50,9 +56,9 @@ describe("Crypto utilities", () => {
 
   describe("isValidAddress", () => {
     it("should validate correct Polkadot address", () => {
-      const address = "1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z"
+      const address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
       
-      const isValid = isValidAddress(address, 0)
+      const isValid = isValidAddress(address, 42)
       
       expect(isValid).toBe(true)
     })
@@ -68,15 +74,15 @@ describe("Crypto utilities", () => {
 
   describe("formatAddress", () => {
     it("should format long address", () => {
-      const address = "1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z"
+      const address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
       
       const formatted = formatAddress(address, 8)
       
-      expect(formatted).toBe("1A2B3C4D...5Y6Z")
+      expect(formatted).toBe("5GrwvaEF...oHGKutQY")
     })
 
     it("should return short address as-is", () => {
-      const address = "1A2B3C4D"
+      const address = "5GrwvaEF"
       
       const formatted = formatAddress(address, 8)
       
@@ -84,11 +90,21 @@ describe("Crypto utilities", () => {
     })
   })
 
+  describe("createMessageHash", () => {
+    it("should create message hash", () => {
+      const message = "test message"
+      const hash = createMessageHash(message)
+      
+      expect(hash).toBeDefined()
+      expect(hash).toMatch(/^0x[a-fA-F0-9]+$/)
+    })
+  })
+
   describe("verifySignature", () => {
     it("should verify valid signature", async () => {
       const message = "test message"
-      const signature = "0x1234567890abcdef"
-      const address = "1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z"
+      const signature = "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+      const address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
       
       const result = await verifySignature(message, signature, address, mockProvider)
       

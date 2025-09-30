@@ -5,20 +5,20 @@ export { PolkadotWalletSelector } from "./components/PolkadotWalletSelector"
 
 export type {
   PolkadotProvider,
+  PolkadotPluginOptions
+} from "./plugin"
+
+export type {
   PolkadotAccount,
-  PolkadotChallenge,
-  PolkadotSignature,
   PolkadotUser,
-  PolkadotSession,
-  PolkadotAuthConfig,
-  PolkadotAuthResponse,
-  PolkadotAuthError
-} from "./types"
+  PolkadotSession
+} from "./client"
 
 export {
   verifySignature,
   generateChallenge,
   generateNonce,
   isValidAddress,
-  formatAddress
+  formatAddress,
+  createMessageHash
 } from "./crypto"

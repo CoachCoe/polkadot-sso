@@ -1,6 +1,7 @@
 import { u8aToHex, hexToU8a } from "@polkadot/util"
-import { signatureVerify } from "@polkadot/util-crypto"
-import type { PolkadotProvider } from "./types"
+import { signatureVerify, decodeAddress } from "@polkadot/util-crypto"
+import { randomBytes } from "crypto"
+import type { PolkadotProvider } from "./plugin"
 
 export async function verifySignature(
   message: string,
@@ -22,20 +23,27 @@ export async function verifySignature(
 }
 
 export function generateChallenge(address: string, chain: string): string {
-  const timestamp = Date.now()
-  const nonce = Math.random().toString(36).substring(2, 15)
+  const timestamp = new Date().toISOString()
+  const nonce = generateNonce()
   
-  return `Sign this message to authenticate with ${chain}:\n\nAddress: ${address}\nTimestamp: ${timestamp}\nNonce: ${nonce}`
+  return `${chain} wants you to sign in with your Polkadot account:
+${address}
+
+Sign in with Polkadot to Polkadot App
+
+URI: https://polkadot.app
+Version: 1
+Chain ID: ${chain}
+Nonce: ${nonce}
+Issued At: ${timestamp}`
 }
 
 export function generateNonce(): string {
-  return Math.random().toString(36).substring(2, 15) + 
-         Math.random().toString(36).substring(2, 15)
+  return randomBytes(16).toString('hex')
 }
 
 export function isValidAddress(address: string, ss58Format: number): boolean {
   try {
-    const { decodeAddress } = require("@polkadot/util-crypto")
     decodeAddress(address, false, ss58Format)
     return true
   } catch {
@@ -48,4 +56,10 @@ export function formatAddress(address: string, length: number = 8): string {
     return address
   }
   return `${address.slice(0, length)}...${address.slice(-length)}`
+}
+
+export function createMessageHash(message: string): string {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(message)
+  return u8aToHex(data)
 }

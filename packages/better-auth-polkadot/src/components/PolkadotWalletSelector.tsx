@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { usePolkadotAuth } from "../hooks/usePolkadotAuth"
-import type { PolkadotAccount } from "../types"
+import type { PolkadotAccount } from "../client"
 
 interface PolkadotWalletSelectorProps {
   appName: string

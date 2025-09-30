@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polkadot SSO Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { border-left: 4px solid #4caf50; }
+        .error { border-left: 4px solid #f44336; }
+        .info { border-left: 4px solid #2196f3; }
+        input, select {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Polkadot SSO Test</h1>
+        
+        <div class="test-section">
+            <h2>🏥 Health Check</h2>
+            <button onclick="testHealth()">Test Server Health</button>
+            <div id="health-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔑 Authentication Challenge</h2>
+            <div class="form-group">
+                <label for="address">Address:</label>
+                <input type="text" id="address" placeholder="Enter Polkadot address" value="5EJP9eSB1HpzjpuCJrna8KMcA6mmgaT8W4gSmwHaVDn25gHQ">
+            </div>
+            <div class="form-group">
+                <label for="chain">Chain:</label>
+                <select id="chain">
+                    <option value="polkadot">Polkadot</option>
+                    <option value="kusama">Kusama</option>
+                    <option value="westend">Westend</option>
+                </select>
+            </div>
+            <button onclick="testChallenge()">Get Challenge</button>
+            <div id="challenge-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>✅ Signature Verification</h2>
+            <div class="form-group">
+                <label for="signature">Signature:</label>
+                <input type="text" id="signature" placeholder="Enter signature (mock: test-signature)" value="test-signature">
+            </div>
+            <div class="form-group">
+                <label for="challenge-id">Challenge ID:</label>
+                <input type="text" id="challenge-id" placeholder="Enter challenge ID" value="test-challenge-id">
+            </div>
+            <button onclick="testVerify()">Verify Signature</button>
+            <div id="verify-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>👤 Session Check</h2>
+            <button onclick="testSession()">Check Session</button>
+            <div id="session-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔄 Full Authentication Flow</h2>
+            <button onclick="testFullFlow()">Test Complete Flow</button>
+            <div id="flow-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔗 Real Wallet Integration</h2>
+            <p style="margin-bottom: 15px; font-size: 14px; opacity: 0.8;">
+                Test with actual Polkadot.js Extension (requires browser extension)
+            </p>
+            
+            <div class="form-group">
+                <button onclick="checkWallet()">Check Wallet Extension</button>
+                <button onclick="connectWallet()">Connect Wallet</button>
+                <button onclick="selectAccount()">Select Account</button>
+            </div>
+            
+            <div id="wallet-status" class="result info" style="margin: 10px 0;">
+                Click "Check Wallet Extension" to see if Polkadot.js Extension is available
+            </div>
+            
+            <div id="accounts-list" class="result" style="display: none; margin: 10px 0;"></div>
+            
+            <div class="form-group" id="account-selection" style="display: none;">
+                <label for="selected-account">Select Account:</label>
+                <select id="selected-account">
+                    <option value="">Choose an account...</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="real-auth-section" style="display: none;">
+                <button onclick="testRealAuthentication()">Test Real Authentication</button>
+                <button onclick="testRealSigning()">Test Real Message Signing</button>
+            </div>
+            
+            <div id="real-auth-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001';
+        
+        // Polkadot.js Extension integration
+        let polkadotExtension = null;
+        let accounts = [];
+        let selectedAccount = null;
+        
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                return { success: response.ok, data, status: response.status };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Check if Polkadot.js Extension is available
+        async function checkPolkadotExtension() {
+            if (typeof window.injectedWeb3 === 'undefined') {
+                return { available: false, error: 'Polkadot.js Extension not installed' };
+            }
+            
+            try {
+                const extension = window.injectedWeb3['polkadot-js'];
+                if (!extension) {
+                    return { available: false, error: 'Polkadot.js Extension not found' };
+                }
+                
+                polkadotExtension = extension;
+                return { available: true };
+            } catch (error) {
+                return { available: false, error: error.message };
+            }
+        }
+
+        // Connect to Polkadot.js Extension
+        async function connectPolkadotExtension() {
+            try {
+                if (!polkadotExtension) {
+                    const check = await checkPolkadotExtension();
+                    if (!check.available) {
+                        throw new Error(check.error);
+                    }
+                }
+
+                const extension = await polkadotExtension.enable('Polkadot SSO Test');
+                const accounts = await extension.accounts.get();
+                
+                if (accounts.length === 0) {
+                    throw new Error('No accounts found. Please create an account in Polkadot.js Extension.');
+                }
+                
+                return { success: true, accounts };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Sign message with Polkadot.js Extension
+        async function signMessage(address, message) {
+            try {
+                if (!polkadotExtension) {
+                    throw new Error('Extension not connected');
+                }
+
+                const extension = await polkadotExtension.enable('Polkadot SSO Test');
+                const signer = extension.signer;
+                
+                // Get the account
+                const accounts = await extension.accounts.get();
+                const account = accounts.find(acc => acc.address === address);
+                
+                if (!account) {
+                    throw new Error('Account not found');
+                }
+
+                // Sign the message
+                const signature = await signer.signRaw({
+                    address: address,
+                    data: message,
+                    type: 'bytes'
+                });
+
+                return { success: true, signature: signature.signature };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        function displayResult(elementId, result, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            
+            if (result.success) {
+                element.textContent = JSON.stringify(result.data, null, 2);
+            } else {
+                element.textContent = `Error: ${result.error || result.data?.error || 'Unknown error'}`;
+            }
+        }
+
+        async function testHealth() {
+            const result = await makeRequest(`${API_BASE}/health`);
+            displayResult('health-result', result, result.success ? 'success' : 'error');
+        }
+
+        async function testChallenge() {
+            const address = document.getElementById('address').value;
+            const chain = document.getElementById('chain').value;
+            
+            if (!address) {
+                displayResult('challenge-result', { success: false, error: 'Please enter an address' }, 'error');
+                return;
+            }
+
+            const result = await makeRequest(`${API_BASE}/api/auth/polkadot/challenge`, {
+                method: 'POST',
+                body: JSON.stringify({ address, chain })
+            });
+            
+            displayResult('challenge-result', result, result.success ? 'success' : 'error');
+        }
+
+        async function testVerify() {
+            const signature = document.getElementById('signature').value;
+            const challengeId = document.getElementById('challenge-id').value;
+            const address = document.getElementById('address').value;
+            const message = "Sign this message to authenticate with Polkadot SSO";
+            
+            if (!signature || !challengeId) {
+                displayResult('verify-result', { success: false, error: 'Please enter signature and challenge ID' }, 'error');
+                return;
+            }
+
+            const result = await makeRequest(`${API_BASE}/api/auth/polkadot/verify`, {
+                method: 'POST',
+                body: JSON.stringify({ signature, challenge_id: challengeId, address, message })
+            });
+            
+            displayResult('verify-result', result, result.success ? 'success' : 'error');
+        }
+
+        async function testSession() {
+            const result = await makeRequest(`${API_BASE}/api/auth/session`);
+            displayResult('session-result', result, result.success ? 'success' : 'error');
+        }
+
+        async function testFullFlow() {
+            const flowResult = document.getElementById('flow-result');
+            flowResult.className = 'result info';
+            flowResult.textContent = 'Starting full authentication flow...\n';
+            
+            try {
+                // Step 1: Health check
+                flowResult.textContent += '\n1. Testing server health...\n';
+                const health = await makeRequest(`${API_BASE}/health`);
+                if (!health.success) {
+                    throw new Error('Server health check failed');
+                }
+                flowResult.textContent += '✅ Server is healthy\n';
+                
+                // Step 2: Get challenge
+                flowResult.textContent += '\n2. Getting authentication challenge...\n';
+                const address = document.getElementById('address').value;
+                const chain = document.getElementById('chain').value;
+                const challenge = await makeRequest(`${API_BASE}/api/auth/polkadot/challenge`, {
+                    method: 'POST',
+                    body: JSON.stringify({ address, chain })
+                });
+                
+                if (!challenge.success) {
+                    throw new Error('Failed to get challenge');
+                }
+                flowResult.textContent += `✅ Challenge received: ${challenge.data.nonce}\n`;
+                
+                // Step 3: Verify signature (mock)
+                flowResult.textContent += '\n3. Verifying signature...\n';
+                const verify = await makeRequest(`${API_BASE}/api/auth/polkadot/verify`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        signature: 'test-signature',
+                        challenge_id: challenge.data.nonce,
+                        address,
+                        message: challenge.data.message
+                    })
+                });
+                
+                if (!verify.success) {
+                    throw new Error('Signature verification failed');
+                }
+                flowResult.textContent += `✅ Authentication successful!\n`;
+                flowResult.textContent += `User: ${verify.data.user?.address}\n`;
+                flowResult.textContent += `Session: ${verify.data.session?.id}\n`;
+                
+                // Step 4: Check session
+                flowResult.textContent += '\n4. Checking session...\n';
+                const session = await makeRequest(`${API_BASE}/api/auth/session`);
+                if (session.success) {
+                    flowResult.textContent += `✅ Session check completed\n`;
+                }
+                
+                flowResult.textContent += '\n🎉 Full authentication flow completed successfully!';
+                flowResult.className = 'result success';
+                
+            } catch (error) {
+                flowResult.textContent += `\n❌ Error: ${error.message}`;
+                flowResult.className = 'result error';
+            }
+        }
+
+        // Real wallet integration functions
+        async function checkWallet() {
+            const statusElement = document.getElementById('wallet-status');
+            statusElement.className = 'result info';
+            statusElement.textContent = 'Checking for Polkadot.js Extension...';
+            
+            const check = await checkPolkadotExtension();
+            
+            if (check.available) {
+                statusElement.className = 'result success';
+                statusElement.textContent = '✅ Polkadot.js Extension is available and ready!';
+            } else {
+                statusElement.className = 'result error';
+                statusElement.textContent = `❌ ${check.error}\n\nTo test real wallet integration:\n1. Install Polkadot.js Extension from Chrome/Firefox store\n2. Create or import an account\n3. Refresh this page and try again`;
+            }
+        }
+
+        async function connectWallet() {
+            const statusElement = document.getElementById('wallet-status');
+            const accountsListElement = document.getElementById('accounts-list');
+            const accountSelectionElement = document.getElementById('account-selection');
+            
+            statusElement.className = 'result info';
+            statusElement.textContent = 'Connecting to wallet...';
+            
+            const result = await connectPolkadotExtension();
+            
+            if (result.success) {
+                accounts = result.accounts;
+                statusElement.className = 'result success';
+                statusElement.textContent = `✅ Connected! Found ${accounts.length} account(s)`;
+                
+                // Display accounts
+                accountsListElement.style.display = 'block';
+                accountsListElement.className = 'result success';
+                accountsListElement.innerHTML = accounts.map((account, index) => 
+                    `<div style="margin: 5px 0; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                        <strong>Account ${index + 1}:</strong><br>
+                        <strong>Name:</strong> ${account.name || 'Unnamed'}<br>
+                        <strong>Address:</strong> ${account.address}<br>
+                        <strong>Type:</strong> ${account.type || 'unknown'}
+                    </div>`
+                ).join('');
+                
+                // Populate account selection
+                const selectElement = document.getElementById('selected-account');
+                selectElement.innerHTML = '<option value="">Choose an account...</option>';
+                accounts.forEach((account, index) => {
+                    const option = document.createElement('option');
+                    option.value = account.address;
+                    option.textContent = `${account.name || 'Unnamed'} (${account.address.substring(0, 10)}...)`;
+                    selectElement.appendChild(option);
+                });
+                
+                accountSelectionElement.style.display = 'block';
+            } else {
+                statusElement.className = 'result error';
+                statusElement.textContent = `❌ Failed to connect: ${result.error}`;
+            }
+        }
+
+        function selectAccount() {
+            const selectedAddress = document.getElementById('selected-account').value;
+            const realAuthSection = document.getElementById('real-auth-section');
+            
+            if (selectedAddress) {
+                selectedAccount = accounts.find(acc => acc.address === selectedAddress);
+                realAuthSection.style.display = 'block';
+                
+                const statusElement = document.getElementById('wallet-status');
+                statusElement.className = 'result success';
+                statusElement.textContent = `✅ Selected account: ${selectedAccount.name || 'Unnamed'} (${selectedAddress})`;
+            } else {
+                alert('Please select an account first');
+            }
+        }
+
+        async function testRealSigning() {
+            if (!selectedAccount) {
+                alert('Please select an account first');
+                return;
+            }
+            
+            const resultElement = document.getElementById('real-auth-result');
+            resultElement.className = 'result info';
+            resultElement.textContent = 'Testing real message signing...';
+            
+            try {
+                const testMessage = 'Hello from Polkadot SSO Test!';
+                const signResult = await signMessage(selectedAccount.address, testMessage);
+                
+                if (signResult.success) {
+                    resultElement.className = 'result success';
+                    resultElement.textContent = `✅ Message signed successfully!\n\nMessage: ${testMessage}\nSignature: ${signResult.signature}`;
+                } else {
+                    resultElement.className = 'result error';
+                    resultElement.textContent = `❌ Signing failed: ${signResult.error}`;
+                }
+            } catch (error) {
+                resultElement.className = 'result error';
+                resultElement.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+
+        async function testRealAuthentication() {
+            if (!selectedAccount) {
+                alert('Please select an account first');
+                return;
+            }
+            
+            const resultElement = document.getElementById('real-auth-result');
+            resultElement.className = 'result info';
+            resultElement.textContent = 'Testing real authentication flow...';
+            
+            try {
+                // Step 1: Get challenge
+                resultElement.textContent += '\n1. Getting authentication challenge...\n';
+                const challengeResult = await makeRequest(`${API_BASE}/api/auth/polkadot/challenge`, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        address: selectedAccount.address, 
+                        chain: 'polkadot' 
+                    })
+                });
+                
+                if (!challengeResult.success) {
+                    throw new Error('Failed to get challenge');
+                }
+                
+                resultElement.textContent += `✅ Challenge received: ${challengeResult.data.nonce}\n`;
+                
+                // Step 2: Sign the challenge
+                resultElement.textContent += '\n2. Signing challenge with wallet...\n';
+                const signResult = await signMessage(selectedAccount.address, challengeResult.data.message);
+                
+                if (!signResult.success) {
+                    throw new Error(`Signing failed: ${signResult.error}`);
+                }
+                
+                resultElement.textContent += `✅ Challenge signed successfully!\n`;
+                
+                // Step 3: Verify signature
+                resultElement.textContent += '\n3. Verifying signature...\n';
+                const verifyResult = await makeRequest(`${API_BASE}/api/auth/polkadot/verify`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        signature: signResult.signature,
+                        challenge_id: challengeResult.data.nonce,
+                        address: selectedAccount.address,
+                        message: challengeResult.data.message
+                    })
+                });
+                
+                if (!verifyResult.success) {
+                    throw new Error('Signature verification failed');
+                }
+                
+                resultElement.textContent += `✅ Authentication successful!\n`;
+                resultElement.textContent += `User: ${verifyResult.data.user?.address}\n`;
+                resultElement.textContent += `Session: ${verifyResult.data.session?.id}\n`;
+                resultElement.textContent += `\n🎉 Real wallet authentication completed successfully!`;
+                resultElement.className = 'result success';
+                
+            } catch (error) {
+                resultElement.textContent += `\n❌ Error: ${error.message}`;
+                resultElement.className = 'result error';
+            }
+        }
+
+        // Auto-test health on page load
+        window.onload = function() {
+            testHealth();
+            checkWallet(); // Also check wallet status on load
+        };
+    </script>
+</body>
+</html>
