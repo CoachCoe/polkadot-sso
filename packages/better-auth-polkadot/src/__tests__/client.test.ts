@@ -95,11 +95,11 @@ describe("PolkadotAuthClient", () => {
 
   describe("authenticate", () => {
     it("should complete authentication flow", async () => {
-      const mockChallenge = {
-        message: "test challenge",
+      const mockNonceResponse = {
+        message: "test challenge message",
+        token: "base64-encoded-token",
         nonce: "test-nonce",
-        chain: "polkadot",
-        expiresAt: Date.now() + 300000
+        expiresAt: new Date(Date.now() + 300000).toISOString()
       }
 
       const mockSigner = {
@@ -109,14 +109,23 @@ describe("PolkadotAuthClient", () => {
       }
 
       const mockAuthResponse = {
-        user: { id: "user-1", address: "1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z" },
-        session: { id: "session-1", token: "jwt-token" }
+        user: {
+          id: "user-1",
+          address: "1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z",
+          email: "test@polkadot.polkadot",
+          name: "Test User",
+          chain: "polkadot"
+        },
+        session: {
+          token: "session-token",
+          expiresAt: new Date(Date.now() + 3600000).toISOString()
+        }
       }
 
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve(mockChallenge)
+          json: () => Promise.resolve(mockNonceResponse)
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -131,24 +140,28 @@ describe("PolkadotAuthClient", () => {
 
       expect(result).toEqual(mockAuthResponse)
       expect(mockFetch).toHaveBeenCalledTimes(2)
+      expect(mockFetch).toHaveBeenNthCalledWith(1, "http://localhost:3001/api/auth/polkadot/nonce", expect.any(Object))
+      expect(mockFetch).toHaveBeenNthCalledWith(2, "http://localhost:3001/api/auth/polkadot/verify", expect.objectContaining({
+        credentials: 'include'
+      }))
     })
 
-    it("should handle challenge request failure", async () => {
+    it("should handle nonce request failure", async () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 400
       })
 
       await expect(client.authenticate("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", "polkadot"))
-        .rejects.toThrow("Failed to get challenge")
+        .rejects.toThrow("Failed to get nonce")
     })
 
     it("should handle signature verification failure", async () => {
-      const mockChallenge = {
+      const mockNonceResponse = {
         message: "test challenge",
+        token: "test-token",
         nonce: "test-nonce",
-        chain: "polkadot",
-        expiresAt: Date.now() + 300000
+        expiresAt: new Date(Date.now() + 300000).toISOString()
       }
 
       const mockSigner = {
@@ -160,7 +173,7 @@ describe("PolkadotAuthClient", () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve(mockChallenge)
+          json: () => Promise.resolve(mockNonceResponse)
         })
         .mockResolvedValueOnce({
           ok: false,
@@ -173,6 +186,53 @@ describe("PolkadotAuthClient", () => {
 
       await expect(client.authenticate("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", "polkadot"))
         .rejects.toThrow("Failed to verify signature")
+    })
+  })
+
+  describe("detectChain", () => {
+    it("should detect polkadot chain", async () => {
+      const mockAccounts = [
+        {
+          address: "1FRMM8PEiWXYax7rpS6X4XZX1aAAxSWx1CrKTyrVYhV24fg",
+          meta: { name: "Test", source: "polkadot-js" }
+        }
+      ]
+
+      mockWeb3Enable.mockResolvedValue([{ name: "polkadot-js" }])
+      mockWeb3Accounts.mockResolvedValue(mockAccounts)
+
+      const accounts = await client.getAccounts()
+      expect(accounts[0].chain).toBe("polkadot")
+    })
+
+    it("should detect kusama chain", async () => {
+      const mockAccounts = [
+        {
+          address: "CpjsLDC1JFyrhm3ftC9Gs4QoyrkHKhZKtK7YqGTRFtTafgp",
+          meta: { name: "Test", source: "polkadot-js" }
+        }
+      ]
+
+      mockWeb3Enable.mockResolvedValue([{ name: "polkadot-js" }])
+      mockWeb3Accounts.mockResolvedValue(mockAccounts)
+
+      const accounts = await client.getAccounts()
+      expect(accounts[0].chain).toBe("kusama")
+    })
+
+    it("should detect westend chain", async () => {
+      const mockAccounts = [
+        {
+          address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+          meta: { name: "Test", source: "polkadot-js" }
+        }
+      ]
+
+      mockWeb3Enable.mockResolvedValue([{ name: "polkadot-js" }])
+      mockWeb3Accounts.mockResolvedValue(mockAccounts)
+
+      const accounts = await client.getAccounts()
+      expect(accounts[0].chain).toBe("westend")
     })
   })
 })

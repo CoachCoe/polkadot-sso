@@ -11,11 +11,7 @@ export const auth: any = betterAuth({
   plugins: [
     polkadotPlugin({
       domain: process.env.DOMAIN || "localhost:3001",
-      appName: process.env.APP_NAME || "Polkadot SSO",
-      appVersion: process.env.APP_VERSION || "1.0.0",
       statement: process.env.STATEMENT || "Sign in with Polkadot to access your account",
-      uri: process.env.URI || "http://localhost:3001",
-      sessionMaxAge: parseInt(process.env.SESSION_MAX_AGE || "3600"),
       providers: [
         {
           id: "polkadot",

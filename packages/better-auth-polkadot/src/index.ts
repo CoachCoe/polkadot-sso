@@ -16,7 +16,6 @@ export type {
 
 export {
   verifySignature,
-  generateChallenge,
   generateNonce,
   isValidAddress,
   formatAddress,

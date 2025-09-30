@@ -75,27 +75,26 @@ export class PolkadotAuthClient {
 
   async authenticate(address: string, chain: string): Promise<any> {
     try {
-      const challengeResponse = await fetch(`${this.ssoUrl}/api/auth/polkadot/challenge`, {
+      const nonceResponse = await fetch(`${this.ssoUrl}/api/auth/polkadot/nonce`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address, chain })
       })
 
-      if (!challengeResponse.ok) {
-        throw new Error('Failed to get challenge')
+      if (!nonceResponse.ok) {
+        throw new Error('Failed to get nonce')
       }
 
-      const challenge = await challengeResponse.json()
-      const signature = await this.signMessage(address, challenge.message)
+      const { message, token } = await nonceResponse.json()
+      const signature = await this.signMessage(address, message)
 
       const verifyResponse = await fetch(`${this.ssoUrl}/api/auth/polkadot/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           signature,
-          address,
-          message: challenge.message,
-          chain
+          token
         })
       })
 

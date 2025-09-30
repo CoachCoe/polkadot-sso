@@ -1,5 +1,5 @@
 import { u8aToHex, hexToU8a } from "@polkadot/util"
-import { signatureVerify, decodeAddress } from "@polkadot/util-crypto"
+import { signatureVerify, decodeAddress, cryptoWaitReady } from "@polkadot/util-crypto"
 import { randomBytes } from "crypto"
 import type { PolkadotProvider } from "./plugin"
 
@@ -10,11 +10,13 @@ export async function verifySignature(
   provider: PolkadotProvider
 ): Promise<boolean> {
   try {
+    await cryptoWaitReady()
+
     const messageBytes = new TextEncoder().encode(message)
     const signatureBytes = hexToU8a(signature)
-    
+
     const result = signatureVerify(messageBytes, signatureBytes, address)
-    
+
     return result.isValid
   } catch (error) {
     console.error("Signature verification failed:", error)
@@ -22,21 +24,6 @@ export async function verifySignature(
   }
 }
 
-export function generateChallenge(address: string, chain: string): string {
-  const timestamp = new Date().toISOString()
-  const nonce = generateNonce()
-  
-  return `${chain} wants you to sign in with your Polkadot account:
-${address}
-
-Sign in with Polkadot to Polkadot App
-
-URI: https://polkadot.app
-Version: 1
-Chain ID: ${chain}
-Nonce: ${nonce}
-Issued At: ${timestamp}`
-}
 
 export function generateNonce(): string {
   return randomBytes(16).toString('hex')

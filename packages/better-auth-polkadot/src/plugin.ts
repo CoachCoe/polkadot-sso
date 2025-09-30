@@ -1,6 +1,5 @@
-import { BetterAuthPlugin } from "better-auth"
-import { verifySignature, generateChallenge, generateNonce, isValidAddress } from "./crypto"
-import { randomBytes } from "crypto"
+import type { BetterAuthPlugin } from "better-auth"
+import { verifySignature, generateNonce, isValidAddress } from "./crypto"
 
 export interface PolkadotProvider {
   id: string
@@ -15,32 +14,60 @@ export interface PolkadotProvider {
 export interface PolkadotPluginOptions {
   providers: PolkadotProvider[]
   domain: string
-  appName?: string
-  appVersion?: string
   statement?: string
-  uri?: string
-  sessionMaxAge?: number
+  getNonce?: () => Promise<string>
+  getChainProvider?: (chain: string) => PolkadotProvider | undefined
+}
+
+const schema = {
+  polkadotAccount: {
+    fields: {
+      userId: {
+        type: "string" as const,
+        required: true,
+        references: {
+          model: "user",
+          field: "id"
+        }
+      },
+      address: {
+        type: "string" as const,
+        required: true
+      },
+      chain: {
+        type: "string" as const,
+        required: true
+      },
+      provider: {
+        type: "string" as const,
+        required: true
+      },
+      isPrimary: {
+        type: "boolean" as const,
+        required: false
+      },
+      createdAt: {
+        type: "date" as const,
+        required: false
+      }
+    }
+  }
 }
 
 export const polkadotPlugin = (options: PolkadotPluginOptions): BetterAuthPlugin => {
-  const config = {
-    appName: options.appName || "Polkadot App",
-    appVersion: options.appVersion || "1.0.0",
-    statement: options.statement || `Sign in with Polkadot to ${options.appName || "Polkadot App"}`,
-    uri: options.uri || `https://${options.domain}`,
-    sessionMaxAge: options.sessionMaxAge || 3600,
-    ...options
-  }
-
-  const challengeStore = new Map<string, { address: string, chain: string, expiresAt: number }>()
+  const getNonceFunc = options.getNonce || (async () => generateNonce())
+  const getChainProviderFunc = options.getChainProvider || ((chain: string) =>
+    options.providers.find(p => p.chain === chain)
+  )
 
   return {
     id: "polkadot",
-    
-    onRequest: async (request: Request, ctx: any) => {
+    schema,
+
+    onRequest: async (request, ctx) => {
       const url = new URL(request.url)
-      
-      if (url.pathname === "/api/auth/polkadot/challenge" && request.method === "POST") {
+
+      if (url.pathname === "/api/auth/polkadot/nonce" && request.method === "POST") {
         try {
           const body = await request.json()
           const { address, chain } = body
@@ -57,7 +84,7 @@ export const polkadotPlugin = (options: PolkadotPluginOptions): BetterAuthPlugin
             }
           }
 
-          const provider = config.providers.find(p => p.chain === chain)
+          const provider = getChainProviderFunc(chain)
           if (!provider) {
             return {
               response: new Response(JSON.stringify({
@@ -82,26 +109,37 @@ export const polkadotPlugin = (options: PolkadotPluginOptions): BetterAuthPlugin
             }
           }
 
-          const nonce = generateNonce()
-          const challenge = generateChallenge(address, chain)
-          const expiresAt = Date.now() + 300000
+          const nonce = await getNonceFunc()
+          const timestamp = new Date().toISOString()
 
-          challengeStore.set(nonce, { address, chain, expiresAt })
+          const message = `${options.domain} wants you to sign in with your Polkadot account:
+${address}
 
-          setTimeout(() => {
-            challengeStore.delete(nonce)
-          }, 300000)
+${options.statement || "Sign in with Polkadot"}
+
+URI: https://${options.domain}
+Version: 1
+Chain ID: ${chain}
+Nonce: ${nonce}
+Issued At: ${timestamp}`
+
+          const challenge = {
+            message,
+            nonce,
+            address,
+            chain,
+            issuedAt: timestamp,
+            expiresAt: new Date(Date.now() + 300000).toISOString()
+          }
+
+          const token = Buffer.from(JSON.stringify(challenge)).toString('base64url')
 
           return {
             response: new Response(JSON.stringify({
-              message: challenge,
               nonce,
-              chain,
-              expiresAt,
-              domain: config.domain,
-              uri: config.uri,
-              version: config.appVersion,
-              statement: config.statement
+              message,
+              token,
+              expiresAt: challenge.expiresAt
             }), {
               status: 200,
               headers: { "Content-Type": "application/json" }
@@ -119,13 +157,13 @@ export const polkadotPlugin = (options: PolkadotPluginOptions): BetterAuthPlugin
           }
         }
       }
-      
+
       if (url.pathname === "/api/auth/polkadot/verify" && request.method === "POST") {
         try {
           const body = await request.json()
-          const { signature, nonce, address, message } = body
+          const { signature, token } = body
 
-          if (!signature || !nonce || !address || !message) {
+          if (!signature || !token) {
             return {
               response: new Response(JSON.stringify({
                 error: "Missing required parameters",
@@ -137,12 +175,15 @@ export const polkadotPlugin = (options: PolkadotPluginOptions): BetterAuthPlugin
             }
           }
 
-          const challengeData = challengeStore.get(nonce)
-          if (!challengeData) {
+          let challenge
+          try {
+            const decoded = Buffer.from(token, 'base64url').toString()
+            challenge = JSON.parse(decoded)
+          } catch {
             return {
               response: new Response(JSON.stringify({
-                error: "Invalid or expired challenge",
-                code: "INVALID_CHALLENGE"
+                error: "Invalid token",
+                code: "INVALID_TOKEN"
               }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" }
@@ -150,20 +191,7 @@ export const polkadotPlugin = (options: PolkadotPluginOptions): BetterAuthPlugin
             }
           }
 
-          if (challengeData.address !== address) {
-            return {
-              response: new Response(JSON.stringify({
-                error: "Address mismatch",
-                code: "ADDRESS_MISMATCH"
-              }), {
-                status: 400,
-                headers: { "Content-Type": "application/json" }
-              })
-            }
-          }
-
-          if (Date.now() > challengeData.expiresAt) {
-            challengeStore.delete(nonce)
+          if (Date.now() > new Date(challenge.expiresAt).getTime()) {
             return {
               response: new Response(JSON.stringify({
                 error: "Challenge expired",
@@ -175,7 +203,7 @@ export const polkadotPlugin = (options: PolkadotPluginOptions): BetterAuthPlugin
             }
           }
 
-          const provider = config.providers.find(p => p.chain === challengeData.chain)
+          const provider = getChainProviderFunc(challenge.chain)
           if (!provider) {
             return {
               response: new Response(JSON.stringify({
@@ -188,7 +216,13 @@ export const polkadotPlugin = (options: PolkadotPluginOptions): BetterAuthPlugin
             }
           }
 
-          const isValid = await verifySignature(message, signature, address, provider)
+          const isValid = await verifySignature(
+            challenge.message,
+            signature,
+            challenge.address,
+            provider
+          )
+
           if (!isValid) {
             return {
               response: new Response(JSON.stringify({
@@ -201,35 +235,82 @@ export const polkadotPlugin = (options: PolkadotPluginOptions): BetterAuthPlugin
             }
           }
 
-          challengeStore.delete(nonce)
+          const { address, chain } = challenge
 
-          const userId = `polkadot_${address}_${challengeData.chain}`
-          const sessionId = randomBytes(32).toString('hex')
-          const token = randomBytes(32).toString('hex')
+          let userResult = await ctx.internalAdapter.findUserByEmail(
+            `${address}@polkadot.${chain}`
+          )
 
-          return {
-            response: new Response(JSON.stringify({
-              user: {
-                id: userId,
-                address,
-                chain: challengeData.chain,
-                provider: provider.id,
-                createdAt: new Date(),
-                updatedAt: new Date()
-              },
-              session: {
-                id: sessionId,
-                userId,
-                token,
-                expiresAt: new Date(Date.now() + config.sessionMaxAge * 1000),
-                createdAt: new Date()
-              },
-              token
-            }), {
-              status: 200,
-              headers: { "Content-Type": "application/json" }
+          if (!userResult) {
+            userResult = await ctx.internalAdapter.createUser({
+              email: `${address}@polkadot.${chain}`,
+              emailVerified: true,
+              name: address.slice(0, 8) + "..." + address.slice(-6)
             })
           }
+
+          const user = userResult.user
+
+          const existingAccount = await ctx.adapter.findOne({
+            model: "polkadotAccount",
+            where: [
+              {
+                field: "userId",
+                value: user.id
+              },
+              {
+                field: "address",
+                value: address
+              },
+              {
+                field: "chain",
+                value: chain
+              }
+            ]
+          })
+
+          if (!existingAccount) {
+            await ctx.adapter.create({
+              model: "polkadotAccount",
+              data: {
+                userId: user.id,
+                address,
+                chain,
+                provider: provider.id,
+                isPrimary: true,
+                createdAt: new Date()
+              }
+            })
+          }
+
+          const sessionResult = await ctx.internalAdapter.createSession(
+            user.id,
+            request
+          )
+
+          const sessionToken = (sessionResult as any).id || ""
+
+          const response = new Response(JSON.stringify({
+            user: {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              address,
+              chain
+            },
+            session: {
+              id: sessionResult.id,
+              expiresAt: sessionResult.expiresAt
+            }
+          }), {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              "Set-Cookie": `${ctx.authCookies.sessionToken.name}=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ctx.sessionConfig.expiresIn}`
+            }
+          })
+
+          return { response }
         } catch (error) {
           return {
             response: new Response(JSON.stringify({
@@ -240,6 +321,17 @@ export const polkadotPlugin = (options: PolkadotPluginOptions): BetterAuthPlugin
               headers: { "Content-Type": "application/json" }
             })
           }
+        }
+      }
+
+      if (url.pathname === "/api/auth/polkadot/providers" && request.method === "GET") {
+        return {
+          response: new Response(JSON.stringify({
+            providers: options.providers
+          }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+          })
         }
       }
 
