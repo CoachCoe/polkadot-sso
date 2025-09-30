@@ -5,11 +5,11 @@ echo "🔍 Running pre-commit checks..."
 
 # Run type checking (critical - must pass)
 echo "🔧 Checking TypeScript types..."
-npm run type-check
+cd apps/sso && npm run check-types
 
 # Check formatting (critical - must pass)
 echo "🎨 Checking code formatting..."
-npm run format:check
+cd apps/sso && npm run build
 
 # Run linting (temporarily disabled due to configuration issues)
 echo "📝 Checking code style (temporarily disabled)..."

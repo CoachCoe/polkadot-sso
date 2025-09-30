@@ -1,47 +1,62 @@
-import app from './app.js';
-import { createLogger } from './utils/logger.js';
+import { createServer } from "http"
+import { auth } from "./server.js"
 
-const logger = createLogger('polkadot-sso');
+const PORT = process.env.PORT || 3001
 
-// Start the server
-const PORT = process.env.PORT || 3001;
-const server = app.listen(PORT, () => {
-  logger.info(`🚀 Polkadot SSO server running on port ${PORT}`);
-  logger.info(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
-  logger.info(`🏥 Health Check: http://localhost:${PORT}/health`);
-});
+const server = createServer(async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    logger.info('Process terminated');
-    process.exit(0);
-  });
-});
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200)
+    res.end()
+    return
+  }
 
-process.on('SIGINT', () => {
-  logger.info('SIGINT received, shutting down gracefully');
-  server.close(() => {
-    logger.info('Process terminated');
-    process.exit(0);
-  });
-});
+  if (req.url === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ 
+      status: 'healthy', 
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
+      service: 'polkadot-sso'
+    }))
+    return
+  }
 
-export { app };
+  try {
+    const url = `http://${req.headers.host}${req.url}`
+    const request = new Request(url, {
+      method: req.method,
+      headers: req.headers as any,
+      body: req.method !== 'GET' && req.method !== 'HEAD' ? req : undefined
+    })
+    
+    const response = await auth.handler(request)
+    
+    if (response) {
+      res.writeHead(response.status, Object.fromEntries(response.headers.entries()))
+      res.end(await response.text())
+    } else {
+      res.writeHead(404, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({ error: 'Not Found' }))
+    }
+  } catch (error) {
+    console.error('Server error:', error)
+    res.writeHead(500, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ 
+      error: 'Internal Server Error',
+      code: 'INTERNAL_ERROR'
+    }))
+  }
+})
 
-// SSO Services
-  export { ChallengeService } from './services/challengeService.js';
-  export { SIWEStyleAuthService } from './services/siweStyleAuthService.js';
-  export { TokenService } from './services/token.js';
+server.listen(PORT, () => {
+  console.log(`🚀 Polkadot SSO server running on port ${PORT}`)
+  console.log(`📚 API Documentation: http://localhost:${PORT}/api/auth`)
+  console.log(`🏥 Health Check: http://localhost:${PORT}/health`)
+  console.log(`🔐 Better Auth integration active`)
+})
 
-// SSO Routes
-export { createAuthRouter } from './routes/auth/index.js';
-
-// Shared Utilities
-export { createLogger } from './utils/index.js';
-
-// Configuration
-export { corsConfig, initializeDatabase, sessionConfig } from './config/index.js';
-
-export default app;
+export default server

@@ -1,26 +1,23 @@
-# Polkadot SSO
+# Better Auth Polkadot Plugin
 
-> 🚀 **Production-Ready Better Auth Plugin** for the Polkadot ecosystem
+A comprehensive Better Auth plugin for Polkadot wallet authentication, providing secure SIWE-style authentication for the Polkadot ecosystem.
 
-A comprehensive Better Auth plugin for Polkadot wallet authentication, providing secure SIWE-style authentication with multi-chain support and enterprise-grade security features.
+## Features
 
-## ✨ Features
-
-- 🔐 **Polkadot.js Integration**: Secure wallet-based authentication
+- 🔐 **Multi-Wallet Support**: Polkadot.js, Talisman, SubWallet
 - ⛓️ **Multi-Chain Support**: Polkadot, Kusama, Westend, Asset Hub
-- 🛡️ **Better Auth Integration**: Seamless plugin architecture
+- 🛡️ **Secure Authentication**: Cryptographic signature verification
 - 📱 **React/Next.js Ready**: Full TypeScript support with hooks
+- 🎯 **Better Auth Integration**: Seamless plugin architecture
 - 🧪 **Comprehensive Testing**: 80%+ test coverage
-- 🔒 **Enterprise Security**: Cryptographic signature verification
-- 🌐 **Production Ready**: Stateless, scalable, and secure
 
-## 🚀 Quick Start
-
-### Installation
+## Installation
 
 ```bash
 npm install @polkadot-sso/better-auth-polkadot
 ```
+
+## Quick Start
 
 ### Server Setup
 
@@ -29,11 +26,6 @@ import { betterAuth } from "better-auth"
 import { polkadotPlugin } from "@polkadot-sso/better-auth-polkadot"
 
 const auth = betterAuth({
-  database: {
-    provider: "sqlite",
-    url: "file:./data/auth.db"
-  },
-  secret: process.env.SESSION_SECRET,
   plugins: [
     polkadotPlugin({
       providers: [
@@ -113,43 +105,24 @@ function LoginComponent() {
 }
 ```
 
-## 🏗️ Architecture
+### Component Usage
 
-### Better Auth Plugin System
+```typescript
+import { PolkadotWalletSelector } from "@polkadot-sso/better-auth-polkadot"
 
-The plugin follows the Better Auth architecture with:
-
-- **Stateless Authentication**: JWT-based sessions
-- **Plugin Architecture**: Modular and extensible
-- **Type Safety**: Full TypeScript support
-- **Security First**: Cryptographic verification
-
-### Authentication Flow
-
-1. **Wallet Connection**: User connects their Polkadot wallet
-2. **Account Selection**: User selects an account and chain
-3. **Challenge Generation**: Server generates a cryptographic challenge
-4. **Message Signing**: User signs the challenge with their wallet
-5. **Signature Verification**: Server verifies the signature
-6. **Session Creation**: Server creates a JWT session
-7. **Authentication Complete**: User is authenticated
-
-## 🔧 Configuration
-
-### Environment Variables
-
-```bash
-# Required
-SESSION_SECRET=your-32-character-session-secret
-
-# Optional - Chain RPC URLs
-POLKADOT_RPC_URL=wss://rpc.polkadot.io
-KUSAMA_RPC_URL=wss://kusama-rpc.polkadot.io
-WESTEND_RPC_URL=wss://westend-rpc.polkadot.io
-
-# Optional - Database
-DATABASE_URL=file:./data/auth.db
+function App() {
+  return (
+    <PolkadotWalletSelector
+      appName="My App"
+      ssoUrl="http://localhost:3000"
+      onSuccess={(user) => console.log("Authenticated:", user)}
+      onError={(error) => console.error("Auth error:", error)}
+    />
+  )
+}
 ```
+
+## API Reference
 
 ### Plugin Options
 
@@ -169,55 +142,19 @@ interface PolkadotPluginOptions {
 }
 ```
 
-## 🛡️ Security Features
+### PolkadotProvider
 
-- **Cryptographic Verification**: All signatures are cryptographically verified
-- **Challenge-Response**: Prevents replay attacks
-- **JWT Tokens**: Secure session management
-- **Address Validation**: SS58 format validation
-- **Rate Limiting**: Built-in protection against abuse
-
-## 📦 Packages
-
-### Core Plugin
-- **Location**: `packages/better-auth-polkadot/`
-- **Package**: `@polkadot-sso/better-auth-polkadot`
-- **Status**: ✅ Production Ready
-
-### Example App
-- **Location**: `apps/example/`
-- **Framework**: Nuxt.js
-- **Status**: ✅ Updated for Better Auth
-
-## 🧪 Testing
-
-```bash
-# Run tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Watch mode
-npm run test:watch
+```typescript
+interface PolkadotProvider {
+  id: string
+  name: string
+  chain: string
+  rpcUrl: string
+  ss58Format: number
+  decimals: number
+  tokenSymbol: string
+}
 ```
-
-The plugin includes comprehensive unit tests with 80%+ coverage.
-
-## 🚀 Development
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-```
-
-## 📚 API Reference
 
 ### usePolkadotAuth Hook
 
@@ -235,25 +172,61 @@ interface UsePolkadotAuthReturn {
 }
 ```
 
-### PolkadotWalletSelector Component
+## Authentication Flow
 
-```typescript
-interface PolkadotWalletSelectorProps {
-  appName: string
-  ssoUrl: string
-  onSuccess?: (user: any) => void
-  onError?: (error: string) => void
-}
-```
+1. **Wallet Connection**: User connects their Polkadot wallet
+2. **Account Selection**: User selects an account and chain
+3. **Challenge Generation**: Server generates a cryptographic challenge
+4. **Message Signing**: User signs the challenge with their wallet
+5. **Signature Verification**: Server verifies the signature
+6. **Session Creation**: Server creates a JWT session
+7. **Authentication Complete**: User is authenticated
 
-## 🌟 Supported Chains
+## Security Features
+
+- **Cryptographic Verification**: All signatures are cryptographically verified
+- **Challenge-Response**: Prevents replay attacks
+- **JWT Tokens**: Secure session management
+- **Address Validation**: SS58 format validation
+- **Rate Limiting**: Built-in protection against abuse
+
+## Supported Chains
 
 - **Polkadot**: Main network (ss58: 0)
 - **Kusama**: Canary network (ss58: 2)
 - **Westend**: Test network (ss58: 42)
 - **Asset Hub**: Asset parachain
 
-## 🤝 Contributing
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Build
+npm run build
+
+# Development mode
+npm run dev
+```
+
+## Testing
+
+The plugin includes comprehensive unit tests with 80%+ coverage:
+
+```bash
+npm test                    # Run all tests
+npm run test:watch         # Watch mode
+npm run test:coverage      # Coverage report
+```
+
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -261,16 +234,12 @@ interface PolkadotWalletSelectorProps {
 4. Ensure all tests pass
 5. Submit a pull request
 
-## 📄 License
+## License
 
 MIT License - see LICENSE file for details.
 
-## 🆘 Support
+## Support
 
 - GitHub Issues: [Report bugs and request features](https://github.com/CoachCoe/polkadot-sso/issues)
 - Documentation: [Full API documentation](https://github.com/CoachCoe/polkadot-sso/tree/main/packages/better-auth-polkadot)
 - Discord: [Join our community](https://discord.gg/polkadot-sso)
-
----
-
-**Built with ❤️ for the Polkadot ecosystem**

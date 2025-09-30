@@ -1,0 +1,57 @@
+{
+  "name": "@polkadot-sso/better-auth-polkadot",
+  "version": "1.0.0",
+  "description": "Better Auth plugin for Polkadot wallet authentication",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "prepublishOnly": "npm run clean && npm run build && npm run test"
+  },
+  "keywords": [
+    "polkadot",
+    "authentication",
+    "better-auth",
+    "wallet",
+    "blockchain",
+    "sso"
+  ],
+  "author": "Polkadot SSO Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "better-auth": "^0.7.0"
+  },
+  "dependencies": {
+    "@polkadot/extension-dapp": "^0.46.1",
+    "@polkadot/util": "^13.5.6",
+    "@polkadot/util-crypto": "^13.5.6",
+    "jsonwebtoken": "^9.0.2",
+    "react": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/jest": "^29.0.0",
+    "@types/jsonwebtoken": "^9.0.5",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CoachCoe/polkadot-sso.git",
+    "directory": "packages/better-auth-polkadot"
+  },
+  "bugs": {
+    "url": "https://github.com/CoachCoe/polkadot-sso/issues"
+  },
+  "homepage": "https://github.com/CoachCoe/polkadot-sso#readme"
+}
