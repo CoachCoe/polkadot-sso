@@ -16,7 +16,7 @@
     "@nuxt/ui": "^4.0.0",
     "@pinia/nuxt": "^0.8.0",
     "@polkadot/api": "^10.11.1",
-    "@polkadot/extension-dapp": "^0.46.6",
+    "@polkadot/extension-dapp": "^0.62.1",
     "@polkadot/util": "^12.6.1",
     "@polkadot/util-crypto": "^12.6.1",
     "axios": "^1.6.2",
