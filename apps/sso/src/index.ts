@@ -27,12 +27,24 @@ const server = createServer(async (req, res) => {
 
   try {
     const url = `http://${req.headers.host}${req.url}`
+
+    // Read body for POST requests
+    let body: string | undefined
+    if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
+      const chunks: Buffer[] = []
+      for await (const chunk of req) {
+        chunks.push(chunk)
+      }
+      body = Buffer.concat(chunks).toString()
+    }
+
     const request = new Request(url, {
       method: req.method,
       headers: req.headers as any,
-      body: req.method !== 'GET' && req.method !== 'HEAD' ? req : undefined
-    })
-    
+      body,
+      duplex: 'half'
+    } as RequestInit)
+
     const response = await auth.handler(request)
     
     if (response) {

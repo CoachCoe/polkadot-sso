@@ -165,9 +165,7 @@ const handleSignIn = async () => {
 
     const authResult = await verifySignature({
       signature: signature.signature,
-      address: selectedAccount.value.address,
-      message: challenge.message,
-      chain: selectedAccount.value.chain
+      token: challenge.token
     })
 
     user.value = authResult.user
@@ -203,7 +201,7 @@ const handleSignOut = async () => {
 }
 
 const getChallenge = async (address: string, chain: string) => {
-  const response = await fetch(`${ssoUrl}/api/auth/polkadot/challenge`, {
+  const response = await fetch(`${ssoUrl}/api/auth/polkadot/nonce`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
