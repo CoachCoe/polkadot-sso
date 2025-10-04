@@ -1,6 +1,12 @@
 {
   "name": "polkadot-sso",
+  "author": "Polkadot Auth Team",
+  "license": "MIT",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "bun@1.2.22",
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean",
@@ -14,26 +20,10 @@
     "prettier": "^3.6.2",
     "turbo": "^2.5.8"
   },
-  "engines": {
-    "node": ">=20"
-  },
-  "packageManager": "bun@1.2.22",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
-  "keywords": [
-    "polkadot",
-    "sso",
-    "authentication",
-    "security",
-    "web3",
-    "wallet",
-    "siwe",
-    "polkadot-js"
-  ],
-  "author": "Polkadot Auth Team",
-  "license": "MIT",
   "trustedDependencies": [
     "@parcel/watcher",
     "@scarf/scarf",
@@ -45,5 +35,15 @@
     "unrs-resolver",
     "vue-demi",
     "workerd"
+  ],
+  "keywords": [
+    "polkadot",
+    "sso",
+    "authentication",
+    "security",
+    "web3",
+    "wallet",
+    "siwe",
+    "polkadot-js"
   ]
 }

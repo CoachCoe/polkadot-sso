@@ -1,4 +1,6 @@
 import type { BetterAuthPlugin } from "better-auth"
+import { createAuthEndpoint } from "better-auth/plugins"
+import { z } from "zod"
 import { verifySignature, generateNonce, isValidAddress } from "./crypto"
 
 export interface PolkadotProvider {
@@ -64,49 +66,31 @@ export const polkadotPlugin = (options: PolkadotPluginOptions): BetterAuthPlugin
     id: "polkadot",
     schema,
 
-    onRequest: async (request, ctx) => {
-      const url = new URL(request.url)
+    init: () => {
+      // Plugin initialization - no modifications needed to context
+      return
+    },
 
-      if (url.pathname === "/api/auth/polkadot/nonce" && request.method === "POST") {
-        try {
-          const body = await request.json()
-          const { address, chain } = body
-
-          if (!address || !chain) {
-            return {
-              response: new Response(JSON.stringify({
-                error: "Missing required parameters",
-                code: "MISSING_PARAMETERS"
-              }), {
-                status: 400,
-                headers: { "Content-Type": "application/json" }
-              })
-            }
-          }
+    endpoints: {
+      getNonce: createAuthEndpoint(
+        "/polkadot/nonce",
+        {
+          method: "POST",
+          body: z.object({
+            address: z.string(),
+            chain: z.string()
+          })
+        },
+        async (ctx) => {
+          const { address, chain } = ctx.body
 
           const provider = getChainProviderFunc(chain)
           if (!provider) {
-            return {
-              response: new Response(JSON.stringify({
-                error: "Unsupported chain",
-                code: "UNSUPPORTED_CHAIN"
-              }), {
-                status: 400,
-                headers: { "Content-Type": "application/json" }
-              })
-            }
+            throw new Error("Unsupported chain")
           }
 
           if (!isValidAddress(address, provider.ss58Format)) {
-            return {
-              response: new Response(JSON.stringify({
-                error: "Invalid address format",
-                code: "INVALID_ADDRESS"
-              }), {
-                status: 400,
-                headers: { "Content-Type": "application/json" }
-              })
-            }
+            throw new Error("Invalid address format")
           }
 
           const nonce = await getNonceFunc()
@@ -135,85 +119,41 @@ Issued At: ${timestamp}`
           const token = Buffer.from(JSON.stringify(challenge)).toString('base64url')
 
           return {
-            response: new Response(JSON.stringify({
-              nonce,
-              message,
-              token,
-              expiresAt: challenge.expiresAt
-            }), {
-              status: 200,
-              headers: { "Content-Type": "application/json" }
-            })
-          }
-        } catch (error) {
-          return {
-            response: new Response(JSON.stringify({
-              error: "Internal server error",
-              code: "INTERNAL_ERROR"
-            }), {
-              status: 500,
-              headers: { "Content-Type": "application/json" }
-            })
+            nonce,
+            message,
+            token,
+            expiresAt: challenge.expiresAt
           }
         }
-      }
+      ),
 
-      if (url.pathname === "/api/auth/polkadot/verify" && request.method === "POST") {
-        try {
-          const body = await request.json()
-          const { signature, token } = body
-
-          if (!signature || !token) {
-            return {
-              response: new Response(JSON.stringify({
-                error: "Missing required parameters",
-                code: "MISSING_PARAMETERS"
-              }), {
-                status: 400,
-                headers: { "Content-Type": "application/json" }
-              })
-            }
-          }
+      verify: createAuthEndpoint(
+        "/polkadot/verify",
+        {
+          method: "POST",
+          body: z.object({
+            signature: z.string(),
+            token: z.string()
+          })
+        },
+        async (ctx) => {
+          const { signature, token } = ctx.body
 
           let challenge
           try {
             const decoded = Buffer.from(token, 'base64url').toString()
             challenge = JSON.parse(decoded)
           } catch {
-            return {
-              response: new Response(JSON.stringify({
-                error: "Invalid token",
-                code: "INVALID_TOKEN"
-              }), {
-                status: 400,
-                headers: { "Content-Type": "application/json" }
-              })
-            }
+            throw new Error("Invalid token")
           }
 
           if (Date.now() > new Date(challenge.expiresAt).getTime()) {
-            return {
-              response: new Response(JSON.stringify({
-                error: "Challenge expired",
-                code: "CHALLENGE_EXPIRED"
-              }), {
-                status: 400,
-                headers: { "Content-Type": "application/json" }
-              })
-            }
+            throw new Error("Challenge expired")
           }
 
           const provider = getChainProviderFunc(challenge.chain)
           if (!provider) {
-            return {
-              response: new Response(JSON.stringify({
-                error: "Provider not found",
-                code: "PROVIDER_NOT_FOUND"
-              }), {
-                status: 400,
-                headers: { "Content-Type": "application/json" }
-              })
-            }
+            throw new Error("Provider not found")
           }
 
           const isValid = await verifySignature(
@@ -224,34 +164,48 @@ Issued At: ${timestamp}`
           )
 
           if (!isValid) {
-            return {
-              response: new Response(JSON.stringify({
-                error: "Invalid signature",
-                code: "INVALID_SIGNATURE"
-              }), {
-                status: 400,
-                headers: { "Content-Type": "application/json" }
-              })
-            }
+            throw new Error("Invalid signature")
           }
 
           const { address, chain } = challenge
 
-          let userResult = await ctx.internalAdapter.findUserByEmail(
-            `${address}@polkadot.${chain}`
-          )
+          // Check if user already exists by looking for existing polkadot account
+          const existingPolkadotAccount = await ctx.context.adapter.findOne({
+            model: "polkadotAccount",
+            where: [
+              {
+                field: "address",
+                value: address
+              },
+              {
+                field: "chain",
+                value: chain
+              }
+            ]
+          })
 
-          if (!userResult) {
-            userResult = await ctx.internalAdapter.createUser({
+          let user
+          if (existingPolkadotAccount) {
+            user = await ctx.context.adapter.findOne({
+              model: "user",
+              where: [
+                {
+                  field: "id",
+                  value: (existingPolkadotAccount as any).userId
+                }
+              ]
+            })
+          }
+
+          if (!user) {
+            user = await ctx.context.internalAdapter.createUser({
               email: `${address}@polkadot.${chain}`,
               emailVerified: true,
               name: address.slice(0, 8) + "..." + address.slice(-6)
             })
           }
 
-          const user = userResult.user
-
-          const existingAccount = await ctx.adapter.findOne({
+          const existingAccount = await ctx.context.adapter.findOne({
             model: "polkadotAccount",
             where: [
               {
@@ -270,7 +224,7 @@ Issued At: ${timestamp}`
           })
 
           if (!existingAccount) {
-            await ctx.adapter.create({
+            await ctx.context.adapter.create({
               model: "polkadotAccount",
               data: {
                 userId: user.id,
@@ -283,14 +237,12 @@ Issued At: ${timestamp}`
             })
           }
 
-          const sessionResult = await ctx.internalAdapter.createSession(
+          const sessionResult = await ctx.context.internalAdapter.createSession(
             user.id,
-            request
+            ctx
           )
 
-          const sessionToken = (sessionResult as any).id || ""
-
-          const response = new Response(JSON.stringify({
+          return {
             user: {
               id: user.id,
               email: user.email,
@@ -300,42 +252,24 @@ Issued At: ${timestamp}`
             },
             session: {
               id: sessionResult.id,
-              expiresAt: sessionResult.expiresAt
+              expiresAt: sessionResult.expiresAt,
+              token: sessionResult.token
             }
-          }), {
-            status: 200,
-            headers: {
-              "Content-Type": "application/json",
-              "Set-Cookie": `${ctx.authCookies.sessionToken.name}=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ctx.sessionConfig.expiresIn}`
-            }
-          })
-
-          return { response }
-        } catch (error) {
-          return {
-            response: new Response(JSON.stringify({
-              error: "Internal server error",
-              code: "INTERNAL_ERROR"
-            }), {
-              status: 500,
-              headers: { "Content-Type": "application/json" }
-            })
           }
         }
-      }
+      ),
 
-      if (url.pathname === "/api/auth/polkadot/providers" && request.method === "GET") {
-        return {
-          response: new Response(JSON.stringify({
+      getProviders: createAuthEndpoint(
+        "/polkadot/providers",
+        {
+          method: "GET"
+        },
+        async () => {
+          return {
             providers: options.providers
-          }), {
-            status: 200,
-            headers: { "Content-Type": "application/json" }
-          })
+          }
         }
-      }
-
-      return null
+      )
     }
   }
 }
