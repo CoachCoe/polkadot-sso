@@ -11,7 +11,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "better-auth": "^0.7.0",
+    "better-auth": "^1.3.26",
     "dotenv": "^17.2.2"
   },
   "devDependencies": {
